@@ -194,7 +194,7 @@ const FreeTeacherMode = () => {
 
             {/* Main Layout: Left Tools | Center Workspace | Right Guide */}
             <main className="free-main-layout">
-                {/* Left Sidebar: Tools */}
+                {/* Left Sidebar: Tools & List */}
                 <aside className="tool-sidebar">
                     <div className="sidebar-header">
                         <h3>보드 도구 🛠️</h3>
@@ -215,35 +215,13 @@ const FreeTeacherMode = () => {
                         <div className="divider"></div>
 
                         <div className="form-group">
-                            <label>배경 설정 (이미지/PDF)</label>
-                            {!backgroundUrl ? (
-                                <div
-                                    className={`sidebar-upload-box ${isDraggingOver ? 'dragging' : ''}`}
-                                    onClick={() => fileInputRef.current.click()}
-                                    onDragOver={handleDragOver}
-                                    onDragLeave={handleDragLeave}
-                                    onDrop={handleDrop}
-                                >
-                                    <Upload size={24} />
-                                    <span>업로드 또는 드래그</span>
-                                </div>
-                            ) : (
-                                <div className="sidebar-image-preview">
-                                    <img src={backgroundUrl} alt="prev" />
-                                    <button className="btn-small-outline" onClick={() => setBackgroundUrl('')}>변경</button>
-                                </div>
-                            )}
-                            <input type="file" ref={fileInputRef} hidden onChange={(e) => handleFileUpload(e.target.files[0])} accept="image/*,.pdf" />
-                        </div>
+                            <label>카드 추가</label>
 
-                        <div className="divider"></div>
-
-                        <div className="form-group">
-                            <label>텍스트 카드 추가</label>
-                            <div className="input-with-button">
+                            {/* Text Input */}
+                            <div className="input-with-button" style={{ marginBottom: '0.5rem' }}>
                                 <input
                                     type="text"
-                                    placeholder="내용 입력..."
+                                    placeholder="텍스트 입력..."
                                     value={inputText}
                                     className="styled-input-mini"
                                     onChange={(e) => setInputText(e.target.value)}
@@ -251,7 +229,7 @@ const FreeTeacherMode = () => {
                                 />
                                 <button className="btn-add" onClick={handleAddText}>+</button>
                             </div>
-                            <div className="font-size-group">
+                            <div className="font-size-group" style={{ marginBottom: '1rem' }}>
                                 {['S', 'M', 'L'].map(scale => (
                                     <button
                                         key={scale}
@@ -262,14 +240,48 @@ const FreeTeacherMode = () => {
                                     </button>
                                 ))}
                             </div>
-                        </div>
 
-                        <div className="form-group">
-                            <label>이미지 카드 추가</label>
+                            {/* Image Upload Button */}
                             <button className="btn-sidebar-secondary" onClick={() => itemImageInputRef.current.click()}>
-                                <ImageIcon size={18} /> 이미지 업로드
+                                <ImageIcon size={18} /> 이미지 카드 추가
                             </button>
                             <input type="file" ref={itemImageInputRef} hidden onChange={handleAddImage} accept="image/*" />
+                        </div>
+
+                        <div className="divider"></div>
+
+                        <div className="sidebar-tray-header">
+                            <Layout size={16} /> 생성된 카드 목록 ({items.length})
+                        </div>
+
+                        <div className="sidebar-tray-list">
+                            {items.length === 0 && (
+                                <div className="empty-tray-msg-small">카드가 없습니다.</div>
+                            )}
+                            {items.map(item => (
+                                <div key={item.id} className="sidebar-tray-item">
+                                    <div className="sidebar-item-preview">
+                                        {item.type === 'text' ? (
+                                            <div style={{ fontSize: '10px' }}>{item.content}</div>
+                                        ) : (
+                                            <img src={item.imageUrl} alt="item" />
+                                        )}
+                                    </div>
+                                    <div className="sidebar-item-controls">
+                                        {item.type === 'image' && (
+                                            <input
+                                                type="range"
+                                                min="5" max="100"
+                                                value={item.width}
+                                                onChange={(e) => updateItemWidth(item.id, parseInt(e.target.value))}
+                                                className="mini-range-sidebar"
+                                                title={`크기: ${item.width}%`}
+                                            />
+                                        )}
+                                        <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
@@ -280,60 +292,33 @@ const FreeTeacherMode = () => {
                     </div>
                 </aside>
 
-                {/* Center: Workspace */}
+                {/* Center: Workspace (Background Only) */}
                 <section className="teacher-workspace">
-                    <section className="tray-management-area">
-                        <div className="tray-header">
-                            <Layout size={18} />
-                            <span>생성된 카드 목록 (미리보기)</span>
-                        </div>
-                        <div className="tray-grid">
-                            {items.length === 0 && (
-                                <div className="empty-tray-msg">생성된 카드가 없습니다.</div>
-                            )}
-                            {items.map(item => (
-                                <div key={item.id} className={`tray-edit-card ${item.type}`}>
-                                    <div className="card-preview">
-                                        {item.type === 'text' ? (
-                                            <div style={{ fontSize: '12px' }}>{item.content}</div>
-                                        ) : (
-                                            <img
-                                                src={item.imageUrl}
-                                                alt="item"
-                                                draggable="false"
-                                                style={{ width: '100%' }}
-                                            />
-                                        )}
-                                    </div>
-                                    <div className="card-controls">
-                                        {item.type === 'image' && (
-                                            <input
-                                                type="range"
-                                                min="5" max="100"
-                                                value={item.width}
-                                                onChange={(e) => updateItemWidth(item.id, parseInt(e.target.value))}
-                                                className="mini-range"
-                                            />
-                                        )}
-                                        <button className="btn-delete-item" onClick={() => handleDeleteItem(item.id)}>×</button>
-                                    </div>
+                    <section className="center-preview-area">
+                        {!backgroundUrl ? (
+                            <div
+                                className={`center-upload-zone ${isDraggingOver ? 'dragging' : ''}`}
+                                onClick={() => fileInputRef.current.click()}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                            >
+                                <div className="upload-icon-circle">
+                                    <Upload size={48} color="#E6B400" />
                                 </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    <section className="preview-area">
-                        <div className="preview-label">배경 미리보기</div>
-                        <div className="preview-container">
-                            {!backgroundUrl ? (
-                                <div className="no-bg-overlay">
-                                    <ImageIcon size={48} />
-                                    <p>배경 이미지가 없습니다.</p>
-                                </div>
-                            ) : (
+                                <h3>배경 이미지 업로드</h3>
+                                <p>클릭하거나 이미지를 여기로 드래그하세요</p>
+                                <span className="upload-hint">JPG, PNG, PDF 지원 (PDF는 1페이지만)</span>
+                            </div>
+                        ) : (
+                            <div className="canvas-wrapper">
                                 <img src={backgroundUrl} alt="background" className="canvas-bg-img" />
-                            )}
-                        </div>
+                                <button className="btn-change-bg" onClick={() => setBackgroundUrl('')}>
+                                    배경 변경하기
+                                </button>
+                            </div>
+                        )}
+                        <input type="file" ref={fileInputRef} hidden onChange={(e) => handleFileUpload(e.target.files[0])} accept="image/*,.pdf" />
                     </section>
                 </section>
 
