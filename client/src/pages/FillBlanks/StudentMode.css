@@ -175,7 +175,7 @@
 }
 
 /* Responsive side-by-side to column */
-@media (max-width: 950px) {
+@media (max-width: 800px) {
     .game-content {
         flex-direction: column;
         padding-bottom: 240px;
