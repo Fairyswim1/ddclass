@@ -113,155 +113,157 @@ const TeacherMode = () => {
                 <div className="teacher-content-area">
                     {/* STEP 1: 텍스트 입력 */}
                     {step === 'input' && (
-                        <div className="teacher-card fade-in">
-                            <div className="teacher-welcome-area">
-                                <img src="/character.png" alt="DD" className="dd-mini-character" />
-                                <div className="teacher-msg">
+                        <>
+                            <div className="teacher-top-banner fade-in">
+                                <img src="/character.png" alt="DD" className="dd-mini-character-small" />
+                                <div className="teacher-msg-small">
                                     <strong>선생님, 오늘 수업도 디디가 도울게요!</strong>
                                     <p>아이들을 설레게 할 멋진 지문을 입력해 보세요. ✨</p>
                                 </div>
                             </div>
 
-                            <div className="form-section">
-                                <div className="input-group">
-                                    <label>문제 제목</label>
-                                    <input
-                                        type="text"
-                                        className="styled-input"
-                                        placeholder=""
-                                        value={title}
-                                        onChange={(e) => setTitle(e.target.value)}
-                                    />
+                            <div className="teacher-card fade-in">
+
+                                <div className="form-section">
+                                    <div className="input-group">
+                                        <label>문제 제목</label>
+                                        <input
+                                            type="text"
+                                            className="styled-input"
+                                            placeholder=""
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>본문 내용</label>
+                                        <textarea
+                                            className="styled-textarea"
+                                            placeholder={"여기에 문제로 낼 지문을 입력하거나 붙여넣으세요.\n(띄어쓰기 단위로 빈칸을 만들 수 있습니다.)"}
+                                            value={inputText}
+                                            onChange={(e) => setInputText(e.target.value)}
+                                            rows={12}
+                                        />
+                                        {(inputText.includes('$') || inputText.includes('\\[')) && (
+                                            <div className="latex-hint">
+                                                💡 LaTeX 수식이 감지되었습니다. $ 기호나 \[, \( 기호 사이의 텍스트는 수식으로 변환됩니다.
+                                            </div>
+                                        )}
+                                    </div>
+                                    <button className="btn-primary-large" onClick={handleAnalyzeText}>
+                                        다음: 빈칸 만들기
+                                    </button>
                                 </div>
-                                <div className="input-group">
-                                    <label>본문 내용</label>
-                                    <textarea
-                                        className="styled-textarea"
-                                        placeholder={"여기에 문제로 낼 지문을 입력하거나 붙여넣으세요.\n(띄어쓰기 단위로 빈칸을 만들 수 있습니다.)"}
-                                        value={inputText}
-                                        onChange={(e) => setInputText(e.target.value)}
-                                        rows={12}
-                                    />
-                                    {(inputText.includes('$') || inputText.includes('\\[')) && (
-                                        <div className="latex-hint">
-                                            💡 LaTeX 수식이 감지되었습니다. $ 기호나 \[, \( 기호 사이의 텍스트는 수식으로 변환됩니다.
+                            </div>
+                    )}
+
+                            {/* STEP 2: 빈칸 생성 */}
+                            {step === 'create' && (
+                                <div className="teacher-card fade-in">
+                                    <div className="card-header">
+                                        <h3>빈칸을 선택해주세요</h3>
+                                        <p>👆 <strong>단어를 클릭</strong>하여 빈칸으로 만드세요. 다시 클릭하면 취소됩니다.</p>
+                                    </div>
+
+                                    <div className="word-editor-refined">
+                                        {words.map((word, index) => (
+                                            <span
+                                                key={index}
+                                                className={`word-chip-refined ${blanks.has(index) ? 'is-blank' : ''}`}
+                                                onClick={() => toggleBlank(index)}
+                                            >
+                                                <LatexRenderer text={word} />
+                                                {blanks.has(index) && <span className="blank-indicator">빈칸</span>}
+                                            </span>
+                                        ))}
+                                    </div>
+
+                                    <div className="options-panel-refined">
+                                        <label className="custom-checkbox">
+                                            <input
+                                                type="checkbox"
+                                                checked={!allowDuplicates}
+                                                onChange={(e) => setAllowDuplicates(!e.target.checked)}
+                                            />
+                                            <span className="checkmark"></span>
+                                            <span className="checkbox-text">
+                                                <strong>사용한 단어 카드 감추기</strong> (한 번씩만 사용 가능)
+                                            </span>
+                                        </label>
+                                    </div>
+
+                                    <div className="action-bar-refined">
+                                        <button className="btn-ghost" onClick={() => setStep('input')}>
+                                            뒤로가기
+                                        </button>
+                                        <button className="btn-primary-large" onClick={handleSaveProblem}>
+                                            <Save size={20} /> 문제 생성 완료 ({blanks.size}개)
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* STEP 3: 모니터링 (완료) */}
+                            {step === 'monitor' && createdProblem && (
+                                <div className="teacher-card fade-in text-center">
+                                    <div className="success-lottie-area">
+                                        <div className="success-icon-puffy">
+                                            <Check size={48} color="white" strokeWidth={3} />
                                         </div>
-                                    )}
+                                        <h2>멋진 문제가 만들어졌어요!</h2>
+                                    </div>
+
+                                    <div className="pin-box-refined">
+                                        <span className="pin-label">참여 코드 (PIN)</span>
+                                        <strong className="pin-number">{createdProblem.pinNumber}</strong>
+                                    </div>
+
+                                    <p className="monitor-guide-text">
+                                        학생들에게 PIN 번호를 알려주세요.<br />
+                                        학생들이 참여하면 아래에서 실시간 현황을 볼 수 있습니다.
+                                    </p>
+
+                                    <div className="monitor-container-refined">
+                                        <ProblemMonitor problemData={createdProblem} />
+                                    </div>
                                 </div>
-                                <button className="btn-primary-large" onClick={handleAnalyzeText}>
-                                    다음: 빈칸 만들기
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* STEP 2: 빈칸 생성 */}
-                    {step === 'create' && (
-                        <div className="teacher-card fade-in">
-                            <div className="card-header">
-                                <h3>빈칸을 선택해주세요</h3>
-                                <p>👆 <strong>단어를 클릭</strong>하여 빈칸으로 만드세요. 다시 클릭하면 취소됩니다.</p>
-                            </div>
-
-                            <div className="word-editor-refined">
-                                {words.map((word, index) => (
-                                    <span
-                                        key={index}
-                                        className={`word-chip-refined ${blanks.has(index) ? 'is-blank' : ''}`}
-                                        onClick={() => toggleBlank(index)}
-                                    >
-                                        <LatexRenderer text={word} />
-                                        {blanks.has(index) && <span className="blank-indicator">빈칸</span>}
-                                    </span>
-                                ))}
-                            </div>
-
-                            <div className="options-panel-refined">
-                                <label className="custom-checkbox">
-                                    <input
-                                        type="checkbox"
-                                        checked={!allowDuplicates}
-                                        onChange={(e) => setAllowDuplicates(!e.target.checked)}
-                                    />
-                                    <span className="checkmark"></span>
-                                    <span className="checkbox-text">
-                                        <strong>사용한 단어 카드 감추기</strong> (한 번씩만 사용 가능)
-                                    </span>
-                                </label>
-                            </div>
-
-                            <div className="action-bar-refined">
-                                <button className="btn-ghost" onClick={() => setStep('input')}>
-                                    뒤로가기
-                                </button>
-                                <button className="btn-primary-large" onClick={handleSaveProblem}>
-                                    <Save size={20} /> 문제 생성 완료 ({blanks.size}개)
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* STEP 3: 모니터링 (완료) */}
-                    {step === 'monitor' && createdProblem && (
-                        <div className="teacher-card fade-in text-center">
-                            <div className="success-lottie-area">
-                                <div className="success-icon-puffy">
-                                    <Check size={48} color="white" strokeWidth={3} />
-                                </div>
-                                <h2>멋진 문제가 만들어졌어요!</h2>
-                            </div>
-
-                            <div className="pin-box-refined">
-                                <span className="pin-label">참여 코드 (PIN)</span>
-                                <strong className="pin-number">{createdProblem.pinNumber}</strong>
-                            </div>
-
-                            <p className="monitor-guide-text">
-                                학생들에게 PIN 번호를 알려주세요.<br />
-                                학생들이 참여하면 아래에서 실시간 현황을 볼 수 있습니다.
-                            </p>
-
-                            <div className="monitor-container-refined">
-                                <ProblemMonitor problemData={createdProblem} />
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Sidebar Guide */}
-                <aside className="teacher-guide-sidebar">
-                    <div className="guide-card">
-                        <h3>어떻게 만드나요? ☁️</h3>
-                        <div className="guide-steps">
-                            <div className={`guide-step-item ${step === 'input' ? 'active' : ''}`}>
-                                <div className="step-num">1</div>
-                                <div className="step-info">
-                                    <h4>지문 입력</h4>
-                                    <p>수업에 사용할 제목과<br />본문 내용을 입력해주세요.</p>
-                                </div>
-                            </div>
-                            <div className={`guide-step-item ${step === 'create' ? 'active' : ''}`}>
-                                <div className="step-num">2</div>
-                                <div className="step-info">
-                                    <h4>빈칸 선택</h4>
-                                    <p>문제로 내고 싶은 단어를<br />클릭해 빈칸으로 만드세요.</p>
-                                </div>
-                            </div>
-                            <div className={`guide-step-item ${step === 'monitor' ? 'active' : ''}`}>
-                                <div className="step-num">3</div>
-                                <div className="step-info">
-                                    <h4>PIN 공유</h4>
-                                    <p>생성된 PIN 번호를 학생들에게<br />공유하고 수업 시작!</p>
-                                </div>
-                            </div>
+                            )}
                         </div>
 
-                        <div className="tip-box">
-                            <h5>💡 디디의 꿀팁</h5>
-                            <p>수학 선생님이라면 <strong>latex 수식</strong>을<br />사용해 수식을 입력해보세요!</p>
+                    {/* Sidebar Guide */}
+                    <aside className="teacher-guide-sidebar">
+                        <div className="guide-card">
+                            <h3>어떻게 만드나요? ☁️</h3>
+                            <div className="guide-steps">
+                                <div className={`guide-step-item ${step === 'input' ? 'active' : ''}`}>
+                                    <div className="step-num">1</div>
+                                    <div className="step-info">
+                                        <h4>지문 입력</h4>
+                                        <p>수업에 사용할 제목과<br />본문 내용을 입력해주세요.</p>
+                                    </div>
+                                </div>
+                                <div className={`guide-step-item ${step === 'create' ? 'active' : ''}`}>
+                                    <div className="step-num">2</div>
+                                    <div className="step-info">
+                                        <h4>빈칸 선택</h4>
+                                        <p>문제로 내고 싶은 단어를<br />클릭해 빈칸으로 만드세요.</p>
+                                    </div>
+                                </div>
+                                <div className={`guide-step-item ${step === 'monitor' ? 'active' : ''}`}>
+                                    <div className="step-num">3</div>
+                                    <div className="step-info">
+                                        <h4>PIN 공유</h4>
+                                        <p>생성된 PIN 번호를 학생들에게<br />공유하고 수업 시작!</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="tip-box">
+                                <h5>💡 디디의 꿀팁</h5>
+                                <p>수학 선생님이라면 <strong>latex 수식</strong>을<br />사용해 수식을 입력해보세요!</p>
+                            </div>
                         </div>
-                    </div>
-                </aside>
+                    </aside>
             </main>
         </div>
     );
