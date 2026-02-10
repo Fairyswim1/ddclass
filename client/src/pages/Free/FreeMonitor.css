@@ -25,13 +25,19 @@
 }
 
 .pin-tag {
-    background: #f1f5f9;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
+    background: #eff6ff;
+    /* Lighter blue bg */
+    padding: 0.75rem 2rem;
+    border-radius: 12px;
     font-family: monospace;
-    font-weight: 700;
-    color: #3b82f6;
-    letter-spacing: 0.05em;
+    font-size: 2rem;
+    /* Significantly larger */
+    font-weight: 800;
+    color: #2563eb;
+    /* Stronger blue */
+    letter-spacing: 0.1em;
+    border: 2px solid #bfdbfe;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1);
 }
 
 .student-grid {
