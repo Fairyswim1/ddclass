@@ -11,6 +11,11 @@ import FreeMonitor from './pages/Free/FreeMonitor';
 import './App.css';
 
 function App() {
+  useEffect(() => {
+    console.log("Current API URL:", import.meta.env.VITE_API_URL);
+    console.log("Environment:", import.meta.env.MODE);
+  }, []);
+
   return (
     <Router>
       <div className="app-container">
