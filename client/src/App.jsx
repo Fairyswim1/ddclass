@@ -43,6 +43,7 @@ function App() {
           <Route path="/student/join" element={<StudentLogin />} />
 
           {/* 선생님 전용 공간 */}
+          <Route path="/teacher/login" element={<TeacherLogin />} />
           <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
           <Route path="/teacher/library" element={<PublicLibrary />} />
         </Routes>
