@@ -171,154 +171,206 @@ const FreeTeacherMode = () => {
     };
 
     return (
-        <div className="free-teacher-wrapper">
-            {/* Sidebar */}
-            <aside className="teacher-sidebar">
-                <div className="sidebar-header">
-                    <button onClick={() => navigate('/')} className="btn-icon-text">
-                        <ArrowLeft size={18} /> 뒤로가기
-                    </button>
-                    <h3>보드 만들기</h3>
+    return (
+        <div className="free-teacher-container">
+            {/* Header (Standardized) */}
+            <nav className="header-nav teacher-header">
+                <div className="brand-logo static-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+                    <span className="logo-icon">☁️</span>
+                    <div className="logo-text-fixed">
+                        <span className="logo-dd">D</span>
+                        <span className="logo-full">rag&</span>
+                        <span className="logo-dd">D</span>
+                        <span className="logo-full">rop</span>
+                        <span className="logo-class">Class</span>
+                    </div>
                 </div>
+                <div className="nav-btns">
+                    <button className="btn-ghost" onClick={() => navigate('/')}>
+                        <ArrowLeft size={18} /> 나가기
+                    </button>
+                </div>
+            </nav>
 
-                <div className="sidebar-content">
-                    <div className="form-group">
-                        <label>문제 제목</label>
-                        <input
-                            type="text"
-                            placeholder="제목을 입력하세요"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                        />
+            {/* Main Layout: Left Tools | Center Workspace | Right Guide */}
+            <main className="free-main-layout">
+                {/* Left Sidebar: Tools */}
+                <aside className="tool-sidebar">
+                    <div className="sidebar-header">
+                        <h3>보드 도구 🛠️</h3>
                     </div>
 
-                    <div className="form-group">
-                        <label>배경 이미지 (JPG, PNG, PDF)</label>
-                        {!backgroundUrl ? (
-                            <div
-                                className={`sidebar-upload-box ${isDraggingOver ? 'dragging' : ''}`}
-                                onClick={() => fileInputRef.current.click()}
-                                onDragOver={handleDragOver}
-                                onDragLeave={handleDragLeave}
-                                onDrop={handleDrop}
-                            >
-                                <Upload size={24} />
-                                <span>이미지 선택 또는 드래그</span>
-                                <small style={{ fontSize: '0.7rem', color: '#94a3b8' }}>PDF는 첫 페이지가 배경이 됩니다.</small>
-                            </div>
-                        ) : (
-                            <div className="sidebar-image-preview">
-                                <img src={backgroundUrl} alt="prev" />
-                                <button className="btn-small-outline" onClick={() => setBackgroundUrl('')}>변경</button>
-                            </div>
-                        )}
-                        <input type="file" ref={fileInputRef} hidden onChange={(e) => handleFileUpload(e.target.files[0])} accept="image/*,.pdf" />
-                    </div>
-
-                    <div className="divider"></div>
-
-                    <div className="form-group">
-                        <label>텍스트 카드 추가</label>
-                        <div className="input-with-button">
+                    <div className="sidebar-content">
+                        <div className="form-group">
+                            <label>문제 제목</label>
                             <input
                                 type="text"
-                                placeholder="내용 입력..."
-                                value={inputText}
-                                onChange={(e) => setInputText(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddText()}
+                                placeholder="제목을 입력하세요"
+                                value={title}
+                                className="styled-input-mini"
+                                onChange={(e) => setTitle(e.target.value)}
                             />
-                            <button className="btn-add" onClick={handleAddText}>+</button>
                         </div>
-                        <div className="font-size-group">
-                            <span>크기:</span>
-                            {['S', 'M', 'L'].map(scale => (
-                                <button
-                                    key={scale}
-                                    className={`btn-size-toggle ${fontSizeScale === scale ? 'active' : ''}`}
-                                    onClick={() => setFontSizeScale(scale)}
+
+                        <div className="divider"></div>
+
+                        <div className="form-group">
+                            <label>배경 설정 (이미지/PDF)</label>
+                            {!backgroundUrl ? (
+                                <div
+                                    className={`sidebar-upload-box ${isDraggingOver ? 'dragging' : ''}`}
+                                    onClick={() => fileInputRef.current.click()}
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={handleDrop}
                                 >
-                                    {scale}
-                                </button>
-                            ))}
+                                    <Upload size={24} />
+                                    <span>업로드 또는 드래그</span>
+                                </div>
+                            ) : (
+                                <div className="sidebar-image-preview">
+                                    <img src={backgroundUrl} alt="prev" />
+                                    <button className="btn-small-outline" onClick={() => setBackgroundUrl('')}>변경</button>
+                                </div>
+                            )}
+                            <input type="file" ref={fileInputRef} hidden onChange={(e) => handleFileUpload(e.target.files[0])} accept="image/*,.pdf" />
+                        </div>
+
+                        <div className="divider"></div>
+
+                        <div className="form-group">
+                            <label>텍스트 카드 추가</label>
+                            <div className="input-with-button">
+                                <input
+                                    type="text"
+                                    placeholder="내용 입력..."
+                                    value={inputText}
+                                    className="styled-input-mini"
+                                    onChange={(e) => setInputText(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleAddText()}
+                                />
+                                <button className="btn-add" onClick={handleAddText}>+</button>
+                            </div>
+                            <div className="font-size-group">
+                                {['S', 'M', 'L'].map(scale => (
+                                    <button
+                                        key={scale}
+                                        className={`btn-size-toggle ${fontSizeScale === scale ? 'active' : ''}`}
+                                        onClick={() => setFontSizeScale(scale)}
+                                    >
+                                        {scale}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label>이미지 카드 추가</label>
+                            <button className="btn-sidebar-secondary" onClick={() => itemImageInputRef.current.click()}>
+                                <ImageIcon size={18} /> 이미지 업로드
+                            </button>
+                            <input type="file" ref={itemImageInputRef} hidden onChange={handleAddImage} accept="image/*" />
                         </div>
                     </div>
 
-                    <div className="form-group">
-                        <label>이미지 카드 추가</label>
-                        <button className="btn-sidebar-secondary" onClick={() => itemImageInputRef.current.click()}>
-                            <ImageIcon size={18} /> 이미지 업로드
+                    <div className="sidebar-footer">
+                        <button className="btn-save-all" onClick={handleSave}>
+                            <Save size={18} /> 문제 생성 완료
                         </button>
-                        <input type="file" ref={itemImageInputRef} hidden onChange={handleAddImage} accept="image/*" />
                     </div>
-                </div>
+                </aside>
 
-                <div className="sidebar-footer">
-                    <button className="btn-save-all" onClick={handleSave}>
-                        <Save size={18} /> 문제 생성하기
-                    </button>
-                </div>
-            </aside>
-
-            {/* Main Workspace */}
-            <main className="teacher-workspace">
-                <section className="tray-management-area">
-                    <div className="tray-header">
-                        <Layout size={18} />
-                        <span>생성된 카드 목록 및 크기 조절</span>
-                    </div>
-                    <div className="tray-grid">
-                        {items.length === 0 && (
-                            <div className="empty-tray-msg">생성된 카드가 없습니다. 사이드바에서 카드를 추가해보세요.</div>
-                        )}
-                        {items.map(item => (
-                            <div key={item.id} className={`tray-edit-card ${item.type}`}>
-                                <div className="card-preview">
-                                    {item.type === 'text' ? (
-                                        <div style={{ fontSize: `${item.fontSize}px` }}>{item.content}</div>
-                                    ) : (
-                                        <img
-                                            src={item.imageUrl}
-                                            alt="item"
-                                            draggable="false"
-                                            style={{ width: `${item.width}%` }}
-                                        />
-                                    )}
-                                </div>
-                                <div className="card-controls">
-                                    {item.type === 'image' && (
-                                        <div className="size-slider-box">
-                                            <label>크기</label>
+                {/* Center: Workspace */}
+                <section className="teacher-workspace">
+                    <section className="tray-management-area">
+                        <div className="tray-header">
+                            <Layout size={18} />
+                            <span>생성된 카드 목록 (미리보기)</span>
+                        </div>
+                        <div className="tray-grid">
+                            {items.length === 0 && (
+                                <div className="empty-tray-msg">생성된 카드가 없습니다.</div>
+                            )}
+                            {items.map(item => (
+                                <div key={item.id} className={`tray-edit-card ${item.type}`}>
+                                    <div className="card-preview">
+                                        {item.type === 'text' ? (
+                                            <div style={{ fontSize: '12px' }}>{item.content}</div>
+                                        ) : (
+                                            <img
+                                                src={item.imageUrl}
+                                                alt="item"
+                                                draggable="false"
+                                                style={{ width: '100%' }}
+                                            />
+                                        )}
+                                    </div>
+                                    <div className="card-controls">
+                                        {item.type === 'image' && (
                                             <input
                                                 type="range"
                                                 min="5" max="100"
                                                 value={item.width}
                                                 onChange={(e) => updateItemWidth(item.id, parseInt(e.target.value))}
+                                                className="mini-range"
                                             />
-                                            <span>{item.width}%</span>
-                                        </div>
-                                    )}
-                                    <button className="btn-delete-item" onClick={() => handleDeleteItem(item.id)} title="삭제">
-                                        ×
-                                    </button>
+                                        )}
+                                        <button className="btn-delete-item" onClick={() => handleDeleteItem(item.id)}>×</button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section className="preview-area">
+                        <div className="preview-label">배경 미리보기</div>
+                        <div className="preview-container">
+                            {!backgroundUrl ? (
+                                <div className="no-bg-overlay">
+                                    <ImageIcon size={48} />
+                                    <p>배경 이미지가 없습니다.</p>
+                                </div>
+                            ) : (
+                                <img src={backgroundUrl} alt="background" className="canvas-bg-img" />
+                            )}
+                        </div>
+                    </section>
                 </section>
 
-                <section className="preview-area">
-                    <div className="preview-label">배경 이미지 미리보기</div>
-                    <div className="preview-container">
-                        {!backgroundUrl ? (
-                            <div className="no-bg-overlay">
-                                <ImageIcon size={64} />
-                                <p>배경 이미지를 먼저 업로드해주세요.</p>
+                {/* Right Sidebar: Guide */}
+                <aside className="guide-sidebar">
+                    <div className="guide-card">
+                        <h3>어떻게 만드나요? ☁️</h3>
+                        <div className="guide-steps">
+                            <div className="guide-step-item active">
+                                <div className="step-num">1</div>
+                                <div className="step-info">
+                                    <h4>배경 설정</h4>
+                                    <p>학습지나 이미지를<br />배경으로 업로드하세요.</p>
+                                </div>
                             </div>
-                        ) : (
-                            <img src={backgroundUrl} alt="background" className="canvas-bg-img" />
-                        )}
+                            <div className="guide-step-item active">
+                                <div className="step-num">2</div>
+                                <div className="step-info">
+                                    <h4>카드 추가</h4>
+                                    <p>학생들이 움직일<br />텍스트/이미지 카드를 만드세요.</p>
+                                </div>
+                            </div>
+                            <div className="guide-step-item active">
+                                <div className="step-num">3</div>
+                                <div className="step-info">
+                                    <h4>저장 & 공유</h4>
+                                    <p>완료 후 PIN 번호로<br />수업을 시작하세요!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="tip-box">
+                            <h5>💡 디디의 꿀팁</h5>
+                            <p><strong>PDF 파일</strong>을 업로드하면<br />첫 페이지가 자동으로 배경이 됩니다!</p>
+                        </div>
                     </div>
-                </section>
+                </aside>
             </main>
         </div>
     );
