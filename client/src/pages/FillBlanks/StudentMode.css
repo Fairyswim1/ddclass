@@ -174,8 +174,23 @@
     text-align: center;
 }
 
+@media (max-width: 1100px) {
+    .game-content {
+        padding: 1.5rem 1rem;
+        gap: 1.5rem;
+    }
+
+    .problem-area {
+        padding: 1.5rem;
+    }
+
+    .game-sidebar {
+        flex: 0 0 280px;
+    }
+}
+
 /* Responsive side-by-side to column */
-@media (max-width: 800px) {
+@media (max-width: 700px) {
     .game-content {
         flex-direction: column;
         padding-bottom: 240px;
