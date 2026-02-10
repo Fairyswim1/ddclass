@@ -78,7 +78,7 @@
 
 /* --- Left Tool Sidebar --- */
 .tool-sidebar {
-    width: 250px;
+    width: 300px;
     background: white;
     border-right: 2px solid #F0EEE9;
     display: flex;
@@ -228,6 +228,12 @@
     color: #FF6B6B;
 }
 
+.teacher-workspace {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 /* --- Center Preview Area --- */
 .center-preview-area {
     flex: 1;
@@ -242,7 +248,7 @@
 .center-upload-zone {
     width: 95%;
     height: 90%;
-    max-width: 1400px;
+    max-width: 1600px;
     max-height: 800px;
     border: 4px dashed #E0D8CC;
     border-radius: 24px;
@@ -329,10 +335,10 @@
 
 /* --- Right Guide Sidebar --- */
 .guide-sidebar {
-    width: 180px;
+    width: 280px;
     background: white;
     border-left: 2px solid #F0EEE9;
-    padding: 1rem;
+    padding: 1.5rem;
     overflow-y: auto;
 }
 
