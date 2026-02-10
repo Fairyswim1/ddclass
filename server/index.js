@@ -9,7 +9,11 @@ const server = http.createServer(app);
 // CORS 설정
 // CORS 설정
 const corsOptions = {
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  origin: [
+    "http://localhost:5173",
+    "https://ddclass.vercel.app",
+    process.env.CLIENT_URL
+  ].filter(Boolean),
   methods: ["GET", "POST"],
   credentials: true
 };
