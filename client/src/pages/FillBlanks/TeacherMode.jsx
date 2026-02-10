@@ -200,7 +200,7 @@ const TeacherMode = () => {
                                             <Save size={20} /> 문제 생성 완료 ({blanks.size}개)
                                         </button>
                                     </div>
-                                </div>
+                                </>
                             )}
 
                             {/* STEP 3: 모니터링 (완료) */}

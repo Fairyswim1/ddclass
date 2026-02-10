@@ -216,60 +216,61 @@ const OrderTeacherMode = () => {
                                     </div>
                                 </div>
                             </div>
+                        </>
                     )}
 
-                            {step === 'monitor' && createdProblem && (
-                                <div className="teacher-card fade-in text-center">
-                                    <div className="success-lottie-area">
-                                        <div className="success-icon-puffy">
-                                            <Check size={48} color="white" strokeWidth={3} />
-                                        </div>
-                                        <h2>문제가 생성되었습니다!</h2>
-                                    </div>
-
-                                    <div className="pin-box-refined">
-                                        <span className="pin-label">참여 코드 (PIN)</span>
-                                        <strong className="pin-number">{createdProblem.pinNumber}</strong>
-                                    </div>
-
-                                    <p className="monitor-guide-text">
-                                        학생들에게 PIN 번호를 알려주세요.<br />
-                                        학생들이 참여하면 아래에서 실시간 현황을 볼 수 있습니다.
-                                    </p>
-
-                                    <div className="monitor-container-refined">
-                                        <ProblemMonitor problemData={createdProblem} />
-                                    </div>
+                    {step === 'monitor' && createdProblem && (
+                        <div className="teacher-card fade-in text-center">
+                            <div className="success-lottie-area">
+                                <div className="success-icon-puffy">
+                                    <Check size={48} color="white" strokeWidth={3} />
                                 </div>
-                            )}
-                        </div>
-
-                    <aside className="teacher-guide-sidebar">
-                        <div className="guide-card">
-                            <h3>어떻게 만드나요? ☁️</h3>
-                            <div className="guide-steps">
-                                <div className={`guide-step-item ${step === 'input' ? 'active' : ''}`}>
-                                    <div className="step-num">1</div>
-                                    <div className="step-info">
-                                        <h4>내용 입력</h4>
-                                        <p>제목과 각 단계별 내용을<br />순서대로 입력해주세요.</p>
-                                    </div>
-                                </div>
-                                <div className={`guide-step-item ${step === 'monitor' ? 'active' : ''}`}>
-                                    <div className="step-num">2</div>
-                                    <div className="step-info">
-                                        <h4>PIN 공유</h4>
-                                        <p>생성된 PIN 번호를 학생들에게<br />공유하고 수업 시작!</p>
-                                    </div>
-                                </div>
+                                <h2>문제가 생성되었습니다!</h2>
                             </div>
 
-                            <div className="tip-box">
-                                <h5>💡 디디의 꿀팁</h5>
-                                <p>수학 선생님이라면 <strong>latex 수식</strong>을<br />사용해 수식을 입력해보세요!</p>
+                            <div className="pin-box-refined">
+                                <span className="pin-label">참여 코드 (PIN)</span>
+                                <strong className="pin-number">{createdProblem.pinNumber}</strong>
+                            </div>
+
+                            <p className="monitor-guide-text">
+                                학생들에게 PIN 번호를 알려주세요.<br />
+                                학생들이 참여하면 아래에서 실시간 현황을 볼 수 있습니다.
+                            </p>
+
+                            <div className="monitor-container-refined">
+                                <ProblemMonitor problemData={createdProblem} />
                             </div>
                         </div>
-                    </aside>
+                    )}
+                </div>
+
+                <aside className="teacher-guide-sidebar">
+                    <div className="guide-card">
+                        <h3>어떻게 만드나요? ☁️</h3>
+                        <div className="guide-steps">
+                            <div className={`guide-step-item ${step === 'input' ? 'active' : ''}`}>
+                                <div className="step-num">1</div>
+                                <div className="step-info">
+                                    <h4>내용 입력</h4>
+                                    <p>제목과 각 단계별 내용을<br />순서대로 입력해주세요.</p>
+                                </div>
+                            </div>
+                            <div className={`guide-step-item ${step === 'monitor' ? 'active' : ''}`}>
+                                <div className="step-num">2</div>
+                                <div className="step-info">
+                                    <h4>PIN 공유</h4>
+                                    <p>생성된 PIN 번호를 학생들에게<br />공유하고 수업 시작!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="tip-box">
+                            <h5>💡 디디의 꿀팁</h5>
+                            <p>수학 선생님이라면 <strong>latex 수식</strong>을<br />사용해 수식을 입력해보세요!</p>
+                        </div>
+                    </div>
+                </aside>
             </main>
         </div>
     );
