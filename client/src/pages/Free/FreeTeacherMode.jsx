@@ -346,28 +346,28 @@ const FreeTeacherMode = () => {
                                 <div className="step-num">1</div>
                                 <div className="step-info">
                                     <h4>배경 설정</h4>
-                                    <p>학습지나 이미지를<br />배경으로 업로드하세요.</p>
+                                    <p>학습지나 이미지를 배경으로 업로드하세요.</p>
                                 </div>
                             </div>
                             <div className="guide-step-item active">
                                 <div className="step-num">2</div>
                                 <div className="step-info">
                                     <h4>카드 추가</h4>
-                                    <p>학생들이 움직일<br />텍스트/이미지 카드를 만드세요.</p>
+                                    <p>학생들이 움직일 텍스트나 이미지 카드를 만드세요.</p>
                                 </div>
                             </div>
                             <div className="guide-step-item active">
                                 <div className="step-num">3</div>
                                 <div className="step-info">
                                     <h4>저장 & 공유</h4>
-                                    <p>완료 후 PIN 번호로<br />수업을 시작하세요!</p>
+                                    <p>완료 후 PIN 번호로 수업을 시작하세요!</p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="tip-box">
                             <h5>💡 디디의 꿀팁</h5>
-                            <p><strong>PDF 파일</strong>을 업로드하면<br />첫 페이지가 자동으로 배경이 됩니다!</p>
+                            <p><strong>PDF 파일</strong>을 업로드하면 첫 페이지가 자동으로 배경이 됩니다!</p>
                         </div>
                     </div>
                 </aside>

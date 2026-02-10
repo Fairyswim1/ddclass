@@ -401,10 +401,12 @@
 }
 
 .step-info p {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: #8D7B75;
     margin: 0;
-    line-height: 1.3;
+    line-height: 1.5;
+    word-break: keep-all;
+    /* Prevent breaking words in middle */
 }
 
 .tip-box {
