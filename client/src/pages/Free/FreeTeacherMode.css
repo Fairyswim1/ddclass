@@ -78,7 +78,7 @@
 
 /* --- Left Tool Sidebar --- */
 .tool-sidebar {
-    width: 300px;
+    width: 250px;
     background: white;
     border-right: 2px solid #F0EEE9;
     display: flex;
@@ -240,9 +240,9 @@
 }
 
 .center-upload-zone {
-    width: 90%;
+    width: 95%;
     height: 90%;
-    max-width: 1200px;
+    max-width: 1400px;
     max-height: 800px;
     border: 4px dashed #E0D8CC;
     border-radius: 24px;
@@ -329,10 +329,10 @@
 
 /* --- Right Guide Sidebar --- */
 .guide-sidebar {
-    width: 250px;
+    width: 180px;
     background: white;
     border-left: 2px solid #F0EEE9;
-    padding: 1.5rem;
+    padding: 1rem;
     overflow-y: auto;
 }
 
