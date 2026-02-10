@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { ArrowLeft, User, X, Check } from 'lucide-react';
 import './OrderStudentMode.css';
+import LatexRenderer from '../../components/LatexRenderer';
 
 const OrderStudentMode = () => {
     const location = useLocation();
@@ -16,8 +18,6 @@ const OrderStudentMode = () => {
     // Game State
     const [shuffledSteps, setShuffledSteps] = useState([]); // Remaining cards
     const [userOrder, setUserOrder] = useState([]); // User's answer area
-    const [draggedStep, setDraggedStep] = useState(null);
-    const [draggedFromSource, setDraggedFromSource] = useState(null); // 'userOrder' | 'shuffledSteps'
     const [isCompleted, setIsCompleted] = useState(false);
 
     // Message
@@ -32,16 +32,12 @@ const OrderStudentMode = () => {
             setTimeout(() => setLastMessage(null), 5000);
         });
 
-        // Optional: Receive correctness feedback immediately? 
-        // For now, client-side check or just completion check
-
         return () => socket.off('messageReceived');
     }, [socket]);
 
     // Auto Join if redirected
     useEffect(() => {
         if (location.state?.autoJoin && location.state?.pin && location.state?.nickname) {
-            // Set state for display in input fields, but use direct args for joinGame
             setPin(location.state.pin);
             setNickname(location.state.nickname);
             joinGame(location.state.pin, location.state.nickname);
@@ -61,8 +57,6 @@ const OrderStudentMode = () => {
             const data = await response.json();
 
             if (data.success) {
-                // If type is not order-matching, warn or redirect?
-                // Assuming find-problem returns correct type, or we handle robustly.
                 const probResponse = await fetch(`http://localhost:3000/api/order-matching/${data.id}`);
                 const probData = await probResponse.json();
 
@@ -80,7 +74,6 @@ const OrderStudentMode = () => {
 
                     setStep('game');
                 } else {
-                    // Try fill-blanks fallback just in case? Or error
                     alert('순서 맞추기 문제가 아닙니다.');
                 }
             } else {
@@ -96,137 +89,70 @@ const OrderStudentMode = () => {
         return [...array].sort(() => Math.random() - 0.5);
     };
 
-    // --- DnD Logic (Refined for Split Layout) ---
+    // --- DnD Logic (@hello-pangea/dnd) ---
 
-    const handleDragStart = (e, step, source, index) => {
-        setDraggedStep(step);
-        setDraggedFromSource(source);
-        // source가 userOrder일 때만 index가 의미 있음
-        e.dataTransfer.setData('text/plain', String(step.id));
-        e.dataTransfer.effectAllowed = 'move';
-    };
+    const onDragEnd = (result) => {
+        const { source, destination } = result;
 
-    const handleDragEnd = () => {
-        setTimeout(() => {
-            setDraggedStep(null);
-            setDraggedFromSource(null);
-        }, 100);
-    };
+        // 드롭 위치가 없으면 원위치
+        if (!destination) return;
 
-    const handleDropAtIndex = (targetIndex) => {
-        if (!draggedStep) return;
+        // 같은 위치면 무시
+        if (source.droppableId === destination.droppableId && source.index === destination.index) {
+            return;
+        }
 
-        let newUserOrder = [...userOrder];
-        let newShuffledSteps = [...shuffledSteps];
+        const newUserOrder = [...userOrder];
+        const newShuffledSteps = [...shuffledSteps];
 
-        if (draggedFromSource === 'userOrder') {
-            // Reorder within Answer
-            const sourceIndex = userOrder.findIndex(s => s.id === draggedStep.id);
-            if (sourceIndex === -1) return; // Error case
-
-            const [removed] = newUserOrder.splice(sourceIndex, 1);
-            // Adjust target index if shifting affects it
-            const adjustedIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
-            newUserOrder.splice(adjustedIndex, 0, removed);
-        } else {
-            // Move Bank -> Answer
-            newShuffledSteps = shuffledSteps.filter(s => s.id !== draggedStep.id);
-            newUserOrder.splice(targetIndex, 0, draggedStep);
+        // 리스트 간 이동
+        if (source.droppableId !== destination.droppableId) {
+            // 보관함 -> 답안 영역
+            if (source.droppableId === 'bank' && destination.droppableId === 'answer') {
+                const [item] = newShuffledSteps.splice(source.index, 1);
+                newUserOrder.splice(destination.index, 0, item);
+            }
+            // 답안 영역 -> 보관함
+            else if (source.droppableId === 'answer' && destination.droppableId === 'bank') {
+                const [item] = newUserOrder.splice(source.index, 1);
+                newShuffledSteps.splice(destination.index, 0, item);
+            }
+        }
+        // 같은 리스트 내에서 순서 변경
+        else {
+            if (source.droppableId === 'answer') {
+                const [removed] = newUserOrder.splice(source.index, 1);
+                newUserOrder.splice(destination.index, 0, removed);
+            } else {
+                const [removed] = newShuffledSteps.splice(source.index, 1);
+                newShuffledSteps.splice(destination.index, 0, removed);
+            }
         }
 
         setUserOrder(newUserOrder);
         setShuffledSteps(newShuffledSteps);
         updateAnswerToServer(newUserOrder);
-        setDraggedStep(null);
     };
 
-    const handleRemoveStep = (stepId) => {
-        const item = userOrder.find(s => s.id === stepId);
-        if (item) {
-            const newUserOrder = userOrder.filter(s => s.id !== stepId);
-            const newShuffledSteps = [...shuffledSteps, item];
-            setUserOrder(newUserOrder);
-            setShuffledSteps(newShuffledSteps);
-            updateAnswerToServer(newUserOrder);
+    const handleRemoveStep = (index) => {
+        const newUserOrder = [...userOrder];
+        const [item] = newUserOrder.splice(index, 1);
+        const newShuffledSteps = [...shuffledSteps, item];
 
-            // Clear drag state immediately (element might be removed)
-            setDraggedStep(null);
-            setDraggedFromSource(null);
-        }
-    };
-
-    // Drop handler for Bank (return card)
-    const handleDropToBank = (e) => {
-        e.preventDefault();
-        if (!draggedStep || draggedFromSource !== 'userOrder') return;
-        handleRemoveStep(draggedStep.id);
-    };
-
-    const handleDragOver = (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-    };
-
-    // --- Components ---
-
-    const DropSlot = ({ index }) => {
-        const [isHovering, setIsHovering] = useState(false);
-
-        const handleDragEnter = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsHovering(true);
-        };
-
-        const handleDragLeave = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsHovering(false);
-        };
-
-        const handleDrop = (e) => {
-            e.preventDefault();
-            e.stopPropagation(); // Parent의 generic drop 무시
-            setIsHovering(false);
-            handleDropAtIndex(index);
-        };
-
-        return (
-            <div
-                className={`drop-slot ${isHovering ? 'active' : ''} ${draggedStep ? 'visible' : ''}`}
-                onDragOver={handleDragOver}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-            >
-                {isHovering && draggedStep && (
-                    <div className="drop-guide">
-                        <span>여기 놓기</span>
-                    </div>
-                )}
-            </div>
-        );
+        setUserOrder(newUserOrder);
+        setShuffledSteps(newShuffledSteps);
+        updateAnswerToServer(newUserOrder);
     };
 
     const updateAnswerToServer = (newOrder) => {
-        // Send current answer state to teacher
-        // reusing 'submitAnswer' event. 
-        // ProblemMonitor uses 'answer' as object/map for fill-blanks.
-        // For order-matching, we should send an array. 
-        // Monitor needs to handle this difference.
-
         socket?.emit('submitAnswer', {
             problemId: problem.id,
             studentName: nickname,
-            answer: newOrder // Array of step objects
+            answer: newOrder
         });
 
-        // Check completion (All steps used)
+        // 완료 체크
         if (newOrder.length === problem.steps.length) {
-            // Simple Client-side check for now (Teacher sets order)
-            // Ideally server validates, but current API stores steps in order.
-
-            // Reconstruct IDs string for comparison
             const correctIds = problem.steps.map(s => s.id).join(',');
             const userIds = newOrder.map(s => s.id).join(',');
 
@@ -284,98 +210,101 @@ const OrderStudentMode = () => {
 
             <main className="game-content full-height">
                 <div className="header-area">
-                    <h2 className="problem-title">{problem.title}</h2>
+                    <h2 className="problem-title"><LatexRenderer text={problem.title} /></h2>
                     <p className="instruction">오른쪽의 카드를 왼쪽으로 드래그하여 순서를 맞추세요.</p>
                 </div>
 
-                <div className="split-layout">
-                    {/* Left: Answer Zone */}
-                    <div className="scan-zone answer-zone">
-                        <h3 className="zone-title">답안 영역 ({userOrder.length})</h3>
+                <DragDropContext onDragEnd={onDragEnd}>
+                    <div className="split-layout">
+                        {/* Left: Answer Zone */}
+                        <div className="scan-zone answer-zone">
+                            <h3 className="zone-title">답안 영역 ({userOrder.length})</h3>
 
-                        <div
-                            className="scroll-area"
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => {
-                                e.preventDefault();
-                                // DropSlot이나 다른 요소에서 이미 처리된 경우 무시하려면
-                                // DropSlot의 stopPropagation이 필요함.
-                                // 현재 구조상 DropSlot이 위에 있으므로 stopPropagation하면 여기로 안 옴.
-                                // 하지만 만약 놓친 경우엔 맨 뒤로.
-                                handleDropAtIndex(userOrder.length);
-                            }}
-                        >
-                            <DropSlot index={0} />
-
-                            {userOrder.length === 0 && (
-                                <div className="empty-placeholder" style={{ pointerEvents: 'none' }}>
-                                    카드를 이곳으로 끌어오세요
-                                </div>
-                            )}
-
-                            {userOrder.map((item, index) => (
-                                <React.Fragment key={item.id}>
+                            <Droppable droppableId="answer">
+                                {(provided, snapshot) => (
                                     <div
-                                        className={`order-card filled ${draggedStep?.id === item.id ? 'dragging' : ''}`}
-                                        draggable
-                                        onDragStart={(e) => handleDragStart(e, item, 'userOrder', index)}
-                                        onDragEnd={handleDragEnd}
-                                        onClick={(e) => e.stopPropagation()} // Prevent bubble
+                                        className={`scroll-area ${snapshot.isDraggingOver ? 'drag-over' : ''}`}
+                                        ref={provided.innerRef}
+                                        {...provided.droppableProps}
                                     >
-                                        <div className="card-index">{index + 1}</div>
-                                        <div className="card-text">{item.text}</div>
-                                        <button className="btn-return" onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleRemoveStep(item.id);
-                                        }}>
-                                            <X size={16} />
-                                        </button>
+                                        {userOrder.length === 0 && (
+                                            <div className="empty-placeholder" style={{ pointerEvents: 'none' }}>
+                                                카드를 이곳으로 끌어오세요
+                                            </div>
+                                        )}
+
+                                        {userOrder.map((item, index) => (
+                                            <Draggable key={item.id} draggableId={item.id} index={index}>
+                                                {(provided, snapshot) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        className={`order-card filled ${snapshot.isDragging ? 'dragging' : ''}`}
+                                                        style={{
+                                                            ...provided.draggableProps.style,
+                                                        }}
+                                                    >
+                                                        <div className="card-index">{index + 1}</div>
+                                                        <div className="card-text"><LatexRenderer text={item.text} /></div>
+                                                        <button className="btn-return" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleRemoveStep(index);
+                                                        }}>
+                                                            <X size={16} />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                        {provided.placeholder}
                                     </div>
-                                    <DropSlot index={index + 1} />
-                                </React.Fragment>
-                            ))}
+                                )}
+                            </Droppable>
+                        </div>
+
+                        {/* Right: Resource Bank */}
+                        <div className="scan-zone resource-zone">
+                            <h3 className="zone-title">카드 보관함</h3>
+
+                            <Droppable droppableId="bank">
+                                {(provided, snapshot) => (
+                                    <div
+                                        className={`scroll-area cards-grid-scroll ${snapshot.isDraggingOver ? 'drag-over' : ''}`}
+                                        ref={provided.innerRef}
+                                        {...provided.droppableProps}
+                                    >
+                                        {shuffledSteps.length === 0 ? (
+                                            <div className="empty-placeholder">
+                                                <Check size={32} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
+                                                모든 카드를 사용했습니다
+                                            </div>
+                                        ) : (
+                                            shuffledSteps.map((item, index) => (
+                                                <Draggable key={item.id} draggableId={item.id} index={index}>
+                                                    {(provided, snapshot) => (
+                                                        <div
+                                                            ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                            {...provided.dragHandleProps}
+                                                            className={`order-card bank-item ${snapshot.isDragging ? 'dragging' : ''}`}
+                                                            style={{
+                                                                ...provided.draggableProps.style,
+                                                            }}
+                                                        >
+                                                            <LatexRenderer text={item.text} />
+                                                        </div>
+                                                    )}
+                                                </Draggable>
+                                            ))
+                                        )}
+                                        {provided.placeholder}
+                                    </div>
+                                )}
+                            </Droppable>
                         </div>
                     </div>
-
-                    {/* Right: Resource Bank */}
-                    <div
-                        className={`scan-zone resource-zone ${draggedFromSource === 'userOrder' ? 'drop-target-active' : ''}`}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDropToBank}
-                    >
-                        <h3 className="zone-title">카드 보관함</h3>
-
-                        <div className="scroll-area cards-grid-scroll">
-                            {draggedFromSource === 'userOrder' && (
-                                <div className="return-guide-overlay">
-                                    <div className="guide-content">
-                                        <X size={32} />
-                                        <span>카드를 놓아서 되돌리기</span>
-                                    </div>
-                                </div>
-                            )}
-
-                            {shuffledSteps.length === 0 && draggedFromSource !== 'userOrder' ? (
-                                <div className="empty-placeholder">
-                                    <Check size={32} style={{ opacity: 0.3, marginBottom: '0.5rem' }} />
-                                    모든 카드를 사용했습니다
-                                </div>
-                            ) : (
-                                shuffledSteps.map((item, index) => (
-                                    <div
-                                        key={item.id}
-                                        className={`order-card bank-item ${draggedStep?.id === item.id ? 'dragging' : ''}`}
-                                        draggable
-                                        onDragStart={(e) => handleDragStart(e, item, 'shuffledSteps', index)}
-                                        onDragEnd={handleDragEnd}
-                                    >
-                                        {item.text}
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                </div>
+                </DragDropContext>
 
                 {/* Footer / Status */}
                 <div className="game-footer">
@@ -418,3 +347,4 @@ const OrderStudentMode = () => {
 };
 
 export default OrderStudentMode;
+

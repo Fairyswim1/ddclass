@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { ArrowLeft, User, X } from 'lucide-react';
 import './StudentMode.css';
+import LatexRenderer from '../../components/LatexRenderer';
 
 const StudentMode = () => {
     const location = useLocation();
@@ -157,7 +158,7 @@ const StudentMode = () => {
                             >
                                 {userAnswer ? (
                                     <>
-                                        {userAnswer}
+                                        <LatexRenderer text={userAnswer} />
                                         <button className="btn-remove-word" aria-label="단어 되돌리기">
                                             <X size={12} />
                                         </button>
@@ -168,7 +169,7 @@ const StudentMode = () => {
                             </span>
                         );
                     }
-                    return <span key={index} className="normal-word">{word} </span>;
+                    return <span key={index} className="normal-word"><LatexRenderer text={word} /> </span>;
                 })}
             </div>
         );
@@ -220,7 +221,7 @@ const StudentMode = () => {
                             draggable
                             onDragStart={(e) => handleDragStart(e, item.word)}
                         >
-                            {item.word}
+                            <LatexRenderer text={item.word} />
                         </div>
                     ))}
                     {visibleWords.length === 0 && (
@@ -273,7 +274,7 @@ const StudentMode = () => {
 
             <main className="game-content">
                 <div className="problem-area">
-                    <h2 className="problem-title">{problem.title}</h2>
+                    <h2 className="problem-title"><LatexRenderer text={problem.title} /></h2>
                     <div className="text-display">
                         {renderTextWithBlanks()}
                     </div>

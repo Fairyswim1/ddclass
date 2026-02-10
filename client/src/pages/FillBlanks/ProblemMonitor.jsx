@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import { X, Send, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import './ProblemMonitor.css';
+import LatexRenderer from '../../components/LatexRenderer';
 
 const ProblemMonitor = ({ problemData }) => {
     const [socket, setSocket] = useState(null);
@@ -152,7 +153,7 @@ const ProblemMonitor = ({ problemData }) => {
                         </div>
                         <div className="answer-preview">
                             {(Array.isArray(student.answer) ? student.answer : Object.values(student.answer || {})).slice(-3).map((item, i) => (
-                                <span key={i} className="mini-chip">{getValueDisplay(item)}</span>
+                                <span key={i} className="mini-chip"><LatexRenderer text={getValueDisplay(item)} /></span>
                             ))}
                             {(Array.isArray(student.answer) ? student.answer.length : Object.keys(student.answer || {}).length) > 3 && <span>...</span>}
                         </div>
@@ -199,7 +200,7 @@ const ProblemMonitor = ({ problemData }) => {
                                                 return (
                                                     <li key={idx} className={`order-item ${isCorrect ? 'correct' : 'incorrect'}`}>
                                                         <span className="order-num">{idx + 1}</span>
-                                                        <span className="order-text">{getValueDisplay(item)}</span>
+                                                        <span className="order-text"><LatexRenderer text={getValueDisplay(item)} /></span>
                                                         {!isCorrect && <span className="status-icon"><XCircle size={14} /></span>}
                                                         {isCorrect && <span className="status-icon"><CheckCircle size={14} /></span>}
                                                     </li>
@@ -224,12 +225,12 @@ const ProblemMonitor = ({ problemData }) => {
                                                     key={index}
                                                     className={`mirrored-blank ${isFilled ? (isCorrect ? 'correct' : 'incorrect') : 'empty'}`}
                                                 >
-                                                    {studentAnswer || '(빈칸)'}
-                                                    {isFilled && !isCorrect && <span className="correct-answer-hint">({blank.word})</span>}
+                                                    <LatexRenderer text={studentAnswer || '(빈칸)'} />
+                                                    {isFilled && !isCorrect && <span className="correct-answer-hint">(<LatexRenderer text={blank.word} />)</span>}
                                                 </span>
                                             );
                                         }
-                                        return <span key={index}>{word} </span>;
+                                        return <span key={index}><LatexRenderer text={word} /> </span>;
                                     })
                                 )}
                             </div>
@@ -252,8 +253,9 @@ const ProblemMonitor = ({ problemData }) => {
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 };
 

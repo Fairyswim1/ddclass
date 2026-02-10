@@ -157,7 +157,7 @@ const FreeMonitor = () => {
                                             style={{
                                                 left: `${item.x}%`,
                                                 top: `${item.y}%`,
-                                                width: originalItem?.type === 'image' ? `${(item.width || 15) * 0.25}%` : 'auto',
+                                                width: originalItem?.type === 'image' ? `${(originalItem.width || 15) * 0.25}%` : 'auto',
                                                 fontSize: (originalItem?.type === 'text') ? `${originalItem.fontSize * 0.25}px` : 'inherit',
                                                 transform: 'translate(-50%, -50%)'
                                             }}
@@ -245,7 +245,7 @@ const FreeMonitor = () => {
                                                     position: 'absolute',
                                                     left: `${item.x}%`,
                                                     top: `${item.y}%`,
-                                                    width: originalItem?.type === 'image' ? `${item.width || 15}%` : 'auto',
+                                                    width: originalItem?.type === 'image' ? `${originalItem.width || 15}%` : 'auto',
                                                     fontSize: fs ? `${fs}px` : 'inherit',
                                                     transform: 'translate(-50%, -50%)'
                                                 }}

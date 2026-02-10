@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, ArrowRight } from 'lucide-react';
-import './FillBlanks/StudentMode.css'; // Reusing existing styles
+import { User, ArrowRight, Play } from 'lucide-react';
+import './StudentLogin.css';
 
 const StudentLogin = () => {
     const navigate = useNavigate();
@@ -28,7 +28,6 @@ const StudentLogin = () => {
                         state: { pin, nickname, autoJoin: true }
                     });
                 } else {
-                    // Default to fill-blanks
                     navigate('/student/fill-blanks', {
                         state: { pin, nickname, autoJoin: true }
                     });
@@ -44,29 +43,32 @@ const StudentLogin = () => {
 
     return (
         <div className="student-login-container">
-            <div className="login-card glass-panel">
-                <div className="icon-circle">
-                    <User size={32} color="white" />
+            <div className="login-card-round">
+                <div className="login-header">
+                    <img src="/character.png" alt="DD" className="login-character-mini" />
+                    <h2>교실 입장하기</h2>
+                    <p style={{ color: '#8D7B75' }}>선생님이 알려주신 PIN 번호를 입력하세요!</p>
                 </div>
-                <h2>Game Entry</h2>
-                <p style={{ marginBottom: '1rem', color: '#64748b' }}>PIN 번호를 입력하여 화이트보드에 입장하세요.</p>
 
-                <input
-                    type="text"
-                    placeholder="PIN 번호 (6자리)"
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value)}
-                    maxLength={6}
-                />
-                <input
-                    type="text"
-                    placeholder="닉네임"
-                    value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleJoin()}
-                />
+                <div className="input-box">
+                    <input
+                        type="text"
+                        placeholder="PIN 번호 (6자리)"
+                        value={pin}
+                        onChange={(e) => setPin(e.target.value)}
+                        maxLength={6}
+                    />
+                    <input
+                        type="text"
+                        placeholder="나만의 닉네임"
+                        value={nickname}
+                        onChange={(e) => setNickname(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleJoin()}
+                    />
+                </div>
+
                 <button className="btn-primary" onClick={handleJoin}>
-                    입장하기 <ArrowRight size={18} />
+                    신나게 공부 시작! <Play size={20} fill="currentColor" />
                 </button>
             </div>
         </div>

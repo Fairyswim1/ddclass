@@ -89,8 +89,10 @@ const FreeStudentMode = () => {
         const item = items.find(i => i.id === id);
         if (!item || !canvasRef.current) return;
 
-        const clientX = e.clientX || e.touches?.[0].clientX;
-        const clientY = e.clientY || e.touches?.[0].clientY;
+        const clientX = e.clientX !== undefined ? e.clientX : e.touches?.[0].clientX;
+        const clientY = e.clientY !== undefined ? e.clientY : e.touches?.[0].clientY;
+
+        if (clientX === undefined || clientY === undefined) return;
 
         setDraggingId(id);
 
@@ -110,8 +112,14 @@ const FreeStudentMode = () => {
     const handleMouseMove = (e) => {
         if (!draggingId || !canvasRef.current) return;
 
-        const clientX = e.clientX || e.touches?.[0].clientX;
-        const clientY = e.clientY || e.touches?.[0].clientY;
+        // Prevent default behavior to stop text selection/blocks during drag
+        if (e.cancelable) e.preventDefault();
+
+        const clientX = e.clientX !== undefined ? e.clientX : e.touches?.[0].clientX;
+        const clientY = e.clientY !== undefined ? e.clientY : e.touches?.[0].clientY;
+
+        if (clientX === undefined || clientY === undefined) return;
+
         const canvasRect = canvasRef.current.getBoundingClientRect();
 
         const isOverCanvas = (
@@ -138,15 +146,26 @@ const FreeStudentMode = () => {
 
     const handleMouseUp = () => {
         if (draggingId) {
-            // Update server
-            const answerData = items.map(({ id, x, y, isPlaced }) => ({ id, x, y, isPlaced }));
-            socket?.emit('submitAnswer', {
-                problemId: problem.id,
-                studentName: nickname,
-                answer: answerData
-            });
+            syncAnswerWithServer();
         }
         setDraggingId(null);
+    };
+
+    const handleReturnToTray = (id) => {
+        const nextItems = items.map(item =>
+            item.id === id ? { ...item, isPlaced: false, x: 0, y: 0 } : item
+        );
+        setItems(nextItems);
+        syncAnswerWithServer(nextItems);
+    };
+
+    const syncAnswerWithServer = (currentItems = items) => {
+        const answerData = currentItems.map(({ id, x, y, isPlaced }) => ({ id, x, y, isPlaced }));
+        socket?.emit('submitAnswer', {
+            problemId: problem.id,
+            studentName: nickname,
+            answer: answerData
+        });
     };
 
     if (step === 'login') {
@@ -254,6 +273,16 @@ const FreeStudentMode = () => {
                                     }}
                                 >
                                     {item.type === 'text' ? item.content : <img src={item.imageUrl} alt="img" style={{ width: '100%' }} draggable="false" />}
+                                    <button
+                                        className="item-return-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleReturnToTray(item.id);
+                                        }}
+                                        title="보관함으로 되돌리기"
+                                    >
+                                        ×
+                                    </button>
                                 </div>
                             ))}
                         </div>
