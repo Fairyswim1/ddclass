@@ -171,7 +171,7 @@ const FreeTeacherMode = () => {
     };
 
     return (
-    return (
+
         <div className="free-teacher-container">
             {/* Header (Standardized) */}
             <nav className="header-nav teacher-header">
