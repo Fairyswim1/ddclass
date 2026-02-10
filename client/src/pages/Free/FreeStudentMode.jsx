@@ -53,11 +53,11 @@ const FreeStudentMode = () => {
 
     const performJoin = async (targetPin, targetNickname) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/find-problem/${targetPin}`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/find-problem/${targetPin}`);
             const data = await response.json();
 
             if (data.success && data.type === 'free-drop') {
-                const probRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/free-drop/${data.id}`);
+                const probRes = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/free-drop/${data.id}`);
                 const probData = await probRes.json();
 
                 if (probData.success) {
@@ -67,7 +67,7 @@ const FreeStudentMode = () => {
                         isPlaced: item.isPlaced || false
                     })));
 
-                    const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:3000');
+                    const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
                     setSocket(newSocket);
 
                     newSocket.emit('joinProblem', {

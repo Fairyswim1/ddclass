@@ -53,18 +53,18 @@ const OrderStudentMode = () => {
         }
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/find-problem/${pin}`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/find-problem/${pin}`);
             const data = await response.json();
 
             if (data.success) {
-                const probResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/order-matching/${data.id}`);
+                const probResponse = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/order-matching/${data.id}`);
                 const probData = await probResponse.json();
 
                 if (probData.success) {
                     setProblem(probData.problem);
                     setShuffledSteps(shuffleArray(probData.problem.steps));
 
-                    const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:3000');
+                    const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
                     setSocket(newSocket);
 
                     newSocket.emit('joinProblem', {

@@ -11,7 +11,7 @@ const ProblemMonitor = ({ problemData }) => {
     const [message, setMessage] = useState(''); // Message to send
 
     useEffect(() => {
-        const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:3000');
+        const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
         setSocket(newSocket);
 
         newSocket.emit('joinProblem', {
