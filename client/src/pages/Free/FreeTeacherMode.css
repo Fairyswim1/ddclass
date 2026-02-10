@@ -240,17 +240,18 @@
 }
 
 .center-upload-zone {
-    width: 100%;
-    max-width: 600px;
-    height: 400px;
-    border: 3px dashed #E0D8CC;
-    border-radius: 20px;
+    width: 90%;
+    height: 90%;
+    max-width: 1200px;
+    max-height: 800px;
+    border: 4px dashed #E0D8CC;
+    border-radius: 24px;
     background: white;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.2rem;
+    gap: 1.5rem;
     cursor: pointer;
     transition: all 0.3s;
     color: #A89B96;
@@ -259,35 +260,35 @@
 .center-upload-zone:hover {
     border-color: #E6B400;
     background: #FFFDF5;
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(230, 180, 0, 0.1);
+    transform: scale(1.01);
+    box-shadow: 0 15px 30px rgba(230, 180, 0, 0.15);
 }
 
 .center-upload-zone.dragging {
     border-color: #E6B400;
     background: #FFFDF5;
-    scale: 1.02;
+    transform: scale(1.02);
 }
 
 .upload-icon-circle {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     background: #FFF9E0;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .center-upload-zone h3 {
-    font-size: 1.5rem;
+    font-size: 2rem;
     color: #5D4037;
     margin: 0;
 }
 
 .center-upload-zone p {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     margin: 0;
 }
 
