@@ -45,7 +45,7 @@ const FreeTeacherMode = () => {
                     const formData = new FormData();
                     formData.append('image', blob, 'pdf-bg.png');
 
-                    const response = await fetch('http://localhost:3000/api/upload', {
+                    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/upload`, {
                         method: 'POST',
                         body: formData
                     });
@@ -63,7 +63,7 @@ const FreeTeacherMode = () => {
             const formData = new FormData();
             formData.append('image', file);
             try {
-                const response = await fetch('http://localhost:3000/api/upload', {
+                const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/upload`, {
                     method: 'POST',
                     body: formData
                 });
@@ -116,7 +116,7 @@ const FreeTeacherMode = () => {
         const formData = new FormData();
         formData.append('image', file);
         try {
-            const response = await fetch('http://localhost:3000/api/upload', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/upload`, {
                 method: 'POST',
                 body: formData
             });
@@ -150,7 +150,7 @@ const FreeTeacherMode = () => {
             return;
         }
         try {
-            const response = await fetch('http://localhost:3000/api/free-drop', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/free-drop`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

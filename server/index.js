@@ -7,18 +7,17 @@ const app = express();
 const server = http.createServer(app);
 
 // CORS 설정
-app.use(cors({
-  origin: "http://localhost:5173", // Vite 기본 포트
+// CORS 설정
+const corsOptions = {
+  origin: process.env.CLIENT_URL || "http://localhost:5173",
   methods: ["GET", "POST"],
   credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
 
 const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
-    credentials: true
-  }
+  cors: corsOptions
 });
 
 // 메모리 데이터 저장소 (DB 대용)

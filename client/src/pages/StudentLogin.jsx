@@ -15,7 +15,7 @@ const StudentLogin = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:3000/api/find-problem/${pin}`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/find-problem/${pin}`);
             const data = await response.json();
 
             if (data.success) {

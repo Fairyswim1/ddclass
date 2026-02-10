@@ -20,7 +20,7 @@ const FreeMonitor = () => {
     useEffect(() => {
         const fetchProblem = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/api/free-drop/${id}`);
+                const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/free-drop/${id}`);
                 const data = await response.json();
                 if (data.success) {
                     setProblem(data.problem);
@@ -39,7 +39,7 @@ const FreeMonitor = () => {
     useEffect(() => {
         if (!problem) return;
 
-        const newSocket = io('http://localhost:3000');
+        const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:3000');
         setSocket(newSocket);
 
         newSocket.emit('joinProblem', {

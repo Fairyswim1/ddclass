@@ -52,12 +52,12 @@ const StudentMode = () => {
 
         try {
             // PIN으로 문제 ID 찾기
-            const response = await fetch(`http://localhost:3000/api/find-problem/${targetPin}`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/find-problem/${targetPin}`);
             const data = await response.json();
 
             if (data.success) {
                 // 문제 데이터 로드
-                const probResponse = await fetch(`http://localhost:3000/api/fill-blanks/${data.id}`);
+                const probResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/fill-blanks/${data.id}`);
                 const probData = await probResponse.json();
 
                 if (probData.success) {
@@ -67,7 +67,7 @@ const StudentMode = () => {
                     setShuffledWords(shuffleArray(words));
 
                     // 소켓 연결
-                    const newSocket = io('http://localhost:3000');
+                    const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:3000');
                     setSocket(newSocket);
 
                     newSocket.emit('joinProblem', {
