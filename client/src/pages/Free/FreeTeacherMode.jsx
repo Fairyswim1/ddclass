@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, Type, Save, ArrowLeft, Image as ImageIcon, Plus, Trash2, Layout, Maximize2 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
+import { useAuth } from '../../contexts/AuthContext';
 import './FreeTeacherMode.css';
 
 // Set worker for PDF.js
@@ -13,6 +14,8 @@ const FreeTeacherMode = () => {
     const [title, setTitle] = useState('');
     const [backgroundUrl, setBackgroundUrl] = useState('');
     const [items, setItems] = useState([]); // { id, content, type, width, fontSize }
+    const [isPublic, setIsPublic] = useState(false);
+    const { currentUser } = useAuth();
     const [inputText, setInputText] = useState('');
     const [fontSizeScale, setFontSizeScale] = useState('M'); // S, M, L
     const [aspectRatio, setAspectRatio] = useState(16 / 9);
@@ -158,7 +161,9 @@ const FreeTeacherMode = () => {
                     backgroundUrl,
                     items: items.map(i => ({ ...i, isPlaced: false, x: 0, y: 0 })), // Always starts in tray for students
                     aspectRatio,
-                    baseWidth: 1000
+                    baseWidth: 1000,
+                    teacherId: currentUser?.uid || null,
+                    isPublic
                 })
             });
             const data = await response.json();
@@ -286,6 +291,16 @@ const FreeTeacherMode = () => {
                     </div>
 
                     <div className="sidebar-footer">
+                        <div className="visibility-toggle">
+                            <label className="toggle-label">
+                                <input
+                                    type="checkbox"
+                                    checked={isPublic}
+                                    onChange={(e) => setIsPublic(e.target.checked)}
+                                />
+                                <span className="toggle-text">다른 선생님께 이 문제 공개하기</span>
+                            </label>
+                        </div>
                         <button className="btn-save-all" onClick={handleSave}>
                             <Save size={18} /> 문제 생성 완료
                         </button>

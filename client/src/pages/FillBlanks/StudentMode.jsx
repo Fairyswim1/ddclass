@@ -280,21 +280,23 @@ const StudentMode = () => {
                     </div>
                 </div>
 
-                {/* 결과 확인 (모두 채웠을 때) */}
-                {Object.keys(userAnswers).length === problem?.blanks.length && (
-                    <div className="result-card fade-in">
-                        <h3>🎉 문제 풀이 완료!</h3>
-                        <div className="score-display">
-                            <span>총 {problem.blanks.length}문제 중</span>
-                            <span className="score-number">
-                                {problem.blanks.filter(b => userAnswers[b.id] === b.word).length}
-                            </span>
-                            <span>개 정답</span>
+                <div className="game-sidebar">
+                    {/* 결과 확인 (모두 채웠을 때) */}
+                    {Object.keys(userAnswers).length === problem?.blanks.length && (
+                        <div className="result-card fade-in">
+                            <h3>🎉 문제 풀이 완료!</h3>
+                            <div className="score-display">
+                                <span>총 {problem.blanks.length}개 중</span>
+                                <span className="score-number">
+                                    {problem.blanks.filter(b => userAnswers[b.id] === b.word).length}
+                                </span>
+                                <span>개 정답</span>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {renderWordBank()}
+                    {renderWordBank()}
+                </div>
 
                 {/* 메시지 알림 (Toast) */}
                 {lastMessage && (

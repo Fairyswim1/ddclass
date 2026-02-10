@@ -11,10 +11,12 @@ import {
     Heart,
     MousePointer2
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 import './LandingPage.css';
 
 const LandingPage = () => {
     const navigate = useNavigate();
+    const { currentUser, logout } = useAuth();
 
     const services = [
         {
@@ -61,9 +63,21 @@ const LandingPage = () => {
                     <button className="btn-ghost" onClick={() => navigate('/student/join')}>
                         <Gamepad2 size={18} /> 학생 참여 (PIN)
                     </button>
-                    <button className="btn-primary">
-                        <LogIn size={18} /> 선생님 로그인
-                    </button>
+                    {currentUser ? (
+                        <div className="user-profile-nav">
+                            <span className="user-name"><strong>{currentUser.displayName || '선생님'}</strong>님 반갑습니다!</span>
+                            <button className="btn-ghost" onClick={() => navigate('/teacher/dashboard')}>
+                                내 보관함
+                            </button>
+                            <button className="btn-primary" onClick={logout}>
+                                로그아웃
+                            </button>
+                        </div>
+                    ) : (
+                        <button className="btn-primary" onClick={() => navigate('/teacher/login')}>
+                            <LogIn size={18} /> 선생님 로그인
+                        </button>
+                    )}
                 </div>
             </nav>
 

@@ -51,6 +51,22 @@
 .nav-btns {
     display: flex;
     gap: 12px;
+    align-items: center;
+}
+
+.user-profile-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: white;
+    padding: 0.4rem 1rem;
+    border-radius: 12px;
+    border: 2px solid #F0EEE9;
+}
+
+.user-name {
+    font-size: 0.95rem;
+    color: var(--color-brand-brown);
 }
 
 /* Main Layout */

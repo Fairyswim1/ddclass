@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Save, Check } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Save, Check, Loader2 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import './OrderTeacherMode.css';
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
@@ -10,6 +11,8 @@ const OrderTeacherMode = () => {
     const [step, setStep] = useState('input'); // input, monitor
     const [title, setTitle] = useState('');
     const [steps, setSteps] = useState(['', '']); // Initial 2 empty steps
+    const [isPublic, setIsPublic] = useState(false);
+    const { currentUser } = useAuth();
     const [createdProblem, setCreatedProblem] = useState(null);
 
     const handleAddStep = () => {
@@ -64,7 +67,9 @@ const OrderTeacherMode = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title,
-                    steps: steps
+                    steps: steps,
+                    teacherId: currentUser?.uid || null,
+                    isPublic
                 })
             });
 
@@ -207,6 +212,20 @@ const OrderTeacherMode = () => {
                                         <button className="btn-add-step-refined" onClick={handleAddStep}>
                                             <Plus size={18} /> 새로운 단계 추가
                                         </button>
+
+                                        <div className="options-panel-refined" style={{ marginTop: '2rem' }}>
+                                            <label className="custom-checkbox">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isPublic}
+                                                    onChange={(e) => setIsPublic(e.target.checked)}
+                                                />
+                                                <span className="checkmark"></span>
+                                                <span className="checkbox-text">
+                                                    <strong>다른 선생님께 이 문제 공개하기</strong> (라이브러리에 공유)
+                                                </span>
+                                            </label>
+                                        </div>
                                     </div>
 
                                     <div className="action-bar-refined">

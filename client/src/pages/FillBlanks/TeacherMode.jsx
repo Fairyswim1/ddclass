@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, Save } from 'lucide-react';
+import { ArrowLeft, Check, Save, Loader2 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import './TeacherMode.css';
 import ProblemMonitor from './ProblemMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
@@ -13,6 +14,8 @@ const TeacherMode = () => {
     const [words, setWords] = useState([]);
     const [blanks, setBlanks] = useState(new Set()); // Set of indices
     const [allowDuplicates, setAllowDuplicates] = useState(false); // 단어 중복 사용 허용 여부
+    const [isPublic, setIsPublic] = useState(false);
+    const { currentUser } = useAuth();
     const [createdProblem, setCreatedProblem] = useState(null);
 
     // 1. 텍스트 입력 후 분석
@@ -66,7 +69,9 @@ const TeacherMode = () => {
                     title,
                     originalText: inputText,
                     blanks: blankList,
-                    allowDuplicates
+                    allowDuplicates,
+                    teacherId: currentUser?.uid || null,
+                    isPublic
                 })
             });
 
@@ -189,6 +194,17 @@ const TeacherMode = () => {
                                     <span className="checkmark"></span>
                                     <span className="checkbox-text">
                                         <strong>사용한 단어 카드 감추기</strong> (한 번씩만 사용 가능)
+                                    </span>
+                                </label>
+                                <label className="custom-checkbox" style={{ marginTop: '0.5rem' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={isPublic}
+                                        onChange={(e) => setIsPublic(e.target.checked)}
+                                    />
+                                    <span className="checkmark"></span>
+                                    <span className="checkbox-text">
+                                        <strong>다른 선생님께 이 문제 공개하기</strong> (라이브러리에 공유)
                                     </span>
                                 </label>
                             </div>

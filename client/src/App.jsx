@@ -9,6 +9,9 @@ import StudentLogin from './pages/StudentLogin';
 import FreeTeacherMode from './pages/Free/FreeTeacherMode';
 import FreeStudentMode from './pages/Free/FreeStudentMode';
 import FreeMonitor from './pages/Free/FreeMonitor';
+import TeacherLogin from './pages/TeacherLogin';
+import TeacherDashboard from './pages/TeacherDashboard';
+import PublicLibrary from './pages/PublicLibrary';
 import './App.css';
 
 function App() {
@@ -38,6 +41,10 @@ function App() {
 
           {/* 학생 공통 진입 (Dispatcher) */}
           <Route path="/student/join" element={<StudentLogin />} />
+
+          {/* 선생님 전용 공간 */}
+          <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
+          <Route path="/teacher/library" element={<PublicLibrary />} />
         </Routes>
       </div>
     </Router>
