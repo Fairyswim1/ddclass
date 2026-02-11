@@ -14,6 +14,15 @@ const OrderTeacherMode = () => {
     const [isPublic, setIsPublic] = useState(false);
     const { currentUser } = useAuth();
     const [createdProblem, setCreatedProblem] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // 로그인 체크
+    useEffect(() => {
+        if (!currentUser) {
+            alert('선생님 기능은 로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+            navigate('/teacher/login');
+        }
+    }, [currentUser, navigate]);
 
     const handleAddStep = () => {
         setSteps([...steps, '']);
@@ -61,23 +70,29 @@ const OrderTeacherMode = () => {
             return;
         }
 
+        if (!currentUser) {
+            alert('로그인 정보가 없습니다. 다시 로그인해주세요.');
+            navigate('/teacher/login');
+            return;
+        }
+
         try {
+            setIsSaving(true);
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/order-matching`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title,
                     steps: steps,
-                    teacherId: currentUser?.uid || null,
+                    teacherId: currentUser.uid,
                     isPublic
                 })
             });
 
             const data = await response.json();
             if (data.success) {
+                console.log('순서 맞추기 문제 저장 성공:', data.problemId, 'TeacherID:', currentUser.uid);
                 // Adapt data for ProblemMonitor
-                // ProblemMonitor expects: id, title, blanks(length) for progress
-                // We'll mock 'blanks' as steps to reuse the progress bar logic
                 const mockBlanks = steps.map((s, i) => ({ id: `step-${i}`, word: s }));
 
                 setCreatedProblem({
@@ -85,8 +100,8 @@ const OrderTeacherMode = () => {
                     pinNumber: data.pinNumber,
                     title,
                     type: 'order-matching',
-                    blanks: mockBlanks, // Reusing 'blanks' prop for progress calculation
-                    originalText: steps.join(' ') // Minimal content for monitor
+                    blanks: mockBlanks,
+                    originalText: steps.join(' ')
                 });
                 setStep('monitor');
             } else {
@@ -95,6 +110,8 @@ const OrderTeacherMode = () => {
         } catch (error) {
             console.error('API Error:', error);
             alert('서버 통신 오류');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -229,8 +246,9 @@ const OrderTeacherMode = () => {
                                     </div>
 
                                     <div className="action-bar-refined">
-                                        <button className="btn-primary-large" onClick={handleSaveProblem}>
-                                            <Save size={20} /> 순서 맞추기 문제 생성 완료
+                                        <button className="btn-primary-large" onClick={handleSaveProblem} disabled={isSaving}>
+                                            {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                                            {isSaving ? '저장 중...' : '순서 맞추기 문제 생성 완료'}
                                         </button>
                                     </div>
                                 </div>

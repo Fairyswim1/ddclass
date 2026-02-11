@@ -20,6 +20,15 @@ const FreeTeacherMode = () => {
     const [fontSizeScale, setFontSizeScale] = useState('M'); // S, M, L
     const [aspectRatio, setAspectRatio] = useState(16 / 9);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // 로그인 체크
+    useEffect(() => {
+        if (!currentUser) {
+            alert('선생님 기능은 로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+            navigate('/teacher/login');
+        }
+    }, [currentUser, navigate]);
 
     const fileInputRef = useRef(null);
     const itemImageInputRef = useRef(null);
@@ -146,13 +155,20 @@ const FreeTeacherMode = () => {
     const handleDeleteItem = (id) => {
         setItems(items.filter(i => i.id !== id));
     };
-
     const handleSave = async () => {
         if (!title || !backgroundUrl) {
             alert('제목과 배경 이미지를 설정해주세요.');
             return;
         }
+
+        if (!currentUser) {
+            alert('로그인 정보가 없습니다. 다시 로그인해주세요.');
+            navigate('/teacher/login');
+            return;
+        }
+
         try {
+            setIsSaving(true);
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/free-drop`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -162,17 +178,21 @@ const FreeTeacherMode = () => {
                     items: items.map(i => ({ ...i, isPlaced: false, x: 0, y: 0 })), // Always starts in tray for students
                     aspectRatio,
                     baseWidth: 1000,
-                    teacherId: currentUser?.uid || null,
+                    teacherId: currentUser.uid,
                     isPublic
                 })
             });
             const data = await response.json();
             if (data.success) {
+                console.log('자유 보드 문제 저장 성공:', data.problemId, 'TeacherID:', currentUser.uid);
                 alert('내 보관함에 문제가 저장되었습니다!');
                 navigate(`/free-dnd/monitor/${data.problemId}`);
             }
         } catch (error) {
             console.error(error);
+            alert('서버 통신 오류');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -302,8 +322,9 @@ const FreeTeacherMode = () => {
                                 <span className="toggle-text">다른 선생님께 이 문제 공개하기</span>
                             </label>
                         </div>
-                        <button className="btn-save-all" onClick={handleSave}>
-                            <Save size={18} /> 내 보관함에 저장 & 문제 생성
+                        <button className="btn-save-all" onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                            {isSaving ? '저장 중...' : '내 보관함에 저장 & 문제 생성'}
                         </button>
                     </div>
                 </aside>

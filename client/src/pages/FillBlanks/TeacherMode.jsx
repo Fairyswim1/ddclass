@@ -17,6 +17,15 @@ const TeacherMode = () => {
     const [isPublic, setIsPublic] = useState(false);
     const { currentUser } = useAuth();
     const [createdProblem, setCreatedProblem] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // 로그인 체크
+    useEffect(() => {
+        if (!currentUser) {
+            alert('선생님 기능은 로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+            navigate('/teacher/login');
+        }
+    }, [currentUser, navigate]);
 
     // 1. 텍스트 입력 후 분석
     const handleAnalyzeText = () => {
@@ -55,6 +64,12 @@ const TeacherMode = () => {
             return;
         }
 
+        if (!currentUser) {
+            alert('로그인 정보가 없습니다. 다시 로그인해주세요.');
+            navigate('/teacher/login');
+            return;
+        }
+
         const blankList = Array.from(blanks).map(index => ({
             index,
             word: words[index],
@@ -62,6 +77,7 @@ const TeacherMode = () => {
         }));
 
         try {
+            setIsSaving(true);
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/fill-blanks`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -70,19 +86,20 @@ const TeacherMode = () => {
                     originalText: inputText,
                     blanks: blankList,
                     allowDuplicates,
-                    teacherId: currentUser?.uid || null,
+                    teacherId: currentUser.uid,
                     isPublic
                 })
             });
 
             const data = await response.json();
             if (data.success) {
+                console.log('문제 저장 성공:', data.problemId, 'TeacherID:', currentUser.uid);
                 setCreatedProblem({
                     id: data.problemId,
                     pinNumber: data.pinNumber,
                     title,
-                    originalText: inputText, // 모니터링 컴포넌트에서 미러링 뷰를 위해 필요
-                    blanks: blankList // 모니터링 컴포넌트에서 문항 수를 알기 위해 필요
+                    originalText: inputText,
+                    blanks: blankList
                 });
                 setStep('monitor');
             } else {
@@ -91,6 +108,8 @@ const TeacherMode = () => {
         } catch (error) {
             console.error('API Error:', error);
             alert('서버 통신 오류');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -213,8 +232,9 @@ const TeacherMode = () => {
                                 <button className="btn-ghost" onClick={() => setStep('input')}>
                                     뒤로가기
                                 </button>
-                                <button className="btn-primary-large" onClick={handleSaveProblem}>
-                                    <Save size={20} /> 문제 생성 완료 ({blanks.size}개)
+                                <button className="btn-primary-large" onClick={handleSaveProblem} disabled={isSaving}>
+                                    {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                                    {isSaving ? '저장 중...' : `문제 생성 완료 (${blanks.size}개)`}
                                 </button>
                             </div>
                         </div>
