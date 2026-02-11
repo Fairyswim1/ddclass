@@ -280,3 +280,18 @@
         flex: 1;
     }
 }
+
+/* Error State */
+.dashboard-loading.error {
+    color: #DC2626;
+    text-align: center;
+}
+
+.error-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.dashboard-loading.error button {
+    margin-top: 1rem;
+}

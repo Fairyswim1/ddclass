@@ -20,30 +20,39 @@ import { useAuth } from '../contexts/AuthContext';
 import './TeacherDashboard.css';
 
 const TeacherDashboard = () => {
-    const { currentUser } = useAuth();
+    const { currentUser, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     const [problems, setProblems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('all');
 
     useEffect(() => {
+        if (authLoading) return;
+
         if (!currentUser) {
             navigate('/teacher/login');
             return;
         }
         fetchMyProblems();
-    }, [currentUser]);
+    }, [currentUser, authLoading]);
 
     const fetchMyProblems = async () => {
+        if (!currentUser) return;
+
         try {
             setLoading(true);
-            // composite index 오류 방지를 위해 orderBy를 제거하고 로컬에서 정렬합니다.
+            setError(null);
+            console.log('Fetching problems for UID:', currentUser.uid);
+
             const q = query(
                 collection(db, 'problems'),
                 where('teacherId', '==', currentUser.uid)
             );
             const querySnapshot = await getDocs(q);
+            console.log('Fetched documents count:', querySnapshot.size);
+
             const items = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
@@ -51,14 +60,20 @@ const TeacherDashboard = () => {
 
             // 로컬 정렬 (최신순)
             items.sort((a, b) => {
-                const dateA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-                const dateB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
-                return dateB - dateA;
+                const getTime = (val) => {
+                    if (!val) return 0;
+                    if (val.toMillis) return val.toMillis();
+                    if (val.seconds) return val.seconds * 1000;
+                    return new Date(val).getTime() || 0;
+                };
+                return getTime(b.createdAt) - getTime(a.createdAt);
             });
 
+            console.log('Processed items:', items);
             setProblems(items);
         } catch (error) {
             console.error("Error fetching problems:", error);
+            setError("문제를 불러오는 중 오류가 발생했습니다: " + error.message);
         } finally {
             setLoading(false);
         }
@@ -103,11 +118,21 @@ const TeacherDashboard = () => {
         }
     };
 
-    if (loading) {
+    if (authLoading || loading) {
         return (
             <div className="dashboard-loading">
                 <Loader2 className="animate-spin" size={48} />
-                <p>내 문제들을 불러오는 중...</p>
+                <p>{authLoading ? '로그인 확인 중...' : '내 문제들을 불러오는 중...'}</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="dashboard-loading error">
+                <div className="error-icon">⚠️</div>
+                <p>{error}</p>
+                <button className="btn-secondary" onClick={fetchMyProblems}>다시 시도</button>
             </div>
         );
     }

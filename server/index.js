@@ -62,7 +62,7 @@ app.post('/api/fill-blanks', async (req, res) => {
     };
 
     await db.collection('problems').doc(problemId).set(newProblem);
-    console.log(`빈칸 문제 저장됨: ${title} (PIN: ${pinNumber}, Public: ${isPublic})`);
+    console.log(`[SAVED] 빈칸 문제: ${title} | ID: ${problemId} | PIN: ${pinNumber} | Teacher: ${teacherId}`);
 
     res.json({ success: true, problemId, pinNumber });
   } catch (error) {
@@ -110,7 +110,7 @@ app.post('/api/order-matching', async (req, res) => {
     };
 
     await db.collection('problems').doc(problemId).set(newProblem);
-    console.log(`순서 맞추기 문제 저장됨: ${title} (PIN: ${pinNumber})`);
+    console.log(`[SAVED] 순서 맞추기: ${title} | ID: ${problemId} | PIN: ${pinNumber} | Teacher: ${teacherId}`);
 
     res.json({ success: true, problemId, pinNumber });
   } catch (error) {
@@ -193,7 +193,7 @@ app.post('/api/free-drop', async (req, res) => {
     };
 
     await db.collection('problems').doc(problemId).set(newProblem);
-    console.log(`자유 드래그 문제 저장됨: ${title} (PIN: ${pinNumber})`);
+    console.log(`[SAVED] 자유 보드: ${title} | ID: ${problemId} | PIN: ${pinNumber} | Teacher: ${teacherId}`);
 
     res.json({ success: true, problemId, pinNumber });
   } catch (error) {
