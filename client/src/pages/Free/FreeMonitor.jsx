@@ -100,10 +100,17 @@ const FreeMonitor = () => {
     return (
         <div className="free-monitor-container">
             <nav className="game-nav">
-                <button onClick={() => navigate('/')} className="btn-back">
-                    <ArrowLeft size={20} /> 종료
-                </button>
+                <div className="nav-left">
+                    <button onClick={() => navigate('/')} className="btn-back">
+                        <ArrowLeft size={20} /> 종료
+                    </button>
+                </div>
                 <h2>모니터링: {problem?.title}</h2>
+                <div className="nav-right">
+                    <button onClick={() => navigate('/teacher/dashboard')} className="btn-secondary-mini">
+                        내 보관함 가기
+                    </button>
+                </div>
             </nav>
 
             <div className="monitor-stats">

@@ -245,6 +245,10 @@ const OrderTeacherMode = () => {
                                     <Check size={48} color="white" strokeWidth={3} />
                                 </div>
                                 <h2>문제가 생성되었습니다!</h2>
+                                <p className="save-confirmation-text">
+                                    <Save size={16} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                                    내 보관함에 안전하게 저장되었습니다.
+                                </p>
                             </div>
 
                             <div className="pin-box-refined">
@@ -256,6 +260,12 @@ const OrderTeacherMode = () => {
                                 학생들에게 PIN 번호를 알려주세요.<br />
                                 학생들이 참여하면 아래에서 실시간 현황을 볼 수 있습니다.
                             </p>
+
+                            <div className="dashboard-action-area" style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+                                <button className="btn-secondary" onClick={() => navigate('/teacher/dashboard')}>
+                                    내 보관함 가기
+                                </button>
+                            </div>
 
                             <div className="monitor-container-refined">
                                 <ProblemMonitor problemData={createdProblem} />

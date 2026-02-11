@@ -168,6 +168,7 @@ const FreeTeacherMode = () => {
             });
             const data = await response.json();
             if (data.success) {
+                alert('내 보관함에 문제가 저장되었습니다!');
                 navigate(`/free-dnd/monitor/${data.problemId}`);
             }
         } catch (error) {
@@ -302,7 +303,7 @@ const FreeTeacherMode = () => {
                             </label>
                         </div>
                         <button className="btn-save-all" onClick={handleSave}>
-                            <Save size={18} /> 문제 생성 완료
+                            <Save size={18} /> 내 보관함에 저장 & 문제 생성
                         </button>
                     </div>
                 </aside>
