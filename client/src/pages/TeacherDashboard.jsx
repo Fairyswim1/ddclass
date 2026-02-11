@@ -38,16 +38,24 @@ const TeacherDashboard = () => {
     const fetchMyProblems = async () => {
         try {
             setLoading(true);
+            // composite index 오류 방지를 위해 orderBy를 제거하고 로컬에서 정렬합니다.
             const q = query(
                 collection(db, 'problems'),
-                where('teacherId', '==', currentUser.uid),
-                orderBy('createdAt', 'desc')
+                where('teacherId', '==', currentUser.uid)
             );
             const querySnapshot = await getDocs(q);
             const items = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
+
+            // 로컬 정렬 (최신순)
+            items.sort((a, b) => {
+                const dateA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+                const dateB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+                return dateB - dateA;
+            });
+
             setProblems(items);
         } catch (error) {
             console.error("Error fetching problems:", error);
