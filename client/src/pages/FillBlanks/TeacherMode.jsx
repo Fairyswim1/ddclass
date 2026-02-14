@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, Save, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { db } from '../../firebase';
+import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import './TeacherMode.css';
 import ProblemMonitor from './ProblemMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
@@ -78,36 +80,42 @@ const TeacherMode = () => {
 
         try {
             setIsSaving(true);
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/fill-blanks`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title,
-                    originalText: inputText,
-                    blanks: blankList,
-                    allowDuplicates,
-                    teacherId: currentUser.uid,
-                    isPublic
-                })
-            });
 
-            const data = await response.json();
-            if (data.success) {
-                console.log('문제 저장 성공:', data.problemId, 'TeacherID:', currentUser.uid);
-                setCreatedProblem({
-                    id: data.problemId,
-                    pinNumber: data.pinNumber,
-                    title,
-                    originalText: inputText,
-                    blanks: blankList
-                });
-                setStep('monitor');
-            } else {
-                alert('문제 생성 실패: ' + data.message);
-            }
+            // 클라이언트에서 ID 및 PIN 생성
+            const problemId = Math.random().toString(36).substr(2, 9);
+            const pinNumber = Math.floor(100000 + Math.random() * 900000).toString();
+
+            const newProblem = {
+                id: problemId,
+                type: 'fill-blanks',
+                pinNumber,
+                title,
+                originalText: inputText,
+                blanks: blankList,
+                allowDuplicates,
+                teacherId: currentUser.uid,
+                isPublic,
+                createdAt: serverTimestamp()
+            };
+
+            // Firestore에 직접 저장 (조회 프로젝트와 동일성 보장)
+            console.log('[CLIENT-PRE-SAVE] 빈칸 문제 객체:', newProblem);
+            await setDoc(doc(db, 'problems', problemId), newProblem);
+            console.log('[CLIENT-SAVE] 빈칸 문제 저장 성공:', problemId, 'Teacher:', currentUser.uid);
+
+            setCreatedProblem({
+                id: problemId,
+                pinNumber,
+                title,
+                type: 'fill-blanks',
+                blanks: blankList,
+                originalText: inputText
+            });
+            setStep('monitor');
+
         } catch (error) {
-            console.error('API Error:', error);
-            alert('서버 통신 오류');
+            console.error('Save Error:', error);
+            alert('저장 중 오류가 발생했습니다: ' + error.message);
         } finally {
             setIsSaving(false);
         }

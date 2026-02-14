@@ -70,6 +70,9 @@ const TeacherDashboard = () => {
             });
 
             console.log('Processed items:', items);
+            if (items.length === 0) {
+                console.warn('[DASHBOARD] No problems found for teacher:', currentUser.uid);
+            }
             setProblems(items);
         } catch (error) {
             console.error("Error fetching problems:", error);

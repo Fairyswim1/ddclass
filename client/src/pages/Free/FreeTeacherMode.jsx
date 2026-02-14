@@ -4,6 +4,8 @@ import { Upload, Type, Save, ArrowLeft, Image as ImageIcon, Plus, Trash2, Layout
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import { useAuth } from '../../contexts/AuthContext';
+import { db } from '../../firebase';
+import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import './FreeTeacherMode.css';
 
 // Set worker for PDF.js
@@ -169,28 +171,36 @@ const FreeTeacherMode = () => {
 
         try {
             setIsSaving(true);
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/free-drop`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title,
-                    backgroundUrl,
-                    items: items.map(i => ({ ...i, isPlaced: false, x: 0, y: 0 })), // Always starts in tray for students
-                    aspectRatio,
-                    baseWidth: 1000,
-                    teacherId: currentUser.uid,
-                    isPublic
-                })
-            });
-            const data = await response.json();
-            if (data.success) {
-                console.log('자유 보드 문제 저장 성공:', data.problemId, 'TeacherID:', currentUser.uid);
-                alert('내 보관함에 문제가 저장되었습니다!');
-                navigate(`/free-dnd/monitor/${data.problemId}`);
-            }
+
+            // 클라이언트에서 ID 및 PIN 생성
+            const problemId = Math.random().toString(36).substr(2, 9);
+            const pinNumber = Math.floor(100000 + Math.random() * 900000).toString();
+
+            const newProblem = {
+                id: problemId,
+                type: 'free-drop',
+                pinNumber,
+                title,
+                backgroundUrl,
+                items: items.map(i => ({ ...i, isPlaced: false, x: 0, y: 0 })), // 학생용 초기 상태
+                aspectRatio,
+                baseWidth: 1000,
+                teacherId: currentUser.uid,
+                isPublic,
+                createdAt: serverTimestamp()
+            };
+
+            // Firestore에 직접 저장
+            console.log('[CLIENT-PRE-SAVE] 자유 보드 문제 객체:', newProblem);
+            await setDoc(doc(db, 'problems', problemId), newProblem);
+            console.log('[CLIENT-SAVE] 자유 보드 저장 성공:', problemId, 'Teacher:', currentUser.uid);
+
+            alert('내 보관함에 안전하게 저장되었습니다.');
+            navigate('/teacher/dashboard');
+
         } catch (error) {
-            console.error(error);
-            alert('서버 통신 오류');
+            console.error('Save Error:', error);
+            alert('저장 중 오류가 발생했습니다: ' + error.message);
         } finally {
             setIsSaving(false);
         }
