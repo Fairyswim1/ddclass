@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, ArrowRight, Play } from 'lucide-react';
 import './StudentLogin.css';
+import { db } from '../firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 const StudentLogin = () => {
     const navigate = useNavigate();
@@ -15,15 +17,23 @@ const StudentLogin = () => {
         }
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/find-problem/${pin}`);
-            const data = await response.json();
+            // Firestore에서 PIN으로 직접 문제 검색
+            const q = query(
+                collection(db, 'problems'),
+                where('pinNumber', '==', pin)
+            );
+            const querySnapshot = await getDocs(q);
 
-            if (data.success) {
-                if (data.type === 'order-matching') {
+            if (!querySnapshot.empty) {
+                const problemDoc = querySnapshot.docs[0];
+                const problemData = problemDoc.data();
+                const problemType = problemData.type;
+
+                if (problemType === 'order-matching') {
                     navigate('/student/order-matching', {
                         state: { pin, nickname, autoJoin: true }
                     });
-                } else if (data.type === 'free-drop') {
+                } else if (problemType === 'free-drop') {
                     navigate('/student/free-dnd', {
                         state: { pin, nickname, autoJoin: true }
                     });
@@ -37,7 +47,7 @@ const StudentLogin = () => {
             }
         } catch (error) {
             console.error('Login Error:', error);
-            alert('서버 연결 오류');
+            alert('데이터 조회 중 오류가 발생했습니다: ' + error.message);
         }
     };
 
