@@ -95,7 +95,7 @@ const OrderTeacherMode = () => {
                 type: 'order-matching',
                 pinNumber,
                 title,
-                steps: steps, // raw steps
+                steps: formattedSteps, // formattedSteps 사용
                 teacherId: currentUser.uid,
                 isPublic,
                 createdAt: serverTimestamp()

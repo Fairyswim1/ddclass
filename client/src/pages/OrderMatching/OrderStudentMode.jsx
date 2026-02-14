@@ -72,8 +72,14 @@ const OrderStudentMode = () => {
                     return;
                 }
 
-                setProblem({ id: problemId, ...probData });
-                setShuffledSteps(shuffleArray(probData.steps));
+                // 데이터가 이전 방식으로 저장되었을 경우를 대비한 방어적 처리
+                const normalizedSteps = (probData.steps || []).map((step, idx) => {
+                    if (typeof step === 'string') return { id: `step-${idx}`, text: step };
+                    return step;
+                });
+
+                setProblem({ id: problemId, ...probData, steps: normalizedSteps });
+                setShuffledSteps(shuffleArray(normalizedSteps));
 
                 // 소켓 연결 (실시간 상호작용은 유지)
                 const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
