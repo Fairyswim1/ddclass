@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Type, Save, ArrowLeft, Image as ImageIcon, Plus, Trash2, Layout, Maximize2, Loader2 } from 'lucide-react';
+import { Upload, Type, Save, ArrowLeft, Image as ImageIcon, Plus, Trash2, Layout, Maximize2, Loader2, Check } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../firebase';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import './FreeTeacherMode.css';
 
 // Set worker for PDF.js
@@ -14,6 +14,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 const FreeTeacherMode = () => {
     const navigate = useNavigate();
     const [title, setTitle] = useState('');
+    const [step, setStep] = useState('input'); // input, monitor
     const [backgroundUrl, setBackgroundUrl] = useState('');
     const [items, setItems] = useState([]); // { id, content, type, width, fontSize }
     const [isPublic, setIsPublic] = useState(false);
@@ -23,6 +24,7 @@ const FreeTeacherMode = () => {
     const [aspectRatio, setAspectRatio] = useState(16 / 9);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [createdProblem, setCreatedProblem] = useState(null);
 
     // 로그인 체크
     useEffect(() => {
@@ -195,8 +197,8 @@ const FreeTeacherMode = () => {
             await setDoc(doc(db, 'problems', problemId), newProblem);
             console.log('[CLIENT-SAVE] 자유 보드 저장 성공:', problemId, 'Teacher:', currentUser.uid);
 
-            alert('내 보관함에 안전하게 저장되었습니다.');
-            navigate('/teacher/dashboard');
+            setCreatedProblem(newProblem);
+            setStep('monitor');
 
         } catch (error) {
             console.error('Save Error:', error);
@@ -230,178 +232,218 @@ const FreeTeacherMode = () => {
 
             {/* Main Layout: Left Tools | Center Workspace */}
             <main className="free-main-layout">
-                {/* Top: Guide (Horizontal) */}
-                <div className="top-guide-bar">
-                    <div className="guide-card-horizontal">
-                        <h3>어떻게 만드나요? ☁️</h3>
-                        <div className="guide-steps-horizontal">
-                            <div className="guide-step-item-h active">
-                                <div className="step-num-h">1</div>
-                                <div className="step-info-h">
-                                    <p>배경 설정: 학습지나 이미지를 업로드하세요.</p>
+                {step === 'input' ? (
+                    <>
+                        {/* Top: Guide (Horizontal) */}
+                        <div className="top-guide-bar">
+                            <div className="guide-card-horizontal">
+                                <h3>어떻게 만드나요? ☁️</h3>
+                                <div className="guide-steps-horizontal">
+                                    <div className="guide-step-item-h active">
+                                        <div className="step-num-h">1</div>
+                                        <div className="step-info-h">
+                                            <p>배경 설정: 학습지나 이미지를 업로드하세요.</p>
+                                        </div>
+                                    </div>
+                                    <div className="guide-step-item-h active">
+                                        <div className="step-num-h">2</div>
+                                        <div className="step-info-h">
+                                            <p>카드 추가: 학생들이 움직일 텍스트/이미지를 만드세요.</p>
+                                        </div>
+                                    </div>
+                                    <div className="guide-step-item-h active">
+                                        <div className="step-num-h">3</div>
+                                        <div className="step-info-h">
+                                            <p>저장 & 공유: PIN 번호로 수업을 시작하세요!</p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="guide-step-item-h active">
-                                <div className="step-num-h">2</div>
-                                <div className="step-info-h">
-                                    <p>카드 추가: 학생들이 움직일 텍스트/이미지를 만드세요.</p>
-                                </div>
-                            </div>
-                            <div className="guide-step-item-h active">
-                                <div className="step-num-h">3</div>
-                                <div className="step-info-h">
-                                    <p>저장 & 공유: PIN 번호로 수업을 시작하세요!</p>
+                                <div className="tip-box-h">
+                                    <p><strong>💡 꿀팁:</strong> PDF는 첫 페이지가 배경이 됩니다!</p>
                                 </div>
                             </div>
                         </div>
-                        <div className="tip-box-h">
-                            <p><strong>💡 꿀팁:</strong> PDF는 첫 페이지가 배경이 됩니다!</p>
+
+                        <div className="workspace-container-flex">
+                            {/* Left Sidebar: Tools & List */}
+                            <aside className="tool-sidebar">
+                                <div className="sidebar-header">
+                                    <h3>보드 도구 🛠️</h3>
+                                </div>
+
+                                <div className="sidebar-content">
+                                    <div className="form-group">
+                                        <label>문제 제목</label>
+                                        <input
+                                            type="text"
+                                            placeholder="제목을 입력하세요"
+                                            value={title}
+                                            className="styled-input-mini"
+                                            onChange={(e) => setTitle(e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="divider"></div>
+
+                                    <div className="form-group">
+                                        <label>카드 추가</label>
+
+                                        {/* Text Input */}
+                                        <div className="input-with-button" style={{ marginBottom: '0.5rem' }}>
+                                            <input
+                                                type="text"
+                                                placeholder="텍스트 입력..."
+                                                value={inputText}
+                                                className="styled-input-mini"
+                                                onChange={(e) => setInputText(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleAddText()}
+                                            />
+                                            <button className="btn-add" onClick={handleAddText}>+</button>
+                                        </div>
+                                        <div className="font-size-group" style={{ marginBottom: '1rem' }}>
+                                            {['S', 'M', 'L'].map(scale => (
+                                                <button
+                                                    key={scale}
+                                                    className={`btn-size-toggle ${fontSizeScale === scale ? 'active' : ''}`}
+                                                    onClick={() => setFontSizeScale(scale)}
+                                                >
+                                                    {scale}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        {/* Image Upload Button */}
+                                        <button className="btn-sidebar-secondary" onClick={() => itemImageInputRef.current.click()}>
+                                            <ImageIcon size={18} /> 이미지 카드 추가
+                                        </button>
+                                        <input type="file" ref={itemImageInputRef} hidden onChange={handleAddImage} accept="image/*" />
+                                    </div>
+
+                                    <div className="divider"></div>
+
+                                    <div className="sidebar-tray-header">
+                                        <Layout size={16} /> 생성된 카드 목록 ({items.length})
+                                    </div>
+
+                                    <div className="sidebar-tray-list">
+                                        {items.length === 0 && (
+                                            <div className="empty-tray-msg-small">카드가 없습니다.</div>
+                                        )}
+                                        {items.map(item => (
+                                            <div key={item.id} className="sidebar-tray-item">
+                                                <div className="sidebar-item-preview">
+                                                    {item.type === 'text' ? (
+                                                        <div style={{ fontSize: '10px' }}>{item.content}</div>
+                                                    ) : (
+                                                        <img src={item.imageUrl} alt="item" />
+                                                    )}
+                                                </div>
+                                                <div className="sidebar-item-controls">
+                                                    {item.type === 'image' && (
+                                                        <input
+                                                            type="range"
+                                                            min="5" max="100"
+                                                            value={item.width}
+                                                            onChange={(e) => updateItemWidth(item.id, parseInt(e.target.value))}
+                                                            className="mini-range-sidebar"
+                                                            title={`크기: ${item.width}%`}
+                                                        />
+                                                    )}
+                                                    <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="sidebar-footer">
+                                    <div className="visibility-toggle">
+                                        <label className="toggle-label">
+                                            <input
+                                                type="checkbox"
+                                                checked={isPublic}
+                                                onChange={(e) => setIsPublic(e.target.checked)}
+                                            />
+                                            <span className="toggle-text">다른 선생님께 이 문제 공개하기</span>
+                                        </label>
+                                    </div>
+                                    <button className="btn-save-all" onClick={handleSave} disabled={isSaving}>
+                                        {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                                        {isSaving ? '저장 중...' : '내 보관함에 저장 & 문제 생성'}
+                                    </button>
+                                </div>
+                            </aside>
+
+                            {/* Center: Workspace (Background Only) */}
+                            <section className="teacher-workspace">
+                                <section className="center-preview-area">
+                                    {!backgroundUrl ? (
+                                        <div
+                                            className={`center-upload-zone ${isDraggingOver ? 'dragging' : ''}`}
+                                            onClick={() => fileInputRef.current.click()}
+                                            onDragOver={handleDragOver}
+                                            onDragLeave={handleDragLeave}
+                                            onDrop={handleDrop}
+                                        >
+                                            <div className="upload-icon-circle">
+                                                <Upload size={48} color="#E6B400" />
+                                            </div>
+                                            <h3>배경 이미지 업로드</h3>
+                                            <p>클릭하거나 이미지를 여기로 드래그하세요</p>
+                                            <span className="upload-hint">JPG, PNG, PDF 지원 (PDF는 1페이지만)</span>
+                                        </div>
+                                    ) : (
+                                        <div className="canvas-wrapper">
+                                            <img src={backgroundUrl} alt="background" className="canvas-bg-img" />
+                                            <div className="canvas-overlay-tools">
+                                                <button className="btn-change-bg-prominent" onClick={() => setBackgroundUrl('')}>
+                                                    <ImageIcon size={18} /> 배경 다른 사진으로 변경하기
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <input type="file" ref={fileInputRef} hidden onChange={(e) => handleFileUpload(e.target.files[0])} accept="image/*,.pdf" />
+                                </section>
+                            </section>
+                        </div>
+                    </>
+                ) : (
+                    /* Step: Monitor - Show PIN and Real-time monitoring */
+                    <div className="monitor-view-container fade-in">
+                        <div className="teacher-card text-center" style={{ margin: '2rem auto', maxWidth: '1000px', width: '90%' }}>
+                            <div className="success-lottie-area">
+                                <div className="success-icon-puffy">
+                                    <Check size={48} color="white" strokeWidth={3} />
+                                </div>
+                                <h2>자유 보드가 생성되었습니다!</h2>
+                                <p className="save-confirmation-text">
+                                    <Save size={16} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                                    내 보관함에 안전하게 저장되었습니다.
+                                </p>
+                            </div>
+
+                            <div className="pin-box-refined">
+                                <span className="pin-label">참여 코드 (PIN)</span>
+                                <strong className="pin-number">{createdProblem.pinNumber}</strong>
+                            </div>
+
+                            <p className="monitor-guide-text">
+                                학생들에게 PIN 번호를 알려주세요.<br />
+                                학생들이 참여하면 아래에서 실시간 현황을 볼 수 있습니다.
+                            </p>
+
+                            <div className="dashboard-action-area" style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+                                <button className="btn-secondary" onClick={() => navigate('/teacher/dashboard')}>
+                                    내 보관함 가기
+                                </button>
+                            </div>
+
+                            <div className="monitor-container-refined">
+                                <ProblemMonitor problemData={createdProblem} />
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <div className="workspace-container-flex">
-                    {/* Left Sidebar: Tools & List */}
-                    <aside className="tool-sidebar">
-                        <div className="sidebar-header">
-                            <h3>보드 도구 🛠️</h3>
-                        </div>
-
-                        <div className="sidebar-content">
-                            <div className="form-group">
-                                <label>문제 제목</label>
-                                <input
-                                    type="text"
-                                    placeholder="제목을 입력하세요"
-                                    value={title}
-                                    className="styled-input-mini"
-                                    onChange={(e) => setTitle(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="divider"></div>
-
-                            <div className="form-group">
-                                <label>카드 추가</label>
-
-                                {/* Text Input */}
-                                <div className="input-with-button" style={{ marginBottom: '0.5rem' }}>
-                                    <input
-                                        type="text"
-                                        placeholder="텍스트 입력..."
-                                        value={inputText}
-                                        className="styled-input-mini"
-                                        onChange={(e) => setInputText(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleAddText()}
-                                    />
-                                    <button className="btn-add" onClick={handleAddText}>+</button>
-                                </div>
-                                <div className="font-size-group" style={{ marginBottom: '1rem' }}>
-                                    {['S', 'M', 'L'].map(scale => (
-                                        <button
-                                            key={scale}
-                                            className={`btn-size-toggle ${fontSizeScale === scale ? 'active' : ''}`}
-                                            onClick={() => setFontSizeScale(scale)}
-                                        >
-                                            {scale}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* Image Upload Button */}
-                                <button className="btn-sidebar-secondary" onClick={() => itemImageInputRef.current.click()}>
-                                    <ImageIcon size={18} /> 이미지 카드 추가
-                                </button>
-                                <input type="file" ref={itemImageInputRef} hidden onChange={handleAddImage} accept="image/*" />
-                            </div>
-
-                            <div className="divider"></div>
-
-                            <div className="sidebar-tray-header">
-                                <Layout size={16} /> 생성된 카드 목록 ({items.length})
-                            </div>
-
-                            <div className="sidebar-tray-list">
-                                {items.length === 0 && (
-                                    <div className="empty-tray-msg-small">카드가 없습니다.</div>
-                                )}
-                                {items.map(item => (
-                                    <div key={item.id} className="sidebar-tray-item">
-                                        <div className="sidebar-item-preview">
-                                            {item.type === 'text' ? (
-                                                <div style={{ fontSize: '10px' }}>{item.content}</div>
-                                            ) : (
-                                                <img src={item.imageUrl} alt="item" />
-                                            )}
-                                        </div>
-                                        <div className="sidebar-item-controls">
-                                            {item.type === 'image' && (
-                                                <input
-                                                    type="range"
-                                                    min="5" max="100"
-                                                    value={item.width}
-                                                    onChange={(e) => updateItemWidth(item.id, parseInt(e.target.value))}
-                                                    className="mini-range-sidebar"
-                                                    title={`크기: ${item.width}%`}
-                                                />
-                                            )}
-                                            <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="sidebar-footer">
-                            <div className="visibility-toggle">
-                                <label className="toggle-label">
-                                    <input
-                                        type="checkbox"
-                                        checked={isPublic}
-                                        onChange={(e) => setIsPublic(e.target.checked)}
-                                    />
-                                    <span className="toggle-text">다른 선생님께 이 문제 공개하기</span>
-                                </label>
-                            </div>
-                            <button className="btn-save-all" onClick={handleSave} disabled={isSaving}>
-                                {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                                {isSaving ? '저장 중...' : '내 보관함에 저장 & 문제 생성'}
-                            </button>
-                        </div>
-                    </aside>
-
-                    {/* Center: Workspace (Background Only) */}
-                    <section className="teacher-workspace">
-                        <section className="center-preview-area">
-                            {!backgroundUrl ? (
-                                <div
-                                    className={`center-upload-zone ${isDraggingOver ? 'dragging' : ''}`}
-                                    onClick={() => fileInputRef.current.click()}
-                                    onDragOver={handleDragOver}
-                                    onDragLeave={handleDragLeave}
-                                    onDrop={handleDrop}
-                                >
-                                    <div className="upload-icon-circle">
-                                        <Upload size={48} color="#E6B400" />
-                                    </div>
-                                    <h3>배경 이미지 업로드</h3>
-                                    <p>클릭하거나 이미지를 여기로 드래그하세요</p>
-                                    <span className="upload-hint">JPG, PNG, PDF 지원 (PDF는 1페이지만)</span>
-                                </div>
-                            ) : (
-                                <div className="canvas-wrapper">
-                                    <img src={backgroundUrl} alt="background" className="canvas-bg-img" />
-                                    <div className="canvas-overlay-tools">
-                                        <button className="btn-change-bg-prominent" onClick={() => setBackgroundUrl('')}>
-                                            <ImageIcon size={18} /> 배경 다른 사진으로 변경하기
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                            <input type="file" ref={fileInputRef} hidden onChange={(e) => handleFileUpload(e.target.files[0])} accept="image/*,.pdf" />
-                        </section>
-                    </section>
-                </div>
+                )}
             </main>
         </div>
     );

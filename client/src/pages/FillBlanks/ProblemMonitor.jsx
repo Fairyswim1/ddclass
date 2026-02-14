@@ -54,20 +54,31 @@ const ProblemMonitor = ({ problemData }) => {
     }, [problemData.id, selectedStudent?.name]); // Dependency on selectedStudent name to keep it communicating
 
     const calculateProgress = (studentAnswer) => {
-        if (!problemData.blanks) return 0;
-        const totalBlanks = problemData.blanks.length;
+        if (!problemData.blanks && !problemData.items) return 0;
 
+        // Free Board (free-drop)
+        if (problemData.type === 'free-drop') {
+            if (!Array.isArray(studentAnswer)) return 0;
+            const placedCount = studentAnswer.filter(item => item.isPlaced).length;
+            const totalItems = problemData.items.length;
+            return Math.round((placedCount / totalItems) * 100);
+        }
+
+        const totalBlanks = problemData.blanks.length;
         // Array check (for Order Matching)
         if (Array.isArray(studentAnswer)) {
             return Math.round((studentAnswer.length / totalBlanks) * 100);
         }
-
         // Object check (for Fill Blanks)
         const filledCount = Object.keys(studentAnswer || {}).length;
         return Math.round((filledCount / totalBlanks) * 100);
     };
 
     const getAccuracy = (studentAnswer) => {
+        if (problemData.type === 'free-drop') {
+            return { correct: 0, total: 0, percentage: 100 }; // 자유 보드는 정답 개념이 없으므로 100%로 표시하거나 무시
+        }
+
         if (!problemData.blanks || !studentAnswer) return { correct: 0, total: 0, percentage: 0 };
         const total = problemData.blanks.length;
         let correctCount = 0;
@@ -187,7 +198,37 @@ const ProblemMonitor = ({ problemData }) => {
                         <div className="modal-body">
                             {/* Mirrored Text View */}
                             <div className="mirrored-text-view">
-                                {Array.isArray(selectedStudent.answer) ? (
+                                {problemData.type === 'free-drop' ? (
+                                    // Free Board View
+                                    <div className="free-board-mirror-container">
+                                        <div className="mirror-canvas-wrapper">
+                                            <img src={problemData.backgroundUrl} alt="bg" className="mirror-bg" />
+                                            <div className="mirror-items-layer">
+                                                {Array.isArray(selectedStudent.answer) && selectedStudent.answer.filter(i => i.isPlaced).map(item => {
+                                                    const originalItem = problemData.items.find(pi => pi.id === item.id);
+                                                    if (!originalItem) return null;
+                                                    return (
+                                                        <div
+                                                            key={item.id}
+                                                            className={`mirror-placed-token ${originalItem.type}`}
+                                                            style={{
+                                                                left: `${item.x}%`,
+                                                                top: `${item.y}%`,
+                                                                width: originalItem.type === 'image' ? (originalItem.width ? `${originalItem.width / 2}%` : '10%') : 'auto',
+                                                                fontSize: originalItem.type === 'text' ? '12px' : 'inherit'
+                                                            }}
+                                                        >
+                                                            {originalItem.type === 'text' ? originalItem.content : <img src={originalItem.imageUrl} alt="img" />}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                        <div className="mirror-tray-status">
+                                            <p>남은 카드: {problemData.items.length - (Array.isArray(selectedStudent.answer) ? selectedStudent.answer.filter(i => i.isPlaced).length : 0)}개</p>
+                                        </div>
+                                    </div>
+                                ) : Array.isArray(selectedStudent.answer) ? (
                                     // Order Matching View
                                     <div className="order-matching-view">
                                         <p className="helper-text">학생이 제출한 순서:</p>
