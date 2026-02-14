@@ -7,8 +7,15 @@ import LatexRenderer from '../../components/LatexRenderer';
 const ProblemMonitor = ({ problemData }) => {
     const [socket, setSocket] = useState(null);
     const [students, setStudents] = useState([]); // [{id, name, answer: {}}]
-    const [selectedStudent, setSelectedStudent] = useState(null); // For detail view
+    const [selectedStudentName, setSelectedStudentName] = useState(null); // For detail view
     const [message, setMessage] = useState(''); // Message to send
+    const [isFullScreen, setIsFullScreen] = useState(false);
+    const mirrorRef = useRef(null);
+    const [mirrorWidth, setMirrorWidth] = useState(1000);
+
+    const selectedStudent = students.find(s => s.name === selectedStudentName);
+    const currentProblemWidth = problemData.baseWidth || 1000;
+    const fontScale = mirrorWidth / currentProblemWidth;
 
     useEffect(() => {
         const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
@@ -31,27 +38,20 @@ const ProblemMonitor = ({ problemData }) => {
         newSocket.on('answerUpdated', (studentData) => {
             if (studentData.name === 'TEACHER_MONITOR') return;
 
-            setStudents(prev => prev.map(s => {
-                if (s.name === studentData.name) { // Match by name for persistence
-                    const updated = { ...s, answer: studentData.answer, id: studentData.id }; // Update Socket ID too if reconnected
-                    // If this is the currently selected student, update them too
-                    if (selectedStudent && selectedStudent.name === studentData.name) {
-                        setSelectedStudent(updated);
-                    }
-                    return updated;
-                }
-                return s;
-            }));
-
-            // Add if new
             setStudents(prev => {
-                if (prev.find(s => s.name === studentData.name)) return prev; // 이미 있으면 패스
+                const exists = prev.find(s => s.name === studentData.name);
+                if (exists) {
+                    return prev.map(s => s.name === studentData.name
+                        ? { ...s, answer: studentData.answer, id: studentData.id }
+                        : s
+                    );
+                }
                 return [...prev, { id: studentData.id, name: studentData.name, answer: studentData.answer }];
             });
         });
 
         return () => newSocket.disconnect();
-    }, [problemData.id, selectedStudent?.name]); // Dependency on selectedStudent name to keep it communicating
+    }, [problemData.id]);
 
     const calculateProgress = (studentAnswer) => {
         if (!problemData.blanks && !problemData.items) return 0;
@@ -106,6 +106,17 @@ const ProblemMonitor = ({ problemData }) => {
             percentage: Math.round((correctCount / total) * 100)
         };
     };
+
+    useEffect(() => {
+        if (!mirrorRef.current || !selectedStudentName) return;
+        const observer = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                setMirrorWidth(entry.contentRect.width);
+            }
+        });
+        observer.observe(mirrorRef.current);
+        return () => observer.disconnect();
+    }, [selectedStudentName]);
 
     const handleSendMessage = (e) => {
         e.preventDefault();
@@ -221,20 +232,27 @@ const ProblemMonitor = ({ problemData }) => {
             </div>
 
             {/* Student Detail Modal */}
-            {selectedStudent && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
+            {selectedStudentName && (
+                <div className={`modal-overlay ${isFullScreen ? 'full-screen-overlay' : ''}`} onClick={() => { setSelectedStudentName(null); setIsFullScreen(false); }}>
+                    <div className={`modal-content ${isFullScreen ? 'full-screen-content' : ''}`} onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
-                            <div>
-                                <h2>{selectedStudent.name} 학생의 화면</h2>
+                            <div className="header-info">
+                                <h2>{selectedStudentName} 학생의 화면</h2>
                                 <span className="accuracy-badge">
-                                    정답률: {getAccuracy(selectedStudent.answer).percentage}%
-                                    ({getAccuracy(selectedStudent.answer).correct}/{getAccuracy(selectedStudent.answer).total})
+                                    {(problemData.type === 'free-drop')
+                                        ? `카드 배치: ${Array.isArray(selectedStudent?.answer) ? selectedStudent.answer.filter(i => i.isPlaced).length : 0}개`
+                                        : `정답률: ${getAccuracy(selectedStudent?.answer).percentage}% (${getAccuracy(selectedStudent?.answer).correct}/${getAccuracy(selectedStudent?.answer).total})`
+                                    }
                                 </span>
                             </div>
-                            <button className="btn-close" onClick={() => setSelectedStudent(null)}>
-                                <X size={24} />
-                            </button>
+                            <div className="header-actions">
+                                <button className="btn-fullscreen-toggle" onClick={() => setIsFullScreen(!isFullScreen)}>
+                                    {isFullScreen ? '작게 보기' : '전체 화면'}
+                                </button>
+                                <button className="btn-close" onClick={() => { setSelectedStudentName(null); setIsFullScreen(false); }}>
+                                    <X size={24} />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="modal-body">
@@ -243,10 +261,10 @@ const ProblemMonitor = ({ problemData }) => {
                                 {problemData.type === 'free-drop' ? (
                                     // Free Board View
                                     <div className="free-board-mirror-container">
-                                        <div className="mirror-canvas-wrapper">
+                                        <div className="mirror-canvas-wrapper" ref={mirrorRef}>
                                             <img src={problemData.backgroundUrl} alt="bg" className="mirror-bg" />
                                             <div className="mirror-items-layer">
-                                                {Array.isArray(selectedStudent.answer) && selectedStudent.answer.filter(i => i.isPlaced).map(item => {
+                                                {Array.isArray(selectedStudent?.answer) && selectedStudent.answer.filter(i => i.isPlaced).map(item => {
                                                     const originalItem = problemData.items.find(pi => pi.id === item.id);
                                                     if (!originalItem) return null;
                                                     return (
@@ -257,7 +275,7 @@ const ProblemMonitor = ({ problemData }) => {
                                                                 left: `${item.x}%`,
                                                                 top: `${item.y}%`,
                                                                 width: originalItem.type === 'image' ? (originalItem.width ? `${originalItem.width}%` : '15%') : 'auto',
-                                                                fontSize: originalItem.type === 'text' ? '14px' : 'inherit',
+                                                                fontSize: originalItem.type === 'text' ? `${originalItem.fontSize * fontScale}px` : 'inherit',
                                                                 zIndex: 10
                                                             }}
                                                         >
@@ -268,7 +286,7 @@ const ProblemMonitor = ({ problemData }) => {
                                             </div>
                                         </div>
                                         <div className="mirror-tray-status">
-                                            <p>남은 카드: {problemData.items.length - (Array.isArray(selectedStudent.answer) ? selectedStudent.answer.filter(i => i.isPlaced).length : 0)}개</p>
+                                            <p>남은 카드: {problemData.items.length - (Array.isArray(selectedStudent?.answer) ? selectedStudent.answer.filter(i => i.isPlaced).length : 0)}개</p>
                                         </div>
                                     </div>
                                 ) : Array.isArray(selectedStudent.answer) ? (
