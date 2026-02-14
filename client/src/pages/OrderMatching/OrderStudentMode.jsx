@@ -5,6 +5,8 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { ArrowLeft, User, X, Check } from 'lucide-react';
 import './OrderStudentMode.css';
 import LatexRenderer from '../../components/LatexRenderer';
+import { db } from '../../firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 const OrderStudentMode = () => {
     const location = useLocation();
@@ -53,35 +55,42 @@ const OrderStudentMode = () => {
         }
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/find-problem/${pin}`);
-            const data = await response.json();
+            // Firestore에서 PIN으로 직접 문제 찾기
+            const q = query(
+                collection(db, 'problems'),
+                where('pinNumber', '==', targetPin)
+            );
+            const querySnapshot = await getDocs(q);
 
-            if (data.success) {
-                const probResponse = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/order-matching/${data.id}`);
-                const probData = await probResponse.json();
+            if (!querySnapshot.empty) {
+                const problemDoc = querySnapshot.docs[0];
+                const probData = problemDoc.data();
+                const problemId = problemDoc.id;
 
-                if (probData.success) {
-                    setProblem(probData.problem);
-                    setShuffledSteps(shuffleArray(probData.problem.steps));
-
-                    const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
-                    setSocket(newSocket);
-
-                    newSocket.emit('joinProblem', {
-                        problemId: data.id,
-                        studentName: nickname
-                    });
-
-                    setStep('game');
-                } else {
+                if (probData.type !== 'order-matching') {
                     alert('순서 맞추기 문제가 아닙니다.');
+                    return;
                 }
+
+                setProblem({ id: problemId, ...probData });
+                setShuffledSteps(shuffleArray(probData.steps));
+
+                // 소켓 연결 (실시간 상호작용은 유지)
+                const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
+                setSocket(newSocket);
+
+                newSocket.emit('joinProblem', {
+                    problemId: problemId,
+                    studentName: targetNick
+                });
+
+                setStep('game');
             } else {
                 alert('유효하지 않은 PIN 번호입니다.');
             }
         } catch (error) {
             console.error('Join Error:', error);
-            alert('접속 중 오류가 발생했습니다.');
+            alert('접속 중 오류가 발생했습니다: ' + error.message);
         }
     };
 

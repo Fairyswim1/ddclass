@@ -4,6 +4,8 @@ import { io } from 'socket.io-client';
 import { ArrowLeft, User, X } from 'lucide-react';
 import './StudentMode.css';
 import LatexRenderer from '../../components/LatexRenderer';
+import { db } from '../../firebase';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 
 const StudentMode = () => {
     const location = useLocation();
@@ -51,42 +53,42 @@ const StudentMode = () => {
         }
 
         try {
-            // PIN으로 문제 ID 찾기
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/find-problem/${targetPin}`);
-            const data = await response.json();
+            // Firestore에서 PIN으로 직접 문제 찾기
+            const q = query(
+                collection(db, 'problems'),
+                where('pinNumber', '==', targetPin)
+            );
+            const querySnapshot = await getDocs(q);
 
-            if (data.success) {
-                // 문제 데이터 로드
-                const probResponse = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/fill-blanks/${data.id}`);
-                const probData = await probResponse.json();
+            if (!querySnapshot.empty) {
+                const problemDoc = querySnapshot.docs[0];
+                const probData = problemDoc.data();
+                const problemId = problemDoc.id;
 
-                if (probData.success) {
-                    setProblem(probData.problem);
-                    // 정답 단어들 섞어서 준비
-                    const words = probData.problem.blanks.map(b => b.word);
-                    setShuffledWords(shuffleArray(words));
+                setProblem({ id: problemId, ...probData });
 
-                    // 소켓 연결
-                    const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
-                    setSocket(newSocket);
+                // 정답 단어들 섞어서 준비
+                const words = probData.blanks.map(b => b.word);
+                setShuffledWords(shuffleArray(words));
 
-                    newSocket.emit('joinProblem', {
-                        problemId: data.id,
-                        studentName: targetNick
-                    });
+                // 소켓 연결 (실시간 상호작용은 유지)
+                const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
+                setSocket(newSocket);
 
-                    // Set state just in case input was empty (auto join)
-                    setPin(targetPin);
-                    setNickname(targetNick);
+                newSocket.emit('joinProblem', {
+                    problemId: problemId,
+                    studentName: targetNick
+                });
 
-                    setStep('game');
-                }
+                setPin(targetPin);
+                setNickname(targetNick);
+                setStep('game');
             } else {
                 alert('유효하지 않은 PIN 번호입니다.');
             }
         } catch (error) {
             console.error('Join Error:', error);
-            alert('접속 중 오류가 발생했습니다.');
+            alert('접속 중 오류가 발생했습니다: ' + error.message);
         }
     };
 
