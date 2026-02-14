@@ -1,4 +1,4 @@
-.student-game-container {
+.fb-student-container {
     min-height: 100vh;
     background-color: var(--color-bg-light);
     display: flex;
@@ -35,13 +35,15 @@
     border-radius: var(--radius-round);
 }
 
-.game-content {
+.fb-game-content {
     flex: 1;
     max-width: 1600px;
     width: 100%;
     margin: 0 auto;
     padding: 1.5rem 2rem;
-    display: flex;
+    display: flex !important;
+    flex-direction: row !important;
+    /* 가로 배열 강제 */
     gap: 2rem;
     align-items: flex-start;
 }
@@ -192,8 +194,8 @@
 
 /* Responsive side-by-side to column - 데스크톱 레이아웃 강제 유지를 위해 완화 */
 @media (max-width: 480px) {
-    .game-content {
-        flex-direction: column;
+    .fb-game-content {
+        flex-direction: column !important;
         padding-bottom: 100px;
     }
 

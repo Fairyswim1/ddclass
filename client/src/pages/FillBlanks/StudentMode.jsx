@@ -264,7 +264,7 @@ const StudentMode = () => {
     }
 
     return (
-        <div className="student-game-container">
+        <div className="fb-student-container">
             <nav className="game-nav">
                 <button onClick={() => navigate('/')} className="btn-back">
                     <ArrowLeft size={20} /> 나가기
@@ -274,7 +274,7 @@ const StudentMode = () => {
                 </div>
             </nav>
 
-            <main className="game-content">
+            <main className="fb-game-content">
                 <div className="problem-area">
                     <h2 className="problem-title"><LatexRenderer text={problem.title} /></h2>
                     <div className="text-display">

@@ -213,7 +213,7 @@ const OrderStudentMode = () => {
     }
 
     return (
-        <div className="student-game-container">
+        <div className="om-student-container">
             <nav className="game-nav">
                 <button onClick={() => navigate('/')} className="btn-back">
                     <ArrowLeft size={20} /> 나가기
@@ -223,7 +223,7 @@ const OrderStudentMode = () => {
                 </div>
             </nav>
 
-            <main className="game-content full-height">
+            <main className="om-game-content full-height">
                 <div className="header-area">
                     <h2 className="problem-title"><LatexRenderer text={problem.title} /></h2>
                     <p className="instruction">오른쪽의 카드를 왼쪽으로 드래그하여 순서를 맞추세요.</p>

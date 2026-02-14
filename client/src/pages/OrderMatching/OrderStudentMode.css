@@ -1,12 +1,11 @@
-/* Overall Container */
-.student-game-container {
+.om-student-container {
     min-height: 100vh;
     background-color: var(--color-bg-light);
     display: flex;
     flex-direction: column;
 }
 
-.game-content {
+.om-game-content {
     flex: 1;
     width: 100%;
     max-width: 1600px;
@@ -17,7 +16,7 @@
     gap: 1.5rem;
 }
 
-.game-content.full-height {
+.om-game-content.full-height {
     height: calc(100vh - 80px);
     /* 내비게이션 높이 제외 */
 }
