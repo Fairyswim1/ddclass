@@ -12,6 +12,7 @@ import FreeMonitor from './pages/Free/FreeMonitor';
 import TeacherLogin from './pages/TeacherLogin';
 import TeacherDashboard from './pages/TeacherDashboard';
 import PublicLibrary from './pages/PublicLibrary';
+import MonitorPage from './pages/MonitorPage';
 import './App.css';
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
           <Route path="/teacher/login" element={<TeacherLogin />} />
           <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
           <Route path="/teacher/library" element={<PublicLibrary />} />
+          <Route path="/monitor/:id" element={<MonitorPage />} />
         </Routes>
       </div>
     </Router>

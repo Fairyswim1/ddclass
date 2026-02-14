@@ -241,9 +241,9 @@ const TeacherDashboard = () => {
                             <div className="card-footer">
                                 <button
                                     className="btn-action start"
-                                    onClick={() => navigate(`/${problem.type}/monitor/${problem.id}`)}
+                                    onClick={() => navigate(`/monitor/${problem.id}`)}
                                 >
-                                    시작하기 <ArrowRight size={16} />
+                                    실시간 모니터링 <ArrowRight size={16} />
                                 </button>
                                 <button
                                     className="btn-icon-danger"

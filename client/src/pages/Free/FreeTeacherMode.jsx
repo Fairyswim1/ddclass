@@ -1,3 +1,4 @@
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Type, Save, ArrowLeft, Image as ImageIcon, Plus, Trash2, Layout, Maximize2, Loader2, Check } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
