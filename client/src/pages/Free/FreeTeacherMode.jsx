@@ -433,8 +433,11 @@ const FreeTeacherMode = () => {
                                 학생들이 참여하면 아래에서 실시간 현황을 볼 수 있습니다.
                             </p>
 
-                            <div className="dashboard-action-area" style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-                                <button className="btn-secondary" onClick={() => navigate('/teacher/dashboard')}>
+                            <div className="dashboard-action-area" style={{ marginTop: '2rem', marginBottom: '1rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                                <button className="btn-save-all" onClick={() => navigate(`/monitor/${createdProblem.id}`)} style={{ width: 'auto', padding: '0.8rem 1.5rem' }}>
+                                    <Maximize2 size={18} /> 실시간 모니터링 전체화면으로 가기
+                                </button>
+                                <button className="btn-secondary" onClick={() => navigate('/teacher/dashboard')} style={{ width: 'auto' }}>
                                     내 보관함 가기
                                 </button>
                             </div>

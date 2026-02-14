@@ -391,3 +391,64 @@
     padding: 2rem;
     font-style: italic;
 }
+
+/* Miniature Board Preview in Grid */
+.mini-board-preview {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+}
+
+.mini-canvas {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #f1f5f9;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.mini-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.5;
+}
+
+.mini-items-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.mini-token {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 1px white;
+}
+
+.mini-token.text {
+    background: #3b82f6;
+    /* Blue for text */
+}
+
+.mini-token.image {
+    background: #ef4444;
+    /* Red for image */
+}
+
+.mini-stats {
+    font-size: 0.7rem;
+    color: #64748b;
+    font-weight: 700;
+}

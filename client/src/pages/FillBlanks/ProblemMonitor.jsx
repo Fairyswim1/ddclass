@@ -169,17 +169,46 @@ const ProblemMonitor = ({ problemData }) => {
                                 style={{ width: `${calculateProgress(student.answer)}%` }}
                             ></div>
                         </div>
-                        <div className="answer-preview">
-                            {(Array.isArray(student.answer) ? (
-                                problemData.type === 'free-drop'
-                                    ? student.answer.filter(i => i.isPlaced)
-                                    : student.answer
-                            ) : Object.values(student.answer || {})).slice(-5).map((item, i) => (
-                                <span key={i} className="mini-chip">
-                                    <LatexRenderer text={getValueDisplay(item)} />
-                                </span>
-                            ))}
-                            {(Array.isArray(student.answer) ? student.answer.length : Object.keys(student.answer || {}).length) > 5 && <span>...</span>}
+                        <div className="answer-preview-container">
+                            {problemData.type === 'free-drop' ? (
+                                <div className="mini-board-preview">
+                                    <div className="mini-canvas">
+                                        <img src={problemData.backgroundUrl} alt="bg" className="mini-bg-img" />
+                                        <div className="mini-items-layer">
+                                            {Array.isArray(student.answer) && student.answer.filter(i => i.isPlaced).map((item, idx) => {
+                                                const original = problemData.items.find(pi => pi.id === item.id);
+                                                if (!original) return null;
+                                                return (
+                                                    <div
+                                                        key={idx}
+                                                        className={`mini-token ${original.type}`}
+                                                        style={{
+                                                            left: `${item.x}%`,
+                                                            top: `${item.y}%`,
+                                                        }}
+                                                    >
+                                                        {original.type === 'image' ? '🖼️' : '📝'}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                    <div className="mini-stats">배치 {student.answer.filter(i => i.isPlaced).length}개</div>
+                                </div>
+                            ) : (
+                                <div className="answer-preview">
+                                    {(Array.isArray(student.answer) ? (
+                                        problemData.type === 'free-drop'
+                                            ? student.answer.filter(i => i.isPlaced)
+                                            : student.answer
+                                    ) : Object.values(student.answer || {})).slice(-5).map((item, i) => (
+                                        <span key={i} className="mini-chip">
+                                            <LatexRenderer text={getValueDisplay(item)} />
+                                        </span>
+                                    ))}
+                                    {(Array.isArray(student.answer) ? student.answer.length : Object.keys(student.answer || {}).length) > 5 && <span>...</span>}
+                                </div>
+                            )}
                         </div>
                         <div className="hover-hint">클릭하여 상세 보기 및 메시지 보내기</div>
                     </div>
