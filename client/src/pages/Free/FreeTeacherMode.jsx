@@ -391,9 +391,11 @@ const FreeTeacherMode = () => {
                             ) : (
                                 <div className="canvas-wrapper">
                                     <img src={backgroundUrl} alt="background" className="canvas-bg-img" />
-                                    <button className="btn-change-bg" onClick={() => setBackgroundUrl('')}>
-                                        배경 변경하기
-                                    </button>
+                                    <div className="canvas-overlay-tools">
+                                        <button className="btn-change-bg-prominent" onClick={() => setBackgroundUrl('')}>
+                                            <ImageIcon size={18} /> 배경 다른 사진으로 변경하기
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                             <input type="file" ref={fileInputRef} hidden onChange={(e) => handleFileUpload(e.target.files[0])} accept="image/*,.pdf" />
