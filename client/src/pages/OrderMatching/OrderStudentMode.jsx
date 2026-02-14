@@ -242,11 +242,7 @@ const OrderStudentMode = () => {
                                         ref={provided.innerRef}
                                         {...provided.droppableProps}
                                     >
-                                        {userOrder.length === 0 && (
-                                            <div className="empty-placeholder" style={{ pointerEvents: 'none' }}>
-                                                카드를 이곳으로 끌어오세요
-                                            </div>
-                                        )}
+                                        {/* 중복된 empty-placeholder 제거 */}
 
                                         {userOrder.map((item, index) => (
                                             <Draggable key={item.id} draggableId={item.id} index={index}>
@@ -276,7 +272,7 @@ const OrderStudentMode = () => {
                                         {/* 카드가 없을 때만 안내 문구 표시 */}
                                         {userOrder.length === 0 && (
                                             <div className="empty-drop-guide-message">
-                                                오른쪽의 카드를 이곳으로 드래그하여 순서를 맞추세요.
+                                                이곳에 카드를 드래그하여 순서를 맞추세요
                                             </div>
                                         )}
                                         {provided.placeholder}
