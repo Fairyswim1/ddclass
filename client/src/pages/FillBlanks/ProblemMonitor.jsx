@@ -123,7 +123,14 @@ const ProblemMonitor = ({ problemData }) => {
 
     const getValueDisplay = (val) => {
         if (typeof val === 'object' && val !== null) {
-            return val.text || val.word || JSON.stringify(val);
+            // Free Board case: match with problemData.items to show actual content
+            if (problemData.type === 'free-drop' && val.id) {
+                const original = problemData.items.find(pi => pi.id === val.id);
+                if (original) {
+                    return original.type === 'text' ? original.content : '📷 이미지';
+                }
+            }
+            return val.text || val.word || val.content || '(내용 없음)';
         }
         return val;
     }
@@ -163,10 +170,16 @@ const ProblemMonitor = ({ problemData }) => {
                             ></div>
                         </div>
                         <div className="answer-preview">
-                            {(Array.isArray(student.answer) ? student.answer : Object.values(student.answer || {})).slice(-3).map((item, i) => (
-                                <span key={i} className="mini-chip"><LatexRenderer text={getValueDisplay(item)} /></span>
+                            {(Array.isArray(student.answer) ? (
+                                problemData.type === 'free-drop'
+                                    ? student.answer.filter(i => i.isPlaced)
+                                    : student.answer
+                            ) : Object.values(student.answer || {})).slice(-5).map((item, i) => (
+                                <span key={i} className="mini-chip">
+                                    <LatexRenderer text={getValueDisplay(item)} />
+                                </span>
                             ))}
-                            {(Array.isArray(student.answer) ? student.answer.length : Object.keys(student.answer || {}).length) > 3 && <span>...</span>}
+                            {(Array.isArray(student.answer) ? student.answer.length : Object.keys(student.answer || {}).length) > 5 && <span>...</span>}
                         </div>
                         <div className="hover-hint">클릭하여 상세 보기 및 메시지 보내기</div>
                     </div>
@@ -214,8 +227,9 @@ const ProblemMonitor = ({ problemData }) => {
                                                             style={{
                                                                 left: `${item.x}%`,
                                                                 top: `${item.y}%`,
-                                                                width: originalItem.type === 'image' ? (originalItem.width ? `${originalItem.width / 2}%` : '10%') : 'auto',
-                                                                fontSize: originalItem.type === 'text' ? '12px' : 'inherit'
+                                                                width: originalItem.type === 'image' ? (originalItem.width ? `${originalItem.width}%` : '15%') : 'auto',
+                                                                fontSize: originalItem.type === 'text' ? '14px' : 'inherit',
+                                                                zIndex: 10
                                                             }}
                                                         >
                                                             {originalItem.type === 'text' ? originalItem.content : <img src={originalItem.imageUrl} alt="img" />}

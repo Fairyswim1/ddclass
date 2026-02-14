@@ -48,6 +48,21 @@
     margin-left: 0.5rem;
 }
 
+.monitor-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
 .pin-pill {
     background-color: #fff7ed;
     border: 2px solid #fdba74;
@@ -75,8 +90,8 @@
 
 .monitor-content-area {
     flex: 1;
-    padding: 2rem;
-    max-width: 1400px;
+    padding: 1.5rem;
+    max-width: 1200px;
     width: 100%;
     margin: 0 auto;
 }
