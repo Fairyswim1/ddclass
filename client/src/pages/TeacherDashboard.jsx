@@ -12,7 +12,8 @@ import {
     Copy,
     Trash2,
     ArrowRight,
-    Loader2
+    Loader2,
+    Home
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, orderBy, deleteDoc, doc } from 'firebase/firestore';
@@ -27,6 +28,7 @@ const TeacherDashboard = () => {
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('all');
+    const [showCreateOptions, setShowCreateOptions] = useState(false);
 
     useEffect(() => {
         if (authLoading) return;
@@ -144,13 +146,37 @@ const TeacherDashboard = () => {
         <div className="teacher-dashboard">
             <header className="dashboard-header">
                 <div className="header-left">
-                    <h1>내 문제 보관함 📦</h1>
+                    <div className="header-title-row">
+                        <button className="btn-home" onClick={() => navigate('/')} title="홈으로 가기">
+                            <Home size={20} />
+                        </button>
+                        <h1>내 문제 보관함 📦</h1>
+                    </div>
                     <p>선생님이 제작하신 소중한 교육 자료들입니다.</p>
                 </div>
                 <div className="header-right">
-                    <button className="btn-create-new" onClick={() => navigate('/')}>
-                        <Plus size={20} /> 새 문제 만들기
-                    </button>
+                    <div className="create-dropdown-container">
+                        <button
+                            className={`btn-create-new ${showCreateOptions ? 'active' : ''}`}
+                            onClick={() => setShowCreateOptions(!showCreateOptions)}
+                        >
+                            <Plus size={20} className={showCreateOptions ? 'rotate-45' : ''} /> 새 문제 만들기
+                        </button>
+
+                        {showCreateOptions && (
+                            <div className="create-options-menu">
+                                <button onClick={() => navigate('/fill-blanks')}>
+                                    <Layers size={18} /> 빈칸 채우기
+                                </button>
+                                <button onClick={() => navigate('/order-matching')}>
+                                    <Layout size={18} /> 순서 맞추기
+                                </button>
+                                <button onClick={() => navigate('/free-dnd')}>
+                                    <MousePointer2 size={18} /> 자유 보드
+                                </button>
+                            </div>
+                        )}
+                    </div>
                     <button className="btn-secondary" onClick={() => navigate('/teacher/library')}>
                         <Globe size={18} /> 라이브러리 가기
                     </button>

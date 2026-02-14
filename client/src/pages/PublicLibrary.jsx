@@ -8,7 +8,8 @@ import {
     Download,
     ArrowLeft,
     Loader2,
-    SearchX
+    SearchX,
+    Home
 } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -105,9 +106,14 @@ const PublicLibrary = () => {
         <div className="public-library">
             <header className="library-header">
                 <div className="header-left">
-                    <button className="btn-back" onClick={() => navigate('/teacher/dashboard')}>
-                        <ArrowLeft size={20} /> 대시보드
-                    </button>
+                    <div className="header-nav-btns">
+                        <button className="btn-back" onClick={() => navigate('/')} title="홈으로">
+                            <Home size={20} />
+                        </button>
+                        <button className="btn-back" onClick={() => navigate('/teacher/dashboard')} title="대시보드로">
+                            <ArrowLeft size={20} />
+                        </button>
+                    </div>
                     <h1>공유 라이브러리 🌍</h1>
                     <p>전국의 선생님들이 공유해주신 소중한 문제들입니다.</p>
                 </div>

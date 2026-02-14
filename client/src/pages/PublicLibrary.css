@@ -38,7 +38,12 @@
 .library-header h1 {
     font-size: 2.2rem;
     color: var(--color-brand-brown);
-    margin-bottom: 0.5rem;
+    margin: 0.8rem 0 0.4rem 0;
+}
+
+.header-nav-btns {
+    display: flex;
+    gap: 0.8rem;
 }
 
 /* Controls */
