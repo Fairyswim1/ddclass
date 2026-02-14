@@ -273,13 +273,12 @@ const OrderStudentMode = () => {
                                             </Draggable>
                                         ))}
 
-                                        {/* 남은 빈 칸들 표시 */}
-                                        {Array.from({ length: Math.max(0, (problem?.steps?.length || 0) - userOrder.length) }).map((_, i) => (
-                                            <div key={`empty-${i}`} className="order-card empty-slot-guide">
-                                                <div className="card-index empty">{userOrder.length + i + 1}</div>
-                                                <div className="card-text placeholder">이곳에 카드를 놓으세요</div>
+                                        {/* 카드가 없을 때만 안내 문구 표시 */}
+                                        {userOrder.length === 0 && (
+                                            <div className="empty-drop-guide-message">
+                                                오른쪽의 카드를 이곳으로 드래그하여 순서를 맞추세요.
                                             </div>
-                                        ))}
+                                        )}
                                         {provided.placeholder}
                                     </div>
                                 )}

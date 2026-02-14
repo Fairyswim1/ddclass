@@ -317,7 +317,7 @@ const StudentMode = () => {
                     </div>
                 )}
             </main>
-        </div>
+        </div >
     );
 };
 
