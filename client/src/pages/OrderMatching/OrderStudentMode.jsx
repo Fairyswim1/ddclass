@@ -272,6 +272,14 @@ const OrderStudentMode = () => {
                                                 )}
                                             </Draggable>
                                         ))}
+
+                                        {/* 남은 빈 칸들 표시 */}
+                                        {Array.from({ length: Math.max(0, (problem?.steps?.length || 0) - userOrder.length) }).map((_, i) => (
+                                            <div key={`empty-${i}`} className="order-card empty-slot-guide">
+                                                <div className="card-index empty">{userOrder.length + i + 1}</div>
+                                                <div className="card-text placeholder">이곳에 카드를 놓으세요</div>
+                                            </div>
+                                        ))}
                                         {provided.placeholder}
                                     </div>
                                 )}

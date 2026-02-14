@@ -222,6 +222,26 @@
     transition: transform 0.25s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.2s, border-color 0.2s;
 }
 
+/* 빈 슬롯 가이드 */
+.order-card.empty-slot-guide {
+    background: #FAFAFA;
+    border: 3px dashed #E0E0E0;
+    box-shadow: none;
+    cursor: default;
+    opacity: 0.6;
+}
+
+.card-index.empty {
+    background: #E0E0E0;
+    color: #9E9E9E;
+}
+
+.card-text.placeholder {
+    color: #BDBDBD;
+    font-size: 0.95rem;
+    font-weight: 400;
+}
+
 /* 드롭 미리보기 시 카드 밀림 효과 */
 .order-card.drop-preview-before {
     transform: translateY(15px);
