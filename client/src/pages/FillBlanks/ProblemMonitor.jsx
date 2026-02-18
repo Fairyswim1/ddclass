@@ -204,7 +204,7 @@ const ProblemMonitor = ({ problemData }) => {
                                             })}
                                         </div>
                                     </div>
-                                    <div className="mini-stats">배치 {student.answer.filter(i => i.isPlaced).length}개</div>
+                                    <div className="mini-stats">배치 {Array.isArray(student.answer) ? student.answer.filter(i => i.isPlaced).length : 0}개</div>
                                 </div>
                             ) : (
                                 <div className="answer-preview">
