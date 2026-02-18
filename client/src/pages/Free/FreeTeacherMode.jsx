@@ -157,6 +157,18 @@ const FreeTeacherMode = () => {
             item.id === id ? { ...item, width: newWidth } : item
         ));
     };
+
+    const IMAGE_SIZE_MAP = { 'S': 15, 'M': 30, 'L': 50, 'XL': 80 };
+    const updateItemWidthByScale = (id, scale) => {
+        updateItemWidth(id, IMAGE_SIZE_MAP[scale]);
+    };
+    const getImageSizeLabel = (width) => {
+        if (width <= 20) return 'S';
+        if (width <= 40) return 'M';
+        if (width <= 60) return 'L';
+        return 'XL';
+    };
+
     const handleDeleteItem = (id) => {
         setItems(items.filter(i => i.id !== id));
     };
@@ -301,17 +313,26 @@ const FreeTeacherMode = () => {
                                             />
                                             <button className="btn-add" onClick={handleAddText}>+</button>
                                         </div>
-                                        <div className="font-size-group" style={{ marginBottom: '1rem' }}>
-                                            {['S', 'M', 'L'].map(scale => (
+                                        <div className="font-size-group" style={{ marginBottom: '0.5rem' }}>
+                                            {[{ scale: 'S', px: 16 }, { scale: 'M', px: 24 }, { scale: 'L', px: 32 }].map(({ scale, px }) => (
                                                 <button
                                                     key={scale}
                                                     className={`btn-size-toggle ${fontSizeScale === scale ? 'active' : ''}`}
                                                     onClick={() => setFontSizeScale(scale)}
+                                                    style={{ fontSize: `${px * 0.55}px`, fontWeight: 800, lineHeight: 1 }}
                                                 >
                                                     {scale}
                                                 </button>
                                             ))}
                                         </div>
+                                        {/* 텍스트 실시간 미리보기 */}
+                                        {inputText && (
+                                            <div className="text-preview-box">
+                                                <span style={{ fontSize: `${{ S: 16, M: 24, L: 32 }[fontSizeScale]}px`, fontWeight: 700, color: '#3D2B1F', wordBreak: 'break-all' }}>
+                                                    {inputText}
+                                                </span>
+                                            </div>
+                                        )}
 
                                         {/* Image Upload Button */}
                                         <button className="btn-sidebar-secondary" onClick={() => itemImageInputRef.current.click()}>
@@ -331,27 +352,43 @@ const FreeTeacherMode = () => {
                                             <div className="empty-tray-msg-small">카드가 없습니다.</div>
                                         )}
                                         {items.map(item => (
-                                            <div key={item.id} className="sidebar-tray-item">
-                                                <div className="sidebar-item-preview">
-                                                    {item.type === 'text' ? (
-                                                        <div style={{ fontSize: '10px' }}>{item.content}</div>
-                                                    ) : (
-                                                        <img src={item.imageUrl} alt="item" />
-                                                    )}
-                                                </div>
-                                                <div className="sidebar-item-controls">
-                                                    {item.type === 'image' && (
-                                                        <input
-                                                            type="range"
-                                                            min="5" max="100"
-                                                            value={item.width}
-                                                            onChange={(e) => updateItemWidth(item.id, parseInt(e.target.value))}
-                                                            className="mini-range-sidebar"
-                                                            title={`크기: ${item.width}%`}
-                                                        />
-                                                    )}
-                                                    <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
-                                                </div>
+                                            <div key={item.id} className={`sidebar-tray-item ${item.type === 'image' ? 'sidebar-tray-item--image' : ''}`}>
+                                                {item.type === 'text' ? (
+                                                    /* 텍스트 카드: 실제 크기 미리보기 */
+                                                    <div className="tray-text-preview">
+                                                        <div className="tray-text-badge">{item.fontSizeScale || 'M'}</div>
+                                                        <span style={{
+                                                            fontSize: `${item.fontSize}px`,
+                                                            fontWeight: 700,
+                                                            color: '#3D2B1F',
+                                                            flex: 1,
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            whiteSpace: 'nowrap'
+                                                        }}>{item.content}</span>
+                                                        <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
+                                                    </div>
+                                                ) : (
+                                                    /* 이미지 카드: 썸네일 + S/M/L/XL 버튼 */
+                                                    <div className="tray-image-card">
+                                                        <div className="tray-image-thumb">
+                                                            <img src={item.imageUrl} alt="item" />
+                                                            <div className="tray-image-size-label">{item.width}%</div>
+                                                        </div>
+                                                        <div className="tray-image-controls">
+                                                            <div className="image-size-buttons">
+                                                                {['S', 'M', 'L', 'XL'].map(s => (
+                                                                    <button
+                                                                        key={s}
+                                                                        className={`btn-img-size ${getImageSizeLabel(item.width) === s ? 'active' : ''}`}
+                                                                        onClick={() => updateItemWidthByScale(item.id, s)}
+                                                                    >{s}</button>
+                                                                ))}
+                                                            </div>
+                                                            <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
