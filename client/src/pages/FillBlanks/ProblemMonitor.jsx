@@ -168,7 +168,7 @@ const ProblemMonitor = ({ problemData }) => {
                     <div
                         key={idx}
                         className="student-card clickable"
-                        onClick={() => setSelectedStudent(student)}
+                        onClick={() => setSelectedStudentName(student.name)}
                     >
                         <div className="student-header">
                             <span className="student-name">{student.name}</span>
