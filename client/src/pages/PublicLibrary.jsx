@@ -16,6 +16,24 @@ import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'fire
 import { useAuth } from '../contexts/AuthContext';
 import './PublicLibrary.css';
 
+const SUBJECTS_MAP = {
+    korean: '국어', english: '영어', math: '수학', social: '사회',
+    science: '과학', arts: '예체능', other: '기타'
+};
+
+const SCHOOL_LEVELS = [
+    { value: 'all', label: '모든 학교급' },
+    { value: 'elementary', label: '초등' },
+    { value: 'middle', label: '중등' },
+    { value: 'high', label: '고등' },
+];
+
+const GRADES_MAP = {
+    elementary: [1, 2, 3, 4, 5, 6],
+    middle: [1, 2, 3],
+    high: [1, 2, 3],
+};
+
 const PublicLibrary = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -23,6 +41,8 @@ const PublicLibrary = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('all');
+    const [filterSchoolLevel, setFilterSchoolLevel] = useState('all');
+    const [filterGrade, setFilterGrade] = useState('all');
 
     useEffect(() => {
         fetchPublicProblems();
@@ -81,7 +101,9 @@ const PublicLibrary = () => {
     const filteredProblems = publicProblems.filter(p => {
         const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesType = filterType === 'all' || p.type === filterType;
-        return matchesSearch && matchesType;
+        const matchesSchool = filterSchoolLevel === 'all' || p.schoolLevel === filterSchoolLevel;
+        const matchesGrade = filterGrade === 'all' || String(p.grade) === String(filterGrade);
+        return matchesSearch && matchesType && matchesSchool && matchesGrade;
     });
 
     const getTypeText = (type) => {
@@ -129,16 +151,43 @@ const PublicLibrary = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                </div>
                 <div className="filter-group">
-                    {['all', 'fill-blanks', 'order-matching', 'free-drop'].map(type => (
-                        <button
-                            key={type}
-                            className={`filter-btn ${filterType === type ? 'active' : ''}`}
-                            onClick={() => setFilterType(type)}
-                        >
-                            {type === 'all' ? '전체' : getTypeText(type)}
-                        </button>
-                    ))}
+                    <select
+                        className="library-select"
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
+                    >
+                        <option value="all">모든 유형</option>
+                        <option value="fill-blanks">빈칸 채우기</option>
+                        <option value="order-matching">순서 맞추기</option>
+                        <option value="free-drop">자유 보드</option>
+                    </select>
+
+                    <select
+                        className="library-select"
+                        value={filterSchoolLevel}
+                        onChange={(e) => {
+                            setFilterSchoolLevel(e.target.value);
+                            setFilterGrade('all');
+                        }}
+                    >
+                        {SCHOOL_LEVELS.map(l => (
+                            <option key={l.value} value={l.value}>{l.label}</option>
+                        ))}
+                    </select>
+
+                    <select
+                        className="library-select"
+                        value={filterGrade}
+                        onChange={(e) => setFilterGrade(e.target.value)}
+                        disabled={filterSchoolLevel === 'all'}
+                    >
+                        <option value="all">모든 학년</option>
+                        {filterSchoolLevel !== 'all' && GRADES_MAP[filterSchoolLevel]?.map(g => (
+                            <option key={g} value={g}>{g}학년</option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
@@ -158,8 +207,15 @@ const PublicLibrary = () => {
                                 </span>
                             </div>
 
-                            <div className="card-body">
+                             <div className="card-body">
                                 <h3 className="problem-title">{problem.title}</h3>
+                                <div className="card-metadata-row">
+                                    {problem.subject && <span className="meta-badge subject">{SUBJECTS_MAP[problem.subject] || problem.subject}</span>}
+                                    {problem.schoolLevel && <span className="meta-badge level">
+                                        {SCHOOL_LEVELS.find(l => l.value === problem.schoolLevel)?.label || problem.schoolLevel}
+                                    </span>}
+                                    {problem.grade && <span className="meta-badge grade">{problem.grade}학년</span>}
+                                </div>
                                 <p className="problem-author">제작: {problem.teacherDisplayName || '선생님'}</p>
                             </div>
 
@@ -175,7 +231,7 @@ const PublicLibrary = () => {
                     ))
                 )}
             </main>
-        </div>
+        </div >
     );
 };
 
