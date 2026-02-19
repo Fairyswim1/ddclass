@@ -154,18 +154,22 @@ const OrderTeacherMode = () => {
                 </div>
             </nav>
 
+            {step === 'input' && (
+                <div className="teacher-top-banner-wrapper">
+                    <div className="teacher-top-banner fade-in compact-banner">
+                        <img src="/character.png" alt="DD" className="dd-mini-character-small" />
+                        <div className="teacher-msg-small">
+                            <strong>오늘의 핵심 내용을 순서대로 구성해봐요! ✨</strong>
+                            <p>아이들이 이해하기 쉽게 한 단계씩 정리해 보세요.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <main className="teacher-main-layout">
                 <div className="teacher-content-area">
                     {step === 'input' && (
                         <>
-                            <div className="teacher-top-banner fade-in compact-banner">
-                                <img src="/character.png" alt="DD" className="dd-mini-character-small" />
-                                <div className="teacher-msg-small">
-                                    <strong>오늘의 핵심 내용을 순서대로 구성해봐요! ✨</strong>
-                                    <p>아이들이 이해하기 쉽게 한 단계씩 정리해 보세요.</p>
-                                </div>
-                            </div>
-
                             <div className="teacher-card fade-in">
                                 <div className="form-section">
                                     <div className="input-group">

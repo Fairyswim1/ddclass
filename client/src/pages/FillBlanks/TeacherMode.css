@@ -19,7 +19,7 @@
     max-width: 1200px;
     width: 100%;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1rem 2rem 2rem 2rem;
 }
 
 .teacher-content-area {
@@ -64,15 +64,21 @@
     display: none;
 }
 
+.teacher-top-banner-wrapper {
+    max-width: 1200px;
+    width: 100%;
+    margin: 1rem auto 0;
+    padding: 0 2rem;
+}
+
 .teacher-top-banner {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0.8rem 1.2rem;
+    padding: 0.6rem 1.2rem;
     background: #FFFDF5;
     border: 1px solid var(--color-brand-yellow);
     border-radius: var(--radius-md);
-    margin-bottom: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 

@@ -152,19 +152,23 @@ const TeacherMode = () => {
                 </div>
             </nav>
 
+            {step === 'input' && (
+                <div className="teacher-top-banner-wrapper">
+                    <div className="teacher-top-banner fade-in compact-banner">
+                        <img src="/character.png" alt="DD" className="dd-mini-character-small" />
+                        <div className="teacher-msg-small">
+                            <strong>멋진 빈칸 채우기 문제를 만들어봐요! ✨</strong>
+                            <p>아이들이 핵심 단어를 추측하며 배울 수 있게 지문을 입력해 보세요.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <main className="teacher-main-layout">
                 <div className="teacher-content-area">
                     {/* STEP 1: 텍스트 입력 */}
                     {step === 'input' && (
                         <>
-                            <div className="teacher-top-banner fade-in compact-banner">
-                                <img src="/character.png" alt="DD" className="dd-mini-character-small" />
-                                <div className="teacher-msg-small">
-                                    <strong>멋진 빈칸 채우기 문제를 만들어봐요! ✨</strong>
-                                    <p>아이들이 핵심 단어를 추측하며 배울 수 있게 지문을 입력해 보세요.</p>
-                                </div>
-                            </div>
-
                             <div className="teacher-card fade-in">
 
                                 <div className="form-section">
