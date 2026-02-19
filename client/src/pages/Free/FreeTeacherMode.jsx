@@ -8,6 +8,7 @@ import { db } from '../../firebase';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import './FreeTeacherMode.css';
+import SubjectGradeSelector from '../../components/SubjectGradeSelector';
 
 // Set worker for PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -26,6 +27,9 @@ const FreeTeacherMode = () => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [createdProblem, setCreatedProblem] = useState(null);
+    const [subject, setSubject] = useState('');
+    const [schoolLevel, setSchoolLevel] = useState('');
+    const [grade, setGrade] = useState('');
 
     // 로그인 체크
     useEffect(() => {
@@ -177,6 +181,10 @@ const FreeTeacherMode = () => {
             alert('제목과 배경 이미지를 설정해주세요.');
             return;
         }
+        if (!schoolLevel) {
+            alert('학교급을 선택해주세요. (필수)');
+            return;
+        }
 
         if (!currentUser) {
             alert('로그인 정보가 없습니다. 다시 로그인해주세요.');
@@ -202,6 +210,9 @@ const FreeTeacherMode = () => {
                 baseWidth: 1000,
                 teacherId: currentUser.uid,
                 isPublic,
+                subject: subject || null,
+                schoolLevel,
+                grade: grade || null,
                 createdAt: serverTimestamp()
             };
 
@@ -295,6 +306,15 @@ const FreeTeacherMode = () => {
                                             onChange={(e) => setTitle(e.target.value)}
                                         />
                                     </div>
+
+                                    <SubjectGradeSelector
+                                        subject={subject}
+                                        setSubject={setSubject}
+                                        schoolLevel={schoolLevel}
+                                        setSchoolLevel={setSchoolLevel}
+                                        grade={grade}
+                                        setGrade={setGrade}
+                                    />
 
                                     <div className="divider"></div>
 

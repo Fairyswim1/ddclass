@@ -7,6 +7,7 @@ import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import './OrderTeacherMode.css';
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
+import SubjectGradeSelector from '../../components/SubjectGradeSelector';
 
 const OrderTeacherMode = () => {
     const navigate = useNavigate();
@@ -17,6 +18,9 @@ const OrderTeacherMode = () => {
     const { currentUser } = useAuth();
     const [createdProblem, setCreatedProblem] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [subject, setSubject] = useState('');
+    const [schoolLevel, setSchoolLevel] = useState('');
+    const [grade, setGrade] = useState('');
 
     // 로그인 체크
     useEffect(() => {
@@ -71,6 +75,10 @@ const OrderTeacherMode = () => {
             alert('모든 단계의 내용을 입력해주세요.');
             return;
         }
+        if (!schoolLevel) {
+            alert('학교급을 선택해주세요. (필수)');
+            return;
+        }
 
         if (!currentUser) {
             alert('로그인 정보가 없습니다. 다시 로그인해주세요.');
@@ -95,16 +103,16 @@ const OrderTeacherMode = () => {
                 type: 'order-matching',
                 pinNumber,
                 title,
-                steps: formattedSteps, // formattedSteps 사용
+                steps: formattedSteps,
                 teacherId: currentUser.uid,
                 isPublic,
+                subject: subject || null,
+                schoolLevel,
+                grade: grade || null,
                 createdAt: serverTimestamp()
             };
 
-            // Firestore에 직접 저장 (조회 프로젝트와 동일성 보장)
-            console.log('[CLIENT-PRE-SAVE] 순서 맞추기 문제 객체:', newProblem);
             await setDoc(doc(db, 'problems', problemId), newProblem);
-            console.log('[CLIENT-SAVE] 순서 맞추기 저장 성공:', problemId, 'Teacher:', currentUser.uid);
 
             const mockBlanks = steps.map((s, i) => ({ id: `step-${i}`, word: s }));
 
@@ -159,14 +167,13 @@ const OrderTeacherMode = () => {
                             </div>
 
                             <div className="teacher-card fade-in">
-
                                 <div className="form-section">
                                     <div className="input-group">
                                         <label>문제 제목</label>
                                         <input
                                             type="text"
                                             className="styled-input"
-                                            placeholder=""
+                                            placeholder="문제 제목을 입력하세요"
                                             value={title}
                                             onChange={(e) => setTitle(e.target.value)}
                                         />
@@ -177,8 +184,17 @@ const OrderTeacherMode = () => {
                                         )}
                                     </div>
 
+                                    <SubjectGradeSelector
+                                        subject={subject}
+                                        setSubject={setSubject}
+                                        schoolLevel={schoolLevel}
+                                        setSchoolLevel={setSchoolLevel}
+                                        grade={grade}
+                                        setGrade={setGrade}
+                                    />
+
                                     <div className="input-group">
-                                        <label>단계 내용 입력</label>
+                                        <label>단계 내용 분할 입력</label>
                                         <p className="helper-text">
                                             아래에서 <strong>직접 한 단계씩 입력</strong>하거나,
                                             <strong>내용을 한꺼번에 붙여넣어</strong> 자동으로 나눌 수 있습니다.
@@ -196,72 +212,72 @@ const OrderTeacherMode = () => {
                                             }}
                                         />
                                     </div>
+                                </div>
 
-                                    <div className="steps-editor-refined">
-                                        <div className="section-header-with-action">
-                                            <label>단계별 확인 및 수정 (정답 순서)</label>
-                                            <button className="btn-text-action" onClick={handleReset}>
-                                                <Trash2 size={14} /> 전체 초기화
-                                            </button>
-                                        </div>
-                                        <p className="helper-text">학생들에게는 이 순서가 무작위로 섞여서 보입니다.</p>
+                                <div className="steps-editor-refined">
+                                    <div className="section-header-with-action">
+                                        <label>단계별 확인 및 수정 (정답 순서)</label>
+                                        <button className="btn-text-action" onClick={handleReset}>
+                                            <Trash2 size={14} /> 전체 초기화
+                                        </button>
+                                    </div>
+                                    <p className="helper-text">학생들에게는 이 순서가 무작위로 섞여서 보입니다.</p>
 
-                                        {steps.map((text, index) => (
-                                            <div key={index} className="step-input-card">
-                                                <div className="step-header">
-                                                    <span className="step-badge">{index + 1}단계</span>
-                                                    <div className="step-actions">
-                                                        <button onClick={() => handleMoveStep(index, 'up')} disabled={index === 0} className="btn-mini-icon">
-                                                            <ArrowUp size={16} />
-                                                        </button>
-                                                        <button onClick={() => handleMoveStep(index, 'down')} disabled={index === steps.length - 1} className="btn-mini-icon">
-                                                            <ArrowDown size={16} />
-                                                        </button>
-                                                        <button onClick={() => handleRemoveStep(index)} className="btn-mini-icon delete" disabled={steps.length <= 2}>
-                                                            <Trash2 size={16} />
-                                                        </button>
-                                                    </div>
+                                    {steps.map((text, index) => (
+                                        <div key={index} className="step-input-card">
+                                            <div className="step-header">
+                                                <span className="step-badge">{index + 1}단계</span>
+                                                <div className="step-actions">
+                                                    <button onClick={() => handleMoveStep(index, 'up')} disabled={index === 0} className="btn-mini-icon">
+                                                        <ArrowUp size={16} />
+                                                    </button>
+                                                    <button onClick={() => handleMoveStep(index, 'down')} disabled={index === steps.length - 1} className="btn-mini-icon">
+                                                        <ArrowDown size={16} />
+                                                    </button>
+                                                    <button onClick={() => handleRemoveStep(index)} className="btn-mini-icon delete" disabled={steps.length <= 2}>
+                                                        <Trash2 size={16} />
+                                                    </button>
                                                 </div>
-                                                <input
-                                                    type="text"
-                                                    className="styled-input-compact"
-                                                    placeholder={`단계 ${index + 1}의 내용을 입력하세요`}
-                                                    value={text}
-                                                    onChange={(e) => handleStepChange(index, e.target.value)}
-                                                />
-                                                {(text.includes('$') || text.includes('\\[')) && (
-                                                    <div className="step-latex-preview-refined">
-                                                        <LatexRenderer text={text} />
-                                                    </div>
-                                                )}
                                             </div>
-                                        ))}
-
-                                        <button className="btn-add-step-refined" onClick={handleAddStep}>
-                                            <Plus size={18} /> 새로운 단계 추가
-                                        </button>
-
-                                        <div className="options-panel-refined" style={{ marginTop: '2rem' }}>
-                                            <label className="custom-checkbox">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isPublic}
-                                                    onChange={(e) => setIsPublic(e.target.checked)}
-                                                />
-                                                <span className="checkmark"></span>
-                                                <span className="checkbox-text">
-                                                    <strong>다른 선생님께 이 문제 공개하기</strong> (라이브러리에 공유)
-                                                </span>
-                                            </label>
+                                            <input
+                                                type="text"
+                                                className="styled-input-compact"
+                                                placeholder={`단계 ${index + 1}의 내용을 입력하세요`}
+                                                value={text}
+                                                onChange={(e) => handleStepChange(index, e.target.value)}
+                                            />
+                                            {(text.includes('$') || text.includes('\\[')) && (
+                                                <div className="step-latex-preview-refined">
+                                                    <LatexRenderer text={text} />
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
+                                    ))}
 
-                                    <div className="action-bar-refined">
-                                        <button className="btn-primary-large" onClick={handleSaveProblem} disabled={isSaving}>
-                                            {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                                            {isSaving ? '저장 중...' : '순서 맞추기 문제 생성 완료'}
-                                        </button>
+                                    <button className="btn-add-step-refined" onClick={handleAddStep}>
+                                        <Plus size={18} /> 새로운 단계 추가
+                                    </button>
+
+                                    <div className="options-panel-refined" style={{ marginTop: '2rem' }}>
+                                        <label className="custom-checkbox">
+                                            <input
+                                                type="checkbox"
+                                                checked={isPublic}
+                                                onChange={(e) => setIsPublic(e.target.checked)}
+                                            />
+                                            <span className="checkmark"></span>
+                                            <span className="checkbox-text">
+                                                <strong>다른 선생님께 이 문제 공개하기</strong> (라이브러리에 공유)
+                                            </span>
+                                        </label>
                                     </div>
+                                </div>
+
+                                <div className="action-bar-refined">
+                                    <button className="btn-primary-large" onClick={handleSaveProblem} disabled={isSaving}>
+                                        {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                                        {isSaving ? '저장 중...' : '순서 맞추기 문제 생성 완료'}
+                                    </button>
                                 </div>
                             </div>
                         </>

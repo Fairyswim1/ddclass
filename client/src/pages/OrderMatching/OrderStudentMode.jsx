@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { ArrowLeft, User, X, Check } from 'lucide-react';
+import { ArrowLeft, User, X, Check, Loader2 } from 'lucide-react';
 import './OrderStudentMode.css';
 import LatexRenderer from '../../components/LatexRenderer';
 import { db } from '../../firebase';
@@ -12,7 +12,7 @@ const OrderStudentMode = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [socket, setSocket] = useState(null);
-    const [step, setStep] = useState('login'); // login, game
+    const [step, setStep] = useState(location.state?.autoJoin ? 'joining' : 'login'); // login, joining, game
     const [pin, setPin] = useState(location.state?.pin || '');
     const [nickname, setNickname] = useState('');
     const [problem, setProblem] = useState(null);
@@ -182,6 +182,17 @@ const OrderStudentMode = () => {
     };
 
     // --- Render ---
+
+    if (step === 'joining') {
+        return (
+            <div className="student-login-container">
+                <div className="login-card-round" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem', gap: '1.5rem' }}>
+                    <Loader2 className="animate-spin" size={48} style={{ color: 'var(--color-brand-yellow)' }} />
+                    <p style={{ color: '#8D7B75', fontSize: '1.1rem' }}>교실에 입장하고 있어요...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (step === 'login') {
         return (

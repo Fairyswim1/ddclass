@@ -9,7 +9,8 @@ import {
     Sparkles,
     Layout,
     Heart,
-    MousePointer2
+    MousePointer2,
+    BookOpen
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import './LandingPage.css';
@@ -60,6 +61,9 @@ const LandingPage = () => {
                     </div>
                 </div>
                 <div className="nav-btns">
+                    <button className="btn-ghost" onClick={() => navigate('/teacher/library')}>
+                        <BookOpen size={18} /> 라이브러리
+                    </button>
                     <button className="btn-ghost" onClick={() => navigate('/student/join')}>
                         <Gamepad2 size={18} /> 학생 참여 (PIN)
                     </button>

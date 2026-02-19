@@ -7,6 +7,7 @@ import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import './TeacherMode.css';
 import ProblemMonitor from './ProblemMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
+import SubjectGradeSelector from '../../components/SubjectGradeSelector';
 
 const TeacherMode = () => {
     const navigate = useNavigate();
@@ -20,6 +21,9 @@ const TeacherMode = () => {
     const { currentUser } = useAuth();
     const [createdProblem, setCreatedProblem] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [subject, setSubject] = useState('');
+    const [schoolLevel, setSchoolLevel] = useState('');
+    const [grade, setGrade] = useState('');
 
     // 로그인 체크
     useEffect(() => {
@@ -33,6 +37,10 @@ const TeacherMode = () => {
     const handleAnalyzeText = () => {
         if (!title.trim() || !inputText.trim()) {
             alert('제목과 내용을 모두 입력해주세요.');
+            return;
+        }
+        if (!schoolLevel) {
+            alert('학교급을 선택해주세요. (필수)');
             return;
         }
 
@@ -95,6 +103,9 @@ const TeacherMode = () => {
                 allowDuplicates,
                 teacherId: currentUser.uid,
                 isPublic,
+                subject: subject || null,
+                schoolLevel,
+                grade: grade || null,
                 createdAt: serverTimestamp()
             };
 
@@ -167,6 +178,14 @@ const TeacherMode = () => {
                                             onChange={(e) => setTitle(e.target.value)}
                                         />
                                     </div>
+                                    <SubjectGradeSelector
+                                        subject={subject}
+                                        setSubject={setSubject}
+                                        schoolLevel={schoolLevel}
+                                        setSchoolLevel={setSchoolLevel}
+                                        grade={grade}
+                                        setGrade={setGrade}
+                                    />
                                     <div className="input-group">
                                         <label>본문 내용</label>
                                         <textarea

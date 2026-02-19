@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { ArrowLeft, User, Layout, MessageCircle } from 'lucide-react';
+import { ArrowLeft, User, Layout, MessageCircle, Loader2 } from 'lucide-react';
 import './FreeStudentMode.css';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
@@ -10,7 +10,7 @@ const FreeStudentMode = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [socket, setSocket] = useState(null);
-    const [step, setStep] = useState('login');
+    const [step, setStep] = useState(location.state?.autoJoin ? 'joining' : 'login');
     const [pin, setPin] = useState(location.state?.pin || '');
     const [nickname, setNickname] = useState('');
     const [problem, setProblem] = useState(null);
@@ -181,6 +181,17 @@ const FreeStudentMode = () => {
             answer: answerData
         });
     };
+
+    if (step === 'joining') {
+        return (
+            <div className="student-login-container">
+                <div className="login-card-round" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem', gap: '1.5rem' }}>
+                    <Loader2 className="animate-spin" size={48} style={{ color: 'var(--color-brand-yellow)' }} />
+                    <p style={{ color: '#8D7B75', fontSize: '1.1rem' }}>교실에 입장하고 있어요...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (step === 'login') {
         return (
