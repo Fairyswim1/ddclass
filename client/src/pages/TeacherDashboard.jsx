@@ -11,6 +11,7 @@ import {
     Lock,
     Copy,
     Trash2,
+    Edit2,
     ArrowRight,
     Loader2,
     Home
@@ -299,6 +300,17 @@ const TeacherDashboard = () => {
                                     onClick={() => navigate(`/monitor/${problem.id}`)}
                                 >
                                     실시간 모니터링 <ArrowRight size={16} />
+                                </button>
+                                <button
+                                    className="btn-icon-secondary"
+                                    onClick={() => {
+                                        const basePath = problem.type === 'fill-blanks' ? '/fill-blanks' :
+                                            problem.type === 'order-matching' ? '/order-matching' : '/free-dnd';
+                                        navigate(`${basePath}/${problem.id}`);
+                                    }}
+                                    title="수정"
+                                >
+                                    <Edit2 size={18} />
                                 </button>
                                 <button
                                     className="btn-icon-danger"

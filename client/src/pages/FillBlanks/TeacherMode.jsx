@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Check, Save, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../firebase';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import './TeacherMode.css';
 import ProblemMonitor from './ProblemMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
@@ -24,6 +24,8 @@ const TeacherMode = () => {
     const [subject, setSubject] = useState('');
     const [schoolLevel, setSchoolLevel] = useState('');
     const [grade, setGrade] = useState('');
+    const { id } = useParams();
+    const [prevPin, setPrevPin] = useState('');
 
     // 로그인 체크
     useEffect(() => {
@@ -32,6 +34,45 @@ const TeacherMode = () => {
             navigate('/teacher/login');
         }
     }, [currentUser, navigate]);
+
+    useEffect(() => {
+        if (id) {
+            fetchProblemForEdit(id);
+        }
+    }, [id]);
+
+    const fetchProblemForEdit = async (problemId) => {
+        try {
+            const docRef = doc(db, 'problems', problemId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                setTitle(data.title);
+                setInputText(data.originalText);
+                setAllowDuplicates(data.allowDuplicates);
+                setIsPublic(data.isPublic || false);
+                setSubject(data.subject || '');
+                setSchoolLevel(data.schoolLevel || '');
+                setGrade(data.grade || '');
+                setPrevPin(data.pinNumber);
+
+                // 텍스트 분석하여 단어와 수식을 분리 (handleAnalyzeText와 동일 로직)
+                const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\S+)/g;
+                const matches = data.originalText.match(regex) || [];
+                setWords(matches);
+
+                // 빈칸 인덱스 복구
+                const restoredBlanks = new Set(data.blanks.map(b => b.index));
+                setBlanks(restoredBlanks);
+
+                // 편집 상태이므로 바로 'create' 스텝으로 이동
+                setStep('create');
+            }
+        } catch (error) {
+            console.error("Error fetching problem for edit:", error);
+            alert("문제 정보를 불러오는 중 오류가 발생했습니다.");
+        }
+    };
 
     // 1. 텍스트 입력 후 분석
     const handleAnalyzeText = () => {
@@ -99,9 +140,9 @@ const TeacherMode = () => {
         try {
             setIsSaving(true);
 
-            // 클라이언트에서 ID 및 PIN 생성
-            const problemId = Math.random().toString(36).substr(2, 9);
-            const pinNumber = Math.floor(100000 + Math.random() * 900000).toString();
+            // 편집 모드면 기존 ID와 PIN 사용, 아니면 새로 생성
+            const problemId = id || Math.random().toString(36).substr(2, 9);
+            const pinNumber = id ? prevPin : Math.floor(100000 + Math.random() * 900000).toString();
 
             const newProblem = {
                 id: problemId,
@@ -116,7 +157,7 @@ const TeacherMode = () => {
                 subject: subject || null,
                 schoolLevel,
                 grade: grade || null,
-                createdAt: serverTimestamp()
+                createdAt: id ? serverTimestamp() : serverTimestamp() // 수정일로 관리하고 싶다면 updatedAt 추가 가능
             };
 
             // Firestore에 직접 저장 (조회 프로젝트와 동일성 보장)

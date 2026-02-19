@@ -28,15 +28,15 @@ function App() {
           <Route path="/" element={<LandingPage />} />
 
           {/* 기능 1: 빈칸 채우기 */}
-          <Route path="/fill-blanks" element={<TeacherMode />} />
+          <Route path="/fill-blanks/:id?" element={<TeacherMode />} />
           <Route path="/student/fill-blanks" element={<StudentMode />} />
 
           {/* 기능 2: 순서 맞추기 */}
-          <Route path="/order-matching" element={<OrderTeacherMode />} />
+          <Route path="/order-matching/:id?" element={<OrderTeacherMode />} />
           <Route path="/student/order-matching" element={<OrderStudentMode />} />
 
           {/* 기능 3: 자유 드래그앤드롭 */}
-          <Route path="/free-dnd" element={<FreeTeacherMode />} />
+          <Route path="/free-dnd/:id?" element={<FreeTeacherMode />} />
           <Route path="/free-dnd/monitor/:id" element={<FreeMonitor />} />
           <Route path="/student/free-dnd" element={<FreeStudentMode />} />
 

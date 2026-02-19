@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Upload, Type, Save, ArrowLeft, Image as ImageIcon, Plus, Trash2, Layout, Maximize2, Loader2, Check } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../firebase';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import './FreeTeacherMode.css';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
@@ -30,6 +30,8 @@ const FreeTeacherMode = () => {
     const [subject, setSubject] = useState('');
     const [schoolLevel, setSchoolLevel] = useState('');
     const [grade, setGrade] = useState('');
+    const { id } = useParams();
+    const [prevPin, setPrevPin] = useState('');
 
     // 로그인 체크
     useEffect(() => {
@@ -38,6 +40,34 @@ const FreeTeacherMode = () => {
             navigate('/teacher/login');
         }
     }, [currentUser, navigate]);
+
+    useEffect(() => {
+        if (id) {
+            fetchProblemForEdit(id);
+        }
+    }, [id]);
+
+    const fetchProblemForEdit = async (problemId) => {
+        try {
+            const docRef = doc(db, 'problems', problemId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                setTitle(data.title);
+                setBackgroundUrl(data.backgroundUrl || '');
+                setItems(data.items || []);
+                setAspectRatio(data.aspectRatio || 16 / 9);
+                setIsPublic(data.isPublic || false);
+                setSubject(data.subject || '');
+                setSchoolLevel(data.schoolLevel || '');
+                setGrade(data.grade || '');
+                setPrevPin(data.pinNumber);
+            }
+        } catch (error) {
+            console.error("Error fetching problem for edit:", error);
+            alert("문제 정보를 불러오는 중 오류가 발생했습니다.");
+        }
+    };
 
     const fileInputRef = useRef(null);
     const itemImageInputRef = useRef(null);
@@ -199,9 +229,9 @@ const FreeTeacherMode = () => {
         try {
             setIsSaving(true);
 
-            // 클라이언트에서 ID 및 PIN 생성
-            const problemId = Math.random().toString(36).substr(2, 9);
-            const pinNumber = Math.floor(100000 + Math.random() * 900000).toString();
+            // 편집 모드면 기존 ID와 PIN 사용
+            const problemId = id || Math.random().toString(36).substr(2, 9);
+            const pinNumber = id ? prevPin : Math.floor(100000 + Math.random() * 900000).toString();
 
             const newProblem = {
                 id: problemId,
@@ -217,7 +247,7 @@ const FreeTeacherMode = () => {
                 subject: subject || null,
                 schoolLevel,
                 grade: grade || null,
-                createdAt: serverTimestamp()
+                createdAt: id ? serverTimestamp() : serverTimestamp()
             };
 
             // Firestore에 직접 저장

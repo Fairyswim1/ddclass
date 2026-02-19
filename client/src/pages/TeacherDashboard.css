@@ -391,8 +391,27 @@
 }
 
 .btn-icon-danger:hover {
-    background: #DC2626;
-    color: white;
+    background: #FFF5F5;
+    color: #E65A5A;
+}
+
+.btn-icon-secondary {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 2px solid #F0EEE9;
+    color: #4A90E2;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.btn-icon-secondary:hover {
+    background: #F0F7FF;
+    border-color: #4A90E2;
 }
 
 /* Empty State */
