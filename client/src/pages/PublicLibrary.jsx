@@ -151,7 +151,6 @@ const PublicLibrary = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                </div>
                 <div className="filter-group">
                     <select
                         className="library-select"
@@ -207,7 +206,7 @@ const PublicLibrary = () => {
                                 </span>
                             </div>
 
-                             <div className="card-body">
+                            <div className="card-body">
                                 <h3 className="problem-title">{problem.title}</h3>
                                 <div className="card-metadata-row">
                                     {problem.subject && <span className="meta-badge subject">{SUBJECTS_MAP[problem.subject] || problem.subject}</span>}

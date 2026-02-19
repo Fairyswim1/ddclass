@@ -215,9 +215,8 @@ const TeacherDashboard = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                </div>
                 <div className="filter-group">
-                    <select 
+                    <select
                         className="dashboard-select"
                         value={filterType}
                         onChange={(e) => setFilterType(e.target.value)}
@@ -228,7 +227,7 @@ const TeacherDashboard = () => {
                         <option value="free-drop">자유 보드</option>
                     </select>
 
-                    <select 
+                    <select
                         className="dashboard-select"
                         value={filterSchoolLevel}
                         onChange={(e) => {
@@ -241,7 +240,7 @@ const TeacherDashboard = () => {
                         ))}
                     </select>
 
-                    <select 
+                    <select
                         className="dashboard-select"
                         value={filterGrade}
                         onChange={(e) => setFilterGrade(e.target.value)}
