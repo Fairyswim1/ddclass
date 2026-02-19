@@ -365,10 +365,13 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    background: var(--color-brand-orange);
+    background-color: var(--color-brand-orange);
     color: white;
+    box-shadow: 0 4px 0 #EA580C;
+    white-space: nowrap;
+    min-width: 160px;
+    padding: 0.8rem 1.2rem;
     border: none;
-    padding: 0.8rem;
     border-radius: 12px;
     font-weight: 700;
     cursor: pointer;

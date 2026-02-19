@@ -37,28 +37,34 @@ const StudentPreviewModal = ({ isOpen, onClose, problem }) => {
                 <header style={{
                     padding: '1.2rem 2rem', borderBottom: '2px solid #F0EEE9',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    background: '#FCFBFA'
+                    background: 'white'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                         <div style={{
-                            background: 'var(--color-brand-blue)', color: 'white',
-                            padding: '8px', borderRadius: '12px'
+                            color: 'black',
+                            display: 'flex', alignItems: 'center'
                         }}>
-                            <Eye size={20} />
+                            <Eye size={24} />
                         </div>
                         <div>
-                            <h2 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--color-brand-brown)' }}>학생 화면 미리보기</h2>
-                            <p style={{ margin: 0, fontSize: '0.85rem', color: '#8D7B75' }}>실제 학생이 보게 될 화면과 인터랙션을 미리 체험해보세요.</p>
+                            <h2 style={{ margin: 0, fontSize: '1.3rem', color: 'black', fontWeight: '800' }}>학생 화면 미리보기</h2>
+                            <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>실제 학생이 보게 될 화면과 인터랙션을 미리 체험해보세요.</p>
                         </div>
                     </div>
                     <button onClick={onClose} style={{
-                        background: '#F0EEE9', border: 'none', borderRadius: '50%',
-                        width: '36px', height: '36px', display: 'flex', alignItems: 'center',
+                        background: '#f3f4f6', border: '2px solid #e5e7eb', borderRadius: '12px',
+                        width: '40px', height: '40px', display: 'flex', alignItems: 'center',
                         justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s',
-                        color: '#8D7B75'
-                    }} onMouseOver={e => e.currentTarget.style.background = '#E5E7EB'}
-                        onMouseOut={e => e.currentTarget.style.background = '#F0EEE9'}>
-                        <X size={20} />
+                        color: 'black'
+                    }} onMouseOver={e => {
+                        e.currentTarget.style.background = '#e5e7eb';
+                        e.currentTarget.style.transform = 'scale(1.05)';
+                    }}
+                        onMouseOut={e => {
+                            e.currentTarget.style.background = '#f3f4f6';
+                            e.currentTarget.style.transform = 'scale(1)';
+                        }}>
+                        <X size={24} strokeWidth={3} />
                     </button>
                 </header>
 
