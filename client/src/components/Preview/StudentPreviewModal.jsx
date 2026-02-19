@@ -51,21 +51,7 @@ const StudentPreviewModal = ({ isOpen, onClose, problem }) => {
                             <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>실제 학생이 보게 될 화면과 인터랙션을 미리 체험해보세요.</p>
                         </div>
                     </div>
-                    <button onClick={onClose} style={{
-                        background: '#f3f4f6', border: '2px solid #e5e7eb', borderRadius: '12px',
-                        width: '40px', height: '40px', display: 'flex', alignItems: 'center',
-                        justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s',
-                        color: 'black'
-                    }} onMouseOver={e => {
-                        e.currentTarget.style.background = '#e5e7eb';
-                        e.currentTarget.style.transform = 'scale(1.05)';
-                    }}
-                        onMouseOut={e => {
-                            e.currentTarget.style.background = '#f3f4f6';
-                            e.currentTarget.style.transform = 'scale(1)';
-                        }}>
-                        <X size={24} strokeWidth={3} />
-                    </button>
+
                 </header>
 
                 <div style={{ flex: 1, overflowY: 'auto', background: '#F9F8F6' }}>

@@ -1,16 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-    Search,
-    Download,
-    BookOpen,
-    ArrowLeft,
-    SearchX,
-    Filter,
-    Clock,
-    User,
-    Eye
-} from 'lucide-react';
+
 import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
