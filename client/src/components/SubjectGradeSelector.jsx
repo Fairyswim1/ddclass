@@ -34,55 +34,50 @@ const SubjectGradeSelector = ({ subject, setSubject, schoolLevel, setSchoolLevel
             {/* 과목 선택 */}
             <div className="sg-group">
                 <label className="sg-label">과목</label>
-                <div className="sg-chips">
+                <select
+                    className="sg-select"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                >
+                    <option value="">과목 선택</option>
                     {SUBJECTS.map(s => (
-                        <button
-                            key={s.value}
-                            type="button"
-                            className={`sg-chip ${subject === s.value ? 'active' : ''}`}
-                            onClick={() => setSubject(subject === s.value ? '' : s.value)}
-                        >
-                            {s.label}
-                        </button>
+                        <option key={s.value} value={s.value}>{s.label}</option>
                     ))}
-                </div>
+                </select>
             </div>
 
-            {/* 학교급 선택 (필수) */}
-            <div className="sg-group">
-                <label className="sg-label">학교급 <span className="sg-required">*필수</span></label>
-                <div className="sg-chips">
-                    {SCHOOL_LEVELS.map(l => (
-                        <button
-                            key={l.value}
-                            type="button"
-                            className={`sg-chip level ${schoolLevel === l.value ? 'active' : ''}`}
-                            onClick={() => handleSchoolLevelChange(l.value)}
-                        >
-                            {l.label}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* 학년 선택 (선택) */}
-            {schoolLevel && (
-                <div className="sg-group">
-                    <label className="sg-label">학년 <span className="sg-optional">선택</span></label>
-                    <div className="sg-chips">
-                        {GRADES_MAP[schoolLevel]?.map(g => (
-                            <button
-                                key={g}
-                                type="button"
-                                className={`sg-chip grade ${grade === g ? 'active' : ''}`}
-                                onClick={() => setGrade(grade === g ? '' : g)}
-                            >
-                                {g}학년
-                            </button>
+            <div className="sg-row">
+                {/* 학교급 선택 (필수) */}
+                <div className="sg-group flex-1">
+                    <label className="sg-label">학교급 <span className="sg-required">*필수</span></label>
+                    <select
+                        className="sg-select"
+                        value={schoolLevel}
+                        onChange={(e) => handleSchoolLevelChange(e.target.value)}
+                    >
+                        <option value="">학교급 선택</option>
+                        {SCHOOL_LEVELS.map(l => (
+                            <option key={l.value} value={l.value}>{l.label}</option>
                         ))}
-                    </div>
+                    </select>
                 </div>
-            )}
+
+                {/* 학년 선택 (선택) */}
+                <div className="sg-group flex-1">
+                    <label className="sg-label">학년 <span className="sg-optional">선택</span></label>
+                    <select
+                        className="sg-select"
+                        value={grade}
+                        onChange={(e) => setGrade(e.target.value)}
+                        disabled={!schoolLevel}
+                    >
+                        <option value="">학년 선택</option>
+                        {schoolLevel && GRADES_MAP[schoolLevel]?.map(g => (
+                            <option key={g} value={g}>{g}학년</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
         </div>
     );
 };

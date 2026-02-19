@@ -261,7 +261,7 @@ const FreeTeacherMode = () => {
                         {/* Top: Guide (Horizontal) */}
                         <div className="top-guide-bar">
                             <div className="guide-card-horizontal">
-                                <h3>어떻게 만드나요? ☁️</h3>
+                                <h3>자유 보드 구성 가이드 ☁️</h3>
                                 <div className="guide-steps-horizontal">
                                     <div className="guide-step-item-h active">
                                         <div className="step-num-h">1</div>

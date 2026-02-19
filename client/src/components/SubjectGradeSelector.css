@@ -38,58 +38,48 @@
     color: #B2A49E;
 }
 
-.sg-chips {
+.sg-row {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    gap: 1rem;
+    width: 100%;
 }
 
-.sg-chip {
-    padding: 0.45rem 1rem;
-    border-radius: var(--radius-round);
+.flex-1 {
+    flex: 1;
+}
+
+.sg-select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
     border: 2px solid #EEE6D8;
     background: white;
-    color: var(--color-text-primary);
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.sg-chip:hover {
-    border-color: var(--color-brand-yellow);
-    background: #FFFDF5;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 0 rgba(0,0,0,0.04);
-}
-
-.sg-chip.active {
-    background: var(--color-brand-yellow);
-    border-color: #E6B400;
     color: var(--color-text-primary);
-    box-shadow: 0 3px 0 #E6B400;
-    transform: translateY(-1px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238D7B75' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.8rem center;
+    background-size: 1.2rem;
 }
 
-.sg-chip.level.active {
-    background: var(--color-brand-green);
-    border-color: #7BBF8E;
-    box-shadow: 0 3px 0 #7BBF8E;
+.sg-select:focus {
+    border-color: var(--color-brand-yellow);
+    box-shadow: 0 0 0 4px rgba(255, 206, 68, 0.1);
 }
 
-.sg-chip.grade.active {
-    background: var(--color-brand-blue);
-    border-color: #3A9AE8;
-    color: white;
-    box-shadow: 0 3px 0 #3A9AE8;
+.sg-select:disabled {
+    background-color: #F5F5F5;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
-.sg-chip:active {
-    transform: translateY(1px);
-    box-shadow: none;
+.sg-chips {
+    display: none;
+    /* 드롭다운으로 변경되었으므로 숨김 또는 제거 가능 */
 }
