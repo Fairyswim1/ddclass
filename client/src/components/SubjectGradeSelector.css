@@ -40,7 +40,8 @@
 
 .sg-row {
     display: flex;
-    gap: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     width: 100%;
 }
 

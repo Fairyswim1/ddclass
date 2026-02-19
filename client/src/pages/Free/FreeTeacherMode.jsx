@@ -422,7 +422,7 @@ const FreeTeacherMode = () => {
                                                 checked={isPublic}
                                                 onChange={(e) => setIsPublic(e.target.checked)}
                                             />
-                                            <span className="toggle-text">다른 선생님께 이 문제 공개하기</span>
+                                            <span className="toggle-text">&nbsp; 다른 선생님께 이 문제 공개하기</span>
                                         </label>
                                     </div>
                                     <button className="btn-save-all" onClick={handleSave} disabled={isSaving}>
