@@ -53,34 +53,25 @@ const StudentPreviewModal = ({ isOpen, onClose, problem }) => {
                         </div>
                     </div>
 
-                    {/* 개선된 닫기 버튼: 가시성 극대화 */}
+                    {/* 단순화된 닫기 버튼: 배경/애니메이션 제거, 검정색 X */}
                     <button
                         onClick={onClose}
                         style={{
-                            background: '#111827',
+                            background: 'transparent',
                             border: 'none',
-                            borderRadius: '16px',
-                            width: '48px',
-                            height: '48px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             cursor: 'pointer',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            color: 'white',
-                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                            color: 'black',
+                            padding: '8px',
+                            transition: 'opacity 0.2s'
                         }}
-                        onMouseOver={e => {
-                            e.currentTarget.style.background = '#000';
-                            e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)';
-                        }}
-                        onMouseOut={e => {
-                            e.currentTarget.style.background = '#111827';
-                            e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
-                        }}
+                        onMouseOver={e => e.currentTarget.style.opacity = '0.6'}
+                        onMouseOut={e => e.currentTarget.style.opacity = '1'}
                         aria-label="닫기"
                     >
-                        <X size={32} strokeWidth={3} />
+                        <X size={36} strokeWidth={2.5} />
                     </button>
                 </header>
 
