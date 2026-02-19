@@ -12,14 +12,17 @@ import {
     Copy,
     Trash2,
     Edit2,
-    ArrowRight,
-    Loader2,
     Home,
-    Eye
+    Eye,
+    Loader2,
+    User,
+    Check,
+    X as CloseIcon,
+    RefreshCw
 } from 'lucide-react';
 import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, deleteDoc, doc, setDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import './TeacherDashboard.css';
 
@@ -42,12 +45,17 @@ const GRADES_MAP = {
 };
 
 const TeacherDashboard = () => {
-    const { currentUser, loading: authLoading } = useAuth();
+    const { currentUser, nickname, setNickname, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     const [problems, setProblems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Nickname editing state
+    const [isEditingNickname, setIsEditingNickname] = useState(false);
+    const [newNickname, setNewNickname] = useState('');
+    const [isSyncing, setIsSyncing] = useState(false);
 
     // Preview state
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -67,7 +75,8 @@ const TeacherDashboard = () => {
             return;
         }
         fetchMyProblems();
-    }, [currentUser, authLoading]);
+        setNewNickname(nickname);
+    }, [currentUser, authLoading, nickname]);
 
     const fetchMyProblems = async () => {
         if (!currentUser) return;
@@ -75,14 +84,12 @@ const TeacherDashboard = () => {
         try {
             setLoading(true);
             setError(null);
-            console.log('Fetching problems for UID:', currentUser.uid);
 
             const q = query(
                 collection(db, 'problems'),
                 where('teacherId', '==', currentUser.uid)
             );
             const querySnapshot = await getDocs(q);
-            console.log('Fetched documents count:', querySnapshot.size);
 
             const items = querySnapshot.docs.map(doc => ({
                 id: doc.id,
@@ -100,16 +107,52 @@ const TeacherDashboard = () => {
                 return getTime(b.createdAt) - getTime(a.createdAt);
             });
 
-            console.log('Processed items:', items);
-            if (items.length === 0) {
-                console.warn('[DASHBOARD] No problems found for teacher:', currentUser.uid);
-            }
             setProblems(items);
         } catch (error) {
             console.error("Error fetching problems:", error);
             setError("문제를 불러오는 중 오류가 발생했습니다: " + error.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleNicknameUpdate = async () => {
+        if (!newNickname.trim()) return;
+        try {
+            await setDoc(doc(db, 'profiles', currentUser.uid), {
+                nickname: newNickname.trim(),
+                updatedAt: serverTimestamp()
+            }, { merge: true });
+
+            setNickname(newNickname.trim());
+            setIsEditingNickname(false);
+            alert('닉네임이 성공적으로 변경되었습니다!');
+        } catch (error) {
+            alert('닉네임 변경 실패: ' + error.message);
+        }
+    };
+
+    const syncNicknameToProblems = async () => {
+        if (!window.confirm('모든 기존 문제의 제작자명을 현재 닉네임으로 업데이트하시겠습니까? (이 작업은 몇 초 정도 걸릴 수 있습니다)')) return;
+        try {
+            setIsSyncing(true);
+            const batch = writeBatch(db);
+            const q = query(collection(db, 'problems'), where('teacherId', '==', currentUser.uid));
+            const querySnapshot = await getDocs(q);
+
+            querySnapshot.forEach((document) => {
+                batch.update(doc(db, 'problems', document.id), {
+                    teacherDisplayName: nickname
+                });
+            });
+
+            await batch.commit();
+            alert(`${querySnapshot.size}개의 문제에 새로운 닉네임이 적용되었습니다.`);
+            fetchMyProblems();
+        } catch (error) {
+            alert('일괄 업데이트 실패: ' + error.message);
+        } finally {
+            setIsSyncing(false);
         }
     };
 
@@ -219,6 +262,96 @@ const TeacherDashboard = () => {
                 </div>
             </header>
 
+            {/* Nickname Editor Section */}
+            <section className="profile-section" style={{
+                background: '#fff',
+                margin: '0 2rem 1.5rem',
+                padding: '1.2rem 1.5rem',
+                borderRadius: '20px',
+                border: '2px solid #F0EEE9',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '1rem'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{
+                        background: 'var(--color-brand-orange-light, #FFF3E0)',
+                        color: 'var(--color-brand-orange, #FF6D00)',
+                        padding: '10px',
+                        borderRadius: '12px'
+                    }}>
+                        <User size={24} />
+                    </div>
+                    <div>
+                        {isEditingNickname ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <input
+                                    type="text"
+                                    value={newNickname}
+                                    onChange={(e) => setNewNickname(e.target.value)}
+                                    placeholder="닉네임 입력"
+                                    style={{
+                                        padding: '0.6rem 1rem',
+                                        borderRadius: '10px',
+                                        border: '2px solid var(--color-brand-orange)',
+                                        fontSize: '1rem',
+                                        fontWeight: '700',
+                                        width: '180px'
+                                    }}
+                                    autoFocus
+                                />
+                                <button className="btn-icon-success" onClick={handleNicknameUpdate} title="저장">
+                                    <Check size={20} />
+                                </button>
+                                <button className="btn-icon-danger" onClick={() => {
+                                    setIsEditingNickname(false);
+                                    setNewNickname(nickname);
+                                }} title="취소">
+                                    <CloseIcon size={20} />
+                                </button>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                                <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800' }}>
+                                    {nickname} <span style={{ fontWeight: '500', color: '#666', fontSize: '0.9rem' }}>선생님 반가워요!</span>
+                                </h2>
+                                <button className="btn-icon-subtle" onClick={() => setIsEditingNickname(true)} title="닉네임 수정">
+                                    <Edit2 size={16} />
+                                </button>
+                            </div>
+                        )}
+                        <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#888' }}>
+                            라이브러리에 공유되는 문제의 제작자 닉네임입니다.
+                        </p>
+                    </div>
+                </div>
+
+                <button
+                    className="btn-sync-nickname"
+                    onClick={syncNicknameToProblems}
+                    disabled={isSyncing}
+                    style={{
+                        padding: '0.6rem 1rem',
+                        background: 'white',
+                        border: '2px solid #E5E7EB',
+                        borderRadius: '12px',
+                        fontSize: '0.9rem',
+                        fontWeight: '600',
+                        color: '#4B5563',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        cursor: isSyncing ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
+                    기존 모든 문제에 닉네임 일체화
+                </button>
+            </section>
+
             <div className="dashboard-controls">
                 <div className="search-bar">
                     <Search size={20} />
@@ -268,76 +401,80 @@ const TeacherDashboard = () => {
                 </div>
             </div>
 
-            <main className="dashboard-grid">
+            <main className="problems-grid">
                 {filteredProblems.length === 0 ? (
                     <div className="empty-state">
-                        <div className="empty-icon">📂</div>
-                        <h3>표시할 문제가 없습니다.</h3>
-                        <p>새로운 문제를 만들거나 검색어/필터를 조정해보세요.</p>
+                        <Search size={48} className="empty-icon" />
+                        <h3>등록된 문제가 없습니다.</h3>
+                        <p>'새 문제 만들기' 버튼을 눌러 첫 문제를 제작해보세요!</p>
                     </div>
                 ) : (
                     filteredProblems.map(problem => (
-                        <div key={problem.id} className="problem-card-refined">
+                        <div key={problem.id} className="problem-card">
                             <div className="card-top">
                                 <span className={`type-badge ${problem.type}`}>
                                     {getTypeIcon(problem.type)} {getTypeText(problem.type)}
                                 </span>
-                                <span className={`visibility-badge ${problem.isPublic ? 'public' : 'private'}`}>
-                                    {problem.isPublic ? <Globe size={14} /> : <Lock size={14} />}
-                                    {problem.isPublic ? '공개' : '비공개'}
-                                </span>
+                                <div className="card-actions">
+                                    <button
+                                        className="btn-icon-secondary"
+                                        onClick={() => handlePreview(problem)}
+                                        title="학생 화면 미리보기"
+                                    >
+                                        <Eye size={18} />
+                                    </button>
+                                    <button
+                                        className="btn-icon-edit"
+                                        onClick={() => navigate(`/${problem.type}?id=${problem.id}`)}
+                                        title="문제 수정"
+                                    >
+                                        <Edit2 size={18} />
+                                    </button>
+                                    <button
+                                        className="btn-icon-delete"
+                                        onClick={() => handleDelete(problem.id)}
+                                        title="문제 삭제"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="card-body">
                                 <h3 className="problem-title">{problem.title}</h3>
-                                <div className="card-metadata-row">
-                                    {problem.subject && <span className="meta-badge subject">{SUBJECTS_MAP[problem.subject] || problem.subject}</span>}
-                                    {problem.schoolLevel && <span className="meta-badge level">
+                                <div className="card-metadata">
+                                    {problem.subject && <span className="meta-item subject">{SUBJECTS_MAP[problem.subject] || problem.subject}</span>}
+                                    {problem.schoolLevel && <span className="meta-item level">
                                         {SCHOOL_LEVELS.find(l => l.value === problem.schoolLevel)?.label || problem.schoolLevel}
                                     </span>}
-                                    {problem.grade && <span className="meta-badge grade">{problem.grade}학년</span>}
+                                    {problem.grade && <span className="meta-item grade">{problem.grade}학년</span>}
                                 </div>
-                                <div className="problem-meta">
-                                    <span className="pin-tag" onClick={() => copyPin(problem.pinNumber)}>
-                                        <Copy size={14} /> PIN: {problem.pinNumber}
-                                    </span>
-                                    <span className="date-tag">
-                                        <Clock size={14} /> {problem.createdAt?.toDate().toLocaleDateString()}
-                                    </span>
+                                <div className="card-stats">
+                                    <div className="stat-item">
+                                        <Clock size={14} />
+                                        <span>생성: {problem.createdAt?.seconds ? new Date(problem.createdAt.seconds * 1000).toLocaleDateString() : '최근'}</span>
+                                    </div>
+                                    <div className="stat-item public-status">
+                                        {problem.isPublic ? (
+                                            <><Globe size={14} className="icon-public" /> <span>전체 공개 중</span></>
+                                        ) : (
+                                            <><Lock size={14} className="icon-private" /> <span>나만 보기</span></>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="card-footer">
+                                <div className="pin-display" onClick={() => copyPin(problem.pinNumber)} title="클릭하여 PIN 복사">
+                                    <span className="pin-label">PIN:</span>
+                                    <span className="pin-value">{problem.pinNumber}</span>
+                                    <Copy size={16} className="pin-copy-icon" />
+                                </div>
                                 <button
                                     className="btn-action start"
-                                    onClick={() => navigate(`/monitor/${problem.id}`)}
+                                    onClick={() => navigate(`/teacher/monitor/${problem.pinNumber}`)}
                                 >
-                                    실시간 모니터링 <ArrowRight size={16} />
-                                </button>
-                                <button
-                                    className="btn-icon-secondary"
-                                    onClick={() => handlePreview(problem)}
-                                    title="학생 화면 미리보기"
-                                >
-                                    <Eye size={18} />
-                                </button>
-                                <button
-                                    className="btn-icon-secondary"
-                                    onClick={() => {
-                                        const basePath = problem.type === 'fill-blanks' ? '/fill-blanks' :
-                                            problem.type === 'order-matching' ? '/order-matching' : '/free-dnd';
-                                        navigate(`${basePath}/${problem.id}`);
-                                    }}
-                                    title="수정"
-                                >
-                                    <Edit2 size={18} />
-                                </button>
-                                <button
-                                    className="btn-icon-danger"
-                                    onClick={() => handleDelete(problem.id)}
-                                    title="삭제"
-                                >
-                                    <Trash2 size={18} />
+                                    실시간 모니터링
                                 </button>
                             </div>
                         </div>

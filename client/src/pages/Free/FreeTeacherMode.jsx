@@ -20,7 +20,7 @@ const FreeTeacherMode = () => {
     const [backgroundUrl, setBackgroundUrl] = useState('');
     const [items, setItems] = useState([]); // { id, content, type, width, fontSize }
     const [isPublic, setIsPublic] = useState(false);
-    const { currentUser } = useAuth();
+    const { currentUser, nickname } = useAuth();
     const [inputText, setInputText] = useState('');
     const [fontSizeScale, setFontSizeScale] = useState('M'); // S, M, L
     const [aspectRatio, setAspectRatio] = useState(16 / 9);
@@ -243,11 +243,12 @@ const FreeTeacherMode = () => {
                 aspectRatio,
                 baseWidth: 1000,
                 teacherId: currentUser.uid,
+                teacherDisplayName: nickname || '선생님',
                 isPublic,
                 subject: subject || null,
                 schoolLevel,
                 grade: grade || null,
-                createdAt: id ? serverTimestamp() : serverTimestamp()
+                createdAt: serverTimestamp()
             };
 
             // Firestore에 직접 저장

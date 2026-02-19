@@ -18,7 +18,7 @@ const TeacherMode = () => {
     const [blanks, setBlanks] = useState(new Set()); // Set of indices
     const [allowDuplicates, setAllowDuplicates] = useState(false); // 단어 중복 사용 허용 여부
     const [isPublic, setIsPublic] = useState(false);
-    const { currentUser } = useAuth();
+    const { currentUser, nickname } = useAuth();
     const [createdProblem, setCreatedProblem] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [subject, setSubject] = useState('');
@@ -56,16 +56,13 @@ const TeacherMode = () => {
                 setGrade(data.grade || '');
                 setPrevPin(data.pinNumber);
 
-                // 텍스트 분석하여 단어와 수식을 분리 (handleAnalyzeText와 동일 로직)
                 const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\S+)/g;
                 const matches = data.originalText.match(regex) || [];
                 setWords(matches);
 
-                // 빈칸 인덱스 복구
                 const restoredBlanks = new Set(data.blanks.map(b => b.index));
                 setBlanks(restoredBlanks);
 
-                // 편집 상태이므로 바로 'create' 스텝으로 이동
                 setStep('create');
             }
         } catch (error) {
@@ -74,7 +71,6 @@ const TeacherMode = () => {
         }
     };
 
-    // 1. 텍스트 입력 후 분석
     const handleAnalyzeText = () => {
         if (!title.trim() || !inputText.trim()) {
             alert('제목과 내용을 모두 입력해주세요.');
@@ -85,12 +81,6 @@ const TeacherMode = () => {
             return;
         }
 
-        // 텍스트를 분석하여 단어와 수식을 분리
-        // 1. \[ ... \] : 디스플레이 수식
-        // 2. \( ... \) : 인라인 수식
-        // 3. $ ... $ : 인라인 수식
-        // 5. \begin{...}...\end{...} : LaTeX 환경 블록
-        // 6. \S+ : 일반 단어
         const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\S+)/g;
         const matches = inputText.match(regex) || [];
 
@@ -98,7 +88,6 @@ const TeacherMode = () => {
         setStep('create');
     };
 
-    // 2. 단어 클릭하여 빈칸 토글
     const toggleBlank = (index) => {
         const newBlanks = new Set(blanks);
         if (newBlanks.has(index)) {
@@ -109,7 +98,6 @@ const TeacherMode = () => {
         setBlanks(newBlanks);
     };
 
-    // 3. 문제 저장 및 서버 전송
     const handleSaveProblem = async () => {
         if (blanks.size === 0) {
             alert('최소 하나 이상의 빈칸을 지정해주세요.');
@@ -140,8 +128,6 @@ const TeacherMode = () => {
 
         try {
             setIsSaving(true);
-
-            // 편집 모드면 기존 ID와 PIN 사용, 아니면 새로 생성
             const problemId = id || Math.random().toString(36).substr(2, 9);
             const pinNumber = id ? prevPin : Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -154,17 +140,15 @@ const TeacherMode = () => {
                 blanks: blankList,
                 allowDuplicates,
                 teacherId: currentUser.uid,
+                teacherDisplayName: nickname || '선생님',
                 isPublic,
                 subject: subject || null,
                 schoolLevel,
                 grade: grade || null,
-                createdAt: id ? serverTimestamp() : serverTimestamp() // 수정일로 관리하고 싶다면 updatedAt 추가 가능
+                createdAt: serverTimestamp()
             };
 
-            // Firestore에 직접 저장 (조회 프로젝트와 동일성 보장)
-            console.log('[CLIENT-PRE-SAVE] 빈칸 문제 객체:', newProblem);
             await setDoc(doc(db, 'problems', problemId), newProblem);
-            console.log('[CLIENT-SAVE] 빈칸 문제 저장 성공:', problemId, 'Teacher:', currentUser.uid);
 
             setCreatedProblem({
                 id: problemId,
@@ -218,54 +202,49 @@ const TeacherMode = () => {
 
             <main className="teacher-main-layout">
                 <div className="teacher-content-area">
-                    {/* STEP 1: 텍스트 입력 */}
                     {step === 'input' && (
-                        <>
-                            <div className="teacher-card fade-in">
-
-                                <div className="form-section">
-                                    <div className="input-group">
-                                        <label>문제 제목</label>
-                                        <input
-                                            type="text"
-                                            className="styled-input"
-                                            placeholder=""
-                                            value={title}
-                                            onChange={(e) => setTitle(e.target.value)}
-                                        />
-                                    </div>
-                                    <SubjectGradeSelector
-                                        subject={subject}
-                                        setSubject={setSubject}
-                                        schoolLevel={schoolLevel}
-                                        setSchoolLevel={setSchoolLevel}
-                                        grade={grade}
-                                        setGrade={setGrade}
+                        <div className="teacher-card fade-in">
+                            <div className="form-section">
+                                <div className="input-group">
+                                    <label>문제 제목</label>
+                                    <input
+                                        type="text"
+                                        className="styled-input"
+                                        placeholder=""
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
                                     />
-                                    <div className="input-group">
-                                        <label>본문 내용</label>
-                                        <textarea
-                                            className="styled-textarea"
-                                            placeholder={"여기에 문제로 낼 지문을 입력하거나 붙여넣으세요.\n(띄어쓰기 단위로 빈칸을 만들 수 있습니다.)"}
-                                            value={inputText}
-                                            onChange={(e) => setInputText(e.target.value)}
-                                            rows={12}
-                                        />
-                                        {(inputText.includes('$') || inputText.includes('\\[')) && (
-                                            <div className="latex-hint">
-                                                💡 LaTeX 수식이 감지되었습니다. $ 기호나 \[, \( 기호 사이의 텍스트는 수식으로 변환됩니다.
-                                            </div>
-                                        )}
-                                    </div>
-                                    <button className="btn-primary-large" onClick={handleAnalyzeText}>
-                                        다음: 빈칸 만들기
-                                    </button>
                                 </div>
+                                <SubjectGradeSelector
+                                    subject={subject}
+                                    setSubject={setSubject}
+                                    schoolLevel={schoolLevel}
+                                    setSchoolLevel={setSchoolLevel}
+                                    grade={grade}
+                                    setGrade={setGrade}
+                                />
+                                <div className="input-group">
+                                    <label>본문 내용</label>
+                                    <textarea
+                                        className="styled-textarea"
+                                        placeholder={"여기에 문제로 낼 지문을 입력하거나 붙여넣으세요.\n(띄어쓰기 단위로 빈칸을 만들 수 있습니다.)"}
+                                        value={inputText}
+                                        onChange={(e) => setInputText(e.target.value)}
+                                        rows={12}
+                                    />
+                                    {(inputText.includes('$') || inputText.includes('\\[')) && (
+                                        <div className="latex-hint">
+                                            💡 LaTeX 수식이 감지되었습니다. $ 기호나 \[, \( 기호 사이의 텍스트는 수식으로 변환됩니다.
+                                        </div>
+                                    )}
+                                </div>
+                                <button className="btn-primary-large" onClick={handleAnalyzeText}>
+                                    다음: 빈칸 만들기
+                                </button>
                             </div>
-                        </>
+                        </div>
                     )}
 
-                    {/* STEP 2: 빈칸 생성 */}
                     {step === 'create' && (
                         <div className="teacher-card fade-in">
                             <div className="card-header">
@@ -323,7 +302,6 @@ const TeacherMode = () => {
                         </div>
                     )}
 
-                    {/* STEP 3: 모니터링 (완료) */}
                     {step === 'monitor' && createdProblem && (
                         <div className="teacher-card fade-in text-center">
                             <div className="success-lottie-area">
@@ -360,7 +338,6 @@ const TeacherMode = () => {
                     )}
                 </div>
 
-                {/* Sidebar Guide */}
                 <aside className="teacher-guide-sidebar">
                     <div className="guide-card">
                         <h3>어떻게 만드나요? ☁️</h3>

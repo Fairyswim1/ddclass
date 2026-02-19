@@ -15,7 +15,7 @@ const OrderTeacherMode = () => {
     const [title, setTitle] = useState('');
     const [steps, setSteps] = useState(['', '']); // Initial 2 empty steps
     const [isPublic, setIsPublic] = useState(false);
-    const { currentUser } = useAuth();
+    const { currentUser, nickname } = useAuth();
     const [createdProblem, setCreatedProblem] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [subject, setSubject] = useState('');
@@ -137,19 +137,7 @@ const OrderTeacherMode = () => {
                 text
             }));
 
-            const newProblem = {
-                id: problemId,
-                type: 'order-matching',
-                pinNumber,
-                title,
-                steps: formattedSteps,
-                teacherId: currentUser.uid,
-                isPublic,
-                subject: subject || null,
-                schoolLevel,
-                grade: grade || null,
-                createdAt: id ? serverTimestamp() : serverTimestamp()
-            };
+
 
             await setDoc(doc(db, 'problems', problemId), newProblem);
 
