@@ -45,10 +45,9 @@ const FreeStudentMode = () => {
 
     useEffect(() => {
         // Auto-join if state exists (from StudentLogin)
-        if (location.state?.pin && location.state?.nickname && location.state?.autoJoin && step === 'login') {
+        if (location.state?.pin && location.state?.nickname && location.state?.autoJoin) {
             setPin(location.state.pin);
             setNickname(location.state.nickname);
-            // We need a small delay or use the values directly to avoid closure issues
             performJoin(location.state.pin, location.state.nickname);
         }
     }, [location.state]);
