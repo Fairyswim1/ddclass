@@ -14,8 +14,10 @@ import {
     Edit2,
     ArrowRight,
     Loader2,
-    Home
+    Home,
+    Eye
 } from 'lucide-react';
+import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, orderBy, deleteDoc, doc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
@@ -46,6 +48,12 @@ const TeacherDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Preview state
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [previewProblem, setPreviewProblem] = useState(null);
+
+    // Filter states
     const [filterType, setFilterType] = useState('all');
     const [filterSchoolLevel, setFilterSchoolLevel] = useState('all');
     const [filterGrade, setFilterGrade] = useState('all');
@@ -118,6 +126,11 @@ const TeacherDashboard = () => {
     const copyPin = (pin) => {
         navigator.clipboard.writeText(pin);
         alert('PIN 번호가 복사되었습니다: ' + pin);
+    };
+
+    const handlePreview = (problem) => {
+        setPreviewProblem(problem);
+        setIsPreviewOpen(true);
     };
 
     const filteredProblems = problems.filter(p => {
@@ -303,6 +316,13 @@ const TeacherDashboard = () => {
                                 </button>
                                 <button
                                     className="btn-icon-secondary"
+                                    onClick={() => handlePreview(problem)}
+                                    title="학생 화면 미리보기"
+                                >
+                                    <Eye size={18} />
+                                </button>
+                                <button
+                                    className="btn-icon-secondary"
                                     onClick={() => {
                                         const basePath = problem.type === 'fill-blanks' ? '/fill-blanks' :
                                             problem.type === 'order-matching' ? '/order-matching' : '/free-dnd';
@@ -324,7 +344,13 @@ const TeacherDashboard = () => {
                     ))
                 )}
             </main>
-        </div >
+
+            <StudentPreviewModal
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                problem={previewProblem}
+            />
+        </div>
     );
 };
 

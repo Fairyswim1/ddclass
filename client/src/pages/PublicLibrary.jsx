@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Search,
-    Layout,
-    Layers,
-    MousePointer2,
     Download,
+    BookOpen,
     ArrowLeft,
-    Loader2,
     SearchX,
-    Home
+    Filter,
+    Clock,
+    User,
+    Eye
 } from 'lucide-react';
+import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
@@ -38,9 +39,15 @@ const PublicLibrary = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [publicProblems, setPublicProblems] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterType, setFilterType] = useState('all');
+
+    // Preview state
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [previewProblem, setPreviewProblem] = useState(null);
+
+    // Filter states
+    const [selectedSubject, setSelectedSubject] = useState('all');
     const [filterSchoolLevel, setFilterSchoolLevel] = useState('all');
     const [filterGrade, setFilterGrade] = useState('all');
 
@@ -50,7 +57,7 @@ const PublicLibrary = () => {
 
     const fetchPublicProblems = async () => {
         try {
-            setLoading(true);
+            setIsLoading(true);
             const q = query(
                 collection(db, 'problems'),
                 where('isPublic', '==', true)
@@ -64,7 +71,7 @@ const PublicLibrary = () => {
         } catch (error) {
             console.error("Error fetching library:", error);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -100,7 +107,7 @@ const PublicLibrary = () => {
 
     const filteredProblems = publicProblems.filter(p => {
         const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesType = filterType === 'all' || p.type === filterType;
+        const matchesType = selectedSubject === 'all' || p.type === selectedSubject;
         const matchesSchool = filterSchoolLevel === 'all' || p.schoolLevel === filterSchoolLevel;
         const matchesGrade = filterGrade === 'all' || String(p.grade) === String(filterGrade);
         return matchesSearch && matchesType && matchesSchool && matchesGrade;
@@ -115,7 +122,7 @@ const PublicLibrary = () => {
         }
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="library-loading">
                 <Loader2 className="animate-spin" size={48} />
@@ -154,8 +161,8 @@ const PublicLibrary = () => {
                 <div className="filter-group">
                     <select
                         className="library-select"
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value)}
+                        value={selectedSubject}
+                        onChange={(e) => setSelectedSubject(e.target.value)}
                     >
                         <option value="all">모든 유형</option>
                         <option value="fill-blanks">빈칸 채우기</option>
@@ -218,18 +225,37 @@ const PublicLibrary = () => {
                                 <p className="problem-author">제작: {problem.teacherDisplayName || '선생님'}</p>
                             </div>
 
-                            <div className="card-footer">
+                            <div className="card-footer" style={{ gap: '0.5rem' }}>
                                 <button
                                     className="btn-import"
                                     onClick={() => handleImport(problem)}
+                                    style={{ flex: 1 }}
                                 >
-                                    <Download size={18} /> 내 보관함으로 가져오기
+                                    <Download size={18} /> 가져오기
+                                </button>
+                                <button
+                                    className="btn-icon-secondary"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPreviewProblem(problem);
+                                        setIsPreviewOpen(true);
+                                    }}
+                                    title="미리보기"
+                                    style={{ padding: '0.8rem' }}
+                                >
+                                    <Eye size={20} />
                                 </button>
                             </div>
                         </div>
                     ))
                 )}
             </main>
+
+            <StudentPreviewModal
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                problem={previewProblem}
+            />
         </div >
     );
 };
