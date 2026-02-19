@@ -1,4 +1,18 @@
-
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+    Search,
+    Download,
+    BookOpen,
+    ArrowLeft,
+    SearchX,
+    Filter,
+    Clock,
+    User,
+    Eye,
+    Loader2,
+    Home
+} from 'lucide-react';
 import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -71,17 +85,14 @@ const PublicLibrary = () => {
         }
 
         try {
-            // Create a copy of the problem for the current teacher
             const { id, createdAt, teacherId, pinNumber, ...problemData } = problem;
-
-            // New PIN for the imported version
             const newPin = Math.floor(100000 + Math.random() * 900000).toString();
 
             await addDoc(collection(db, 'problems'), {
                 ...problemData,
                 teacherId: currentUser.uid,
                 pinNumber: newPin,
-                isPublic: false, // Default to private on import
+                isPublic: false,
                 createdAt: serverTimestamp(),
                 importedFrom: id
             });
@@ -244,7 +255,7 @@ const PublicLibrary = () => {
                 onClose={() => setIsPreviewOpen(false)}
                 problem={previewProblem}
             />
-        </div >
+        </div>
     );
 };
 
