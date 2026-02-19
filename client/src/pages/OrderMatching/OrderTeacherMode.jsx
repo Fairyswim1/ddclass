@@ -258,7 +258,7 @@ const OrderTeacherMode = () => {
                                         <Plus size={18} /> 새로운 단계 추가
                                     </button>
 
-                                    <div className="options-panel-refined" style={{ marginTop: '2rem' }}>
+                                    <div className="options-panel-refined">
                                         <label className="custom-checkbox">
                                             <input
                                                 type="checkbox"
