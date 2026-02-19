@@ -13,7 +13,8 @@ const LatexRenderer = ({ text }) => {
     // 1. \[(?:[\s\S]*?)\] : 디스플레이 수식
     // 2. \((?:[\s\S]*?)\) : 인라인 수식
     // 3. \$(?:[\s\S]*?)\$ : 인라인 수식 ($)
-    const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$)/g;
+    // 4. \\begin\{([\s\S]*?)\}([\s\S]*?)\\end\{\1\} : LaTeX 환경 블록
+    const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\})/g;
 
     const parts = text.split(regex);
 
@@ -37,6 +38,9 @@ const LatexRenderer = ({ text }) => {
                 if (part.startsWith('\\$')) {
                     const content = part.slice(2, -2);
                     return <InlineMath key={index} math={content} />;
+                }
+                if (part.startsWith('\\begin')) {
+                    return <BlockMath key={index} math={part} />;
                 }
 
                 return <span key={index}>{part}</span>;

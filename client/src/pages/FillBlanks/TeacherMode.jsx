@@ -57,7 +57,7 @@ const TeacherMode = () => {
                 setPrevPin(data.pinNumber);
 
                 // 텍스트 분석하여 단어와 수식을 분리 (handleAnalyzeText와 동일 로직)
-                const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\S+)/g;
+                const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\S+)/g;
                 const matches = data.originalText.match(regex) || [];
                 setWords(matches);
 
@@ -89,8 +89,9 @@ const TeacherMode = () => {
         // 1. \[ ... \] : 디스플레이 수식
         // 2. \( ... \) : 인라인 수식
         // 3. $ ... $ : 인라인 수식
-        // 4. \S+ : 일반 단어
-        const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\S+)/g;
+        // 5. \begin{...}...\end{...} : LaTeX 환경 블록
+        // 6. \S+ : 일반 단어
+        const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\S+)/g;
         const matches = inputText.match(regex) || [];
 
         setWords(matches);
