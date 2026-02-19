@@ -181,6 +181,10 @@ const FreeTeacherMode = () => {
             alert('제목과 배경 이미지를 설정해주세요.');
             return;
         }
+        if (!subject) {
+            alert('과목을 선택해주세요. (필수)');
+            return;
+        }
         if (!schoolLevel) {
             alert('학교급을 선택해주세요. (필수)');
             return;

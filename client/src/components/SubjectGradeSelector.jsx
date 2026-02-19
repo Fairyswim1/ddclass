@@ -31,9 +31,9 @@ const SubjectGradeSelector = ({ subject, setSubject, schoolLevel, setSchoolLevel
 
     return (
         <div className="sg-selector">
-            {/* 과목 선택 */}
+            {/* 과목 선택 (필수) */}
             <div className="sg-group">
-                <label className="sg-label">과목</label>
+                <label className="sg-label">과목 <span className="sg-required">*필수</span></label>
                 <select
                     className="sg-select"
                     value={subject}
@@ -55,7 +55,7 @@ const SubjectGradeSelector = ({ subject, setSubject, schoolLevel, setSchoolLevel
                         value={schoolLevel}
                         onChange={(e) => handleSchoolLevelChange(e.target.value)}
                     >
-                        <option value="">학교급 선택</option>
+                        <option value="">학교급</option>
                         {SCHOOL_LEVELS.map(l => (
                             <option key={l.value} value={l.value}>{l.label}</option>
                         ))}
@@ -71,7 +71,7 @@ const SubjectGradeSelector = ({ subject, setSubject, schoolLevel, setSchoolLevel
                         onChange={(e) => setGrade(e.target.value)}
                         disabled={!schoolLevel}
                     >
-                        <option value="">학년 선택</option>
+                        <option value="">학년</option>
                         {schoolLevel && GRADES_MAP[schoolLevel]?.map(g => (
                             <option key={g} value={g}>{g}학년</option>
                         ))}

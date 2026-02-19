@@ -70,7 +70,17 @@ const TeacherMode = () => {
     // 3. 문제 저장 및 서버 전송
     const handleSaveProblem = async () => {
         if (blanks.size === 0) {
-            alert('최소 1개 이상의 빈칸을 만들어주세요.');
+            alert('최소 하나 이상의 빈칸을 지정해주세요.');
+            return;
+        }
+
+        if (!subject) {
+            alert('과목을 선택해주세요. (필수)');
+            return;
+        }
+
+        if (!schoolLevel) {
+            alert('학교급을 선택해주세요. (필수)');
             return;
         }
 

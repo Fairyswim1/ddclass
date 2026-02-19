@@ -71,14 +71,21 @@ const OrderTeacherMode = () => {
             alert('문제 제목을 입력해주세요.');
             return;
         }
-        if (steps.some(s => !s.trim())) {
-            alert('모든 단계의 내용을 입력해주세요.');
+
+        if (!subject) {
+            alert('과목을 선택해주세요. (필수)');
             return;
         }
+
         if (!schoolLevel) {
             alert('학교급을 선택해주세요. (필수)');
             return;
         }
+        if (steps.some(s => !s.trim())) {
+            alert('모든 단계의 내용을 입력해주세요.');
+            return;
+        }
+
 
         if (!currentUser) {
             alert('로그인 정보가 없습니다. 다시 로그인해주세요.');
