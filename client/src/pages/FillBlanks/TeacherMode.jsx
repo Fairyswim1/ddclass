@@ -242,7 +242,7 @@ const TeacherMode = () => {
                                         <strong>사용한 단어 카드 감추기</strong> (한 번씩만 사용 가능)
                                     </span>
                                 </label>
-                                <label className="custom-checkbox" style={{ marginTop: '0.5rem' }}>
+                                <label className="custom-checkbox">
                                     <input
                                         type="checkbox"
                                         checked={isPublic}

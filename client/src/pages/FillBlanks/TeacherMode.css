@@ -344,6 +344,47 @@
     }
 }
 
+/* options-panel-refined and custom-checkbox are used in the JSX but were not defined here */
+.options-panel-refined {
+    margin-top: 2rem;
+    padding: 1.2rem;
+    background: #FAF8F6;
+    border: 2px dashed #E2DCCF;
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    /* Separate items by line */
+}
+
+.custom-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    /* Space between checkbox and text */
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+}
+
+.custom-checkbox:hover {
+    transform: translateX(4px);
+}
+
+.custom-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-brand-yellow);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.checkbox-text {
+    font-size: 1rem;
+    color: var(--color-text-primary);
+    line-height: 1.4;
+}
+
 @media (max-width: 1024px) {
     .teacher-main-layout {
         grid-template-columns: 1fr;
