@@ -137,7 +137,21 @@ const OrderTeacherMode = () => {
                 text
             }));
 
-
+            const newProblem = {
+                id: problemId,
+                type: 'order-matching',
+                pinNumber,
+                title,
+                steps: formattedSteps,
+                teacherId: currentUser.uid,
+                teacherDisplayName: nickname || '선생님',
+                isPublic,
+                subject: subject || null,
+                schoolLevel,
+                grade: grade || null,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            };
 
             await setDoc(doc(db, 'problems', problemId), newProblem);
 
