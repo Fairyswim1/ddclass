@@ -18,11 +18,50 @@ import {
     Zap
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import './LandingPage.css';
+import { db } from '../firebase';
+import {
+    collection,
+    query,
+    where,
+    orderBy,
+    limit,
+    getDocs
+} from 'firebase/firestore';
+import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
 
 const LandingPage = () => {
     const navigate = useNavigate();
     const { currentUser, logout } = useAuth();
+    const [popularProblems, setPopularProblems] = React.useState([]);
+    const [isLoadingPopular, setIsLoadingPopular] = React.useState(true);
+    const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
+    const [previewProblem, setPreviewProblem] = React.useState(null);
+
+    React.useEffect(() => {
+        fetchPopularProblems();
+    }, []);
+
+    const fetchPopularProblems = async () => {
+        try {
+            setIsLoadingPopular(true);
+            const q = query(
+                collection(db, 'problems'),
+                where('isPublic', '==', true),
+                orderBy('likeCount', 'desc'),
+                limit(4)
+            );
+            const querySnapshot = await getDocs(q);
+            const items = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setPopularProblems(items);
+        } catch (error) {
+            console.error("Error fetching popular problems:", error);
+        } finally {
+            setIsLoadingPopular(false);
+        }
+    };
 
     const services = [
         {
@@ -153,6 +192,69 @@ const LandingPage = () => {
                                 </motion.div>
                             ))}
                         </div>
+                    </div>
+                </section>
+
+                {/* 2.5 Popular Content Section (EBSMath Style) */}
+                <section className="popular-content-section container">
+                    <div className="popular-header">
+                        <div className="title-area">
+                            <span className="popular-badge">TRENDING</span>
+                            <h2>실시간 인기 수업 콘텐츠 🔥</h2>
+                            <p>전국의 선생님들이 가장 많이 활용 중인 리얼 수업 자료입니다.</p>
+                        </div>
+                        <button className="btn-text-more" onClick={() => navigate('/teacher/library')}>
+                            전체 라이브러리 보기 <ArrowRight size={18} />
+                        </button>
+                    </div>
+
+                    <div className="popular-grid">
+                        {isLoadingPopular ? (
+                            [1, 2, 3, 4].map(n => (
+                                <div key={n} className="popular-card skeleton">
+                                    <div className="skeleton-thumb"></div>
+                                    <div className="skeleton-line"></div>
+                                    <div className="skeleton-line short"></div>
+                                </div>
+                            ))
+                        ) : (
+                            popularProblems.map((problem, index) => (
+                                <motion.div
+                                    key={problem.id}
+                                    className="popular-card"
+                                    initial={{ y: 20, opacity: 0 }}
+                                    whileInView={{ y: 0, opacity: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: index * 0.1 }}
+                                    onClick={() => {
+                                        setPreviewProblem(problem);
+                                        setIsPreviewOpen(true);
+                                    }}
+                                >
+                                    <div className={`popular-thumb-box ${problem.type}`}>
+                                        <div className="thumb-icon">
+                                            {problem.type === 'fill-blanks' && <Star size={32} fill="white" />}
+                                            {problem.type === 'order-matching' && <Sparkles size={32} fill="white" />}
+                                            {problem.type === 'free-drop' || problem.type === 'free-dnd' ? <Layout size={32} fill="white" /> : <Layers size={32} fill="white" />}
+                                        </div>
+                                        <div className="thumb-metadata">
+                                            <span className="t-badge">{problem.schoolLevel === 'high' ? '고등' : problem.schoolLevel === 'middle' ? '중등' : '초등'}</span>
+                                            <span className="t-badge">{problem.subject === 'korean' ? '국어' : problem.subject === 'math' ? '수학' : problem.subject || '기타'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="popular-info">
+                                        <h4 className="p-title">{problem.title}</h4>
+                                        <div className="p-stats">
+                                            <span className="p-author"><Users size={14} /> {problem.teacherDisplayName || '선생님'}</span>
+                                            <span className="p-likes"><Heart size={14} fill="#FF5252" color="#FF5252" /> {problem.likeCount || 0}</span>
+                                        </div>
+                                    </div>
+                                    <div className="hover-overlay">
+                                        <button className="btn-preview-mini">수업 미리보기</button>
+                                    </div>
+                                </motion.div>
+                            ))
+                        )}
                     </div>
                 </section>
 
@@ -364,6 +466,11 @@ const LandingPage = () => {
                     </div>
                 </div>
             </footer>
+            <StudentPreviewModal
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                problem={previewProblem}
+            />
         </div>
     );
 };

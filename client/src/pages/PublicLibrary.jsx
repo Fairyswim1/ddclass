@@ -15,9 +15,22 @@ import {
 } from 'lucide-react';
 import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import {
+    collection,
+    query,
+    where,
+    getDocs,
+    addDoc,
+    serverTimestamp,
+    doc,
+    updateDoc,
+    arrayUnion,
+    arrayRemove,
+    increment
+} from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import './PublicLibrary.css';
+import { Heart } from 'lucide-react';
 
 const SUBJECTS_MAP = {
     korean: '국어', english: '영어', math: '수학', social: '사회',
@@ -101,6 +114,42 @@ const PublicLibrary = () => {
             navigate('/teacher/dashboard');
         } catch (error) {
             alert('가져오기 실패: ' + error.message);
+        }
+    };
+
+    const handleLike = async (e, problemId, isLiked) => {
+        e.stopPropagation();
+        if (!currentUser) {
+            alert('좋아요를 누르려면 먼저 로그인해주세요!');
+            navigate('/teacher/login');
+            return;
+        }
+
+        try {
+            const problemRef = doc(db, 'problems', problemId);
+            if (isLiked) {
+                await updateDoc(problemRef, {
+                    likedBy: arrayRemove(currentUser.uid),
+                    likeCount: increment(-1)
+                });
+            } else {
+                await updateDoc(problemRef, {
+                    likedBy: arrayUnion(currentUser.uid),
+                    likeCount: increment(1)
+                });
+            }
+            // 로컬 상태 업데이트
+            setPublicProblems(prev => prev.map(p => {
+                if (p.id === problemId) {
+                    const newLikedBy = isLiked
+                        ? p.likedBy.filter(id => id !== currentUser.uid)
+                        : [...(p.likedBy || []), currentUser.uid];
+                    return { ...p, likedBy: newLikedBy, likeCount: (p.likeCount || 0) + (isLiked ? -1 : 1) };
+                }
+                return p;
+            }));
+        } catch (error) {
+            console.error("Error toggling like:", error);
         }
     };
 
@@ -204,49 +253,59 @@ const PublicLibrary = () => {
                         <p>다른 검색어나 필터를 선택해보세요.</p>
                     </div>
                 ) : (
-                    filteredProblems.map(problem => (
-                        <div key={problem.id} className="library-card">
-                            <div className="card-top">
-                                <span className={`type-badge ${problem.type}`}>
-                                    {getTypeText(problem.type)}
-                                </span>
-                            </div>
-
-                            <div className="card-body">
-                                <h3 className="problem-title">{problem.title}</h3>
-                                <div className="card-metadata-row">
-                                    {problem.subject && <span className="meta-badge subject">{SUBJECTS_MAP[problem.subject] || problem.subject}</span>}
-                                    {problem.schoolLevel && <span className="meta-badge level">
-                                        {SCHOOL_LEVELS.find(l => l.value === problem.schoolLevel)?.label || problem.schoolLevel}
-                                    </span>}
-                                    {problem.grade && <span className="meta-badge grade">{problem.grade}학년</span>}
+                    filteredProblems.map(problem => {
+                        const isLiked = currentUser && problem.likedBy?.includes(currentUser.uid);
+                        return (
+                            <div key={problem.id} className="library-card">
+                                <div className="card-top">
+                                    <span className={`type-badge ${problem.type}`}>
+                                        {getTypeText(problem.type)}
+                                    </span>
+                                    <button
+                                        className={`btn-like ${isLiked ? 'active' : ''}`}
+                                        onClick={(e) => handleLike(e, problem.id, isLiked)}
+                                    >
+                                        <Heart size={18} fill={isLiked ? "#FF5252" : "none"} color={isLiked ? "#FF5252" : "#999"} />
+                                        <span>{problem.likeCount || 0}</span>
+                                    </button>
                                 </div>
-                                <p className="problem-author">제작: {problem.teacherDisplayName || '선생님'}</p>
-                            </div>
 
-                            <div className="card-footer" style={{ gap: '0.5rem' }}>
-                                <button
-                                    className="btn-import"
-                                    onClick={() => handleImport(problem)}
-                                    style={{ flex: 1 }}
-                                >
-                                    <Download size={18} /> 가져오기
-                                </button>
-                                <button
-                                    className="btn-icon-secondary"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setPreviewProblem(problem);
-                                        setIsPreviewOpen(true);
-                                    }}
-                                    title="미리보기"
-                                    style={{ padding: '0.8rem' }}
-                                >
-                                    <Eye size={20} />
-                                </button>
+                                <div className="card-body">
+                                    <h3 className="problem-title">{problem.title}</h3>
+                                    <div className="card-metadata-row">
+                                        {problem.subject && <span className="meta-badge subject">{SUBJECTS_MAP[problem.subject] || problem.subject}</span>}
+                                        {problem.schoolLevel && <span className="meta-badge level">
+                                            {SCHOOL_LEVELS.find(l => l.value === problem.schoolLevel)?.label || problem.schoolLevel}
+                                        </span>}
+                                        {problem.grade && <span className="meta-badge grade">{problem.grade}학년</span>}
+                                    </div>
+                                    <p className="problem-author">제작: {problem.teacherDisplayName || '선생님'}</p>
+                                </div>
+
+                                <div className="card-footer" style={{ gap: '0.5rem' }}>
+                                    <button
+                                        className="btn-import"
+                                        onClick={() => handleImport(problem)}
+                                        style={{ flex: 1 }}
+                                    >
+                                        <Download size={18} /> 가져오기
+                                    </button>
+                                    <button
+                                        className="btn-icon-secondary"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setPreviewProblem(problem);
+                                            setIsPreviewOpen(true);
+                                        }}
+                                        title="미리보기"
+                                        style={{ padding: '0.8rem' }}
+                                    >
+                                        <Eye size={20} />
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </main>
 

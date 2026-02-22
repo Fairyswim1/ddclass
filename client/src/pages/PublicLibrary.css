@@ -155,10 +155,53 @@
     border-color: var(--color-brand-orange);
 }
 
-.problem-author {
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.btn-like {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: white;
+    border: 2px solid #F0EEE9;
+    padding: 0.4rem 0.8rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
     font-size: 0.9rem;
+    font-weight: 700;
+    color: #999;
+}
+
+.btn-like:hover {
+    border-color: #FFDADA;
+    background: #FFF5F5;
+}
+
+.btn-like.active {
+    border-color: #FFDADA;
+    background: #FFF5F5;
+    color: #FF5252;
+}
+
+.btn-icon-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F8F9FA;
+    border: 2px solid #F0EEE9;
+    border-radius: 12px;
     color: #8D7B75;
-    margin: 0.5rem 0 0 0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-icon-secondary:hover {
+    background: #E9ECEF;
+    color: var(--color-brand-brown);
 }
 
 .btn-import {
