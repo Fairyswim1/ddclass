@@ -56,7 +56,7 @@ const TeacherMode = () => {
                 setGrade(data.grade || '');
                 setPrevPin(data.pinNumber);
 
-                const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\S+)/g;
+                const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\n|\S+)/g;
                 const matches = data.originalText.match(regex) || [];
                 setWords(matches);
 
@@ -81,7 +81,7 @@ const TeacherMode = () => {
             return;
         }
 
-        const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\S+)/g;
+        const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\n|\S+)/g;
         const matches = inputText.match(regex) || [];
 
         setWords(matches);
@@ -253,16 +253,21 @@ const TeacherMode = () => {
                             </div>
 
                             <div className="word-editor-refined">
-                                {words.map((word, index) => (
-                                    <span
-                                        key={index}
-                                        className={`word-chip-refined ${blanks.has(index) ? 'is-blank' : ''}`}
-                                        onClick={() => toggleBlank(index)}
-                                    >
-                                        <LatexRenderer text={word} />
-                                        {blanks.has(index) && <span className="blank-indicator">빈칸</span>}
-                                    </span>
-                                ))}
+                                {words.map((word, index) => {
+                                    if (word === '\n') {
+                                        return <div key={index} className="word-break" />;
+                                    }
+                                    return (
+                                        <span
+                                            key={index}
+                                            className={`word-chip-refined ${blanks.has(index) ? 'is-blank' : ''}`}
+                                            onClick={() => toggleBlank(index)}
+                                        >
+                                            <LatexRenderer text={word} />
+                                            {blanks.has(index) && <span className="blank-indicator">빈칸</span>}
+                                        </span>
+                                    );
+                                })}
                             </div>
 
                             <div className="options-panel-refined">

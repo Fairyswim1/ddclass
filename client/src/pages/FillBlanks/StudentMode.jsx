@@ -141,12 +141,17 @@ const StudentMode = () => {
     const renderTextWithBlanks = () => {
         if (!problem) return null;
 
-        const words = problem.originalText.split(/\s+/);
+        // TeacherMode와 동일한 기법으로 가공
+        const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\n|\S+)/g;
+        const words = problem.originalText.match(regex) || [];
         const blankMap = new Map(problem.blanks.map(b => [b.index, b]));
 
         return (
             <div className="text-content">
                 {words.map((word, index) => {
+                    if (word === '\n') {
+                        return <br key={index} />;
+                    }
                     if (blankMap.has(index)) {
                         const blank = blankMap.get(index);
                         const userAnswer = userAnswers[blank.id];
