@@ -196,10 +196,8 @@ const LandingPage = () => {
                                         </ul>
                                     </div>
                                     <div className="feature-visual">
-                                        <div className="visual-placeholder yellow">
-                                            <div className="placeholder-content">
-                                                <p>✨ <strong>빈칸 채우기</strong> 스크린샷이 들어갈 자리입니다</p>
-                                            </div>
+                                        <div className="visual-image-box">
+                                            <img src="/images/feature-fill-blanks.png" alt="빈칸 채우기 화면" className="feature-screenshot" />
                                         </div>
                                     </div>
                                 </motion.div>
@@ -224,10 +222,8 @@ const LandingPage = () => {
                                         </ul>
                                     </div>
                                     <div className="feature-visual">
-                                        <div className="visual-placeholder green">
-                                            <div className="placeholder-content">
-                                                <p>✨ <strong>순서 맞추기</strong> 스크린샷이 들어갈 자리입니다</p>
-                                            </div>
+                                        <div className="visual-image-box">
+                                            <img src="/images/feature-order-matching.png" alt="순서 맞추기 화면" className="feature-screenshot" />
                                         </div>
                                     </div>
                                 </motion.div>
@@ -252,10 +248,8 @@ const LandingPage = () => {
                                         </ul>
                                     </div>
                                     <div className="feature-visual">
-                                        <div className="visual-placeholder blue">
-                                            <div className="placeholder-content">
-                                                <p>✨ <strong>자유 보드</strong> 스크린샷이 들어갈 자리입니다</p>
-                                            </div>
+                                        <div className="visual-image-box">
+                                            <img src="/images/feature-free-board.png" alt="자유 보드 화면" className="feature-screenshot" />
                                         </div>
                                     </div>
                                 </motion.div>
@@ -309,14 +303,12 @@ const LandingPage = () => {
                                 </div>
                                 <div className="library-teaser-visual">
                                     <motion.div
-                                        className="library-mock-grid"
-                                        initial={{ scale: 0.9, opacity: 0 }}
-                                        whileInView={{ scale: 1, opacity: 1 }}
+                                        className="library-image-box"
+                                        initial={{ x: 50, opacity: 0 }}
+                                        whileInView={{ x: 0, opacity: 1 }}
                                         viewport={{ once: true }}
                                     >
-                                        {[1, 2, 3, 4].map(n => (
-                                            <div key={n} className={`mock-card card-${n}`}></div>
-                                        ))}
+                                        <img src="/images/feature-library.png" alt="공개 라이브러리 화면" className="library-screenshot" />
                                     </motion.div>
                                 </div>
                             </div>
