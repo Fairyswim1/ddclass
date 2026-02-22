@@ -246,19 +246,26 @@
 /* Grid */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 400px));
+    /* 최대 너비 제한으로 늘어남 방지 */
     gap: 2rem;
+    justify-content: center;
+    /* 아이템이 적을 때 중앙 정렬 */
 }
 
 .problem-card-refined {
     background: white;
-    border-radius: 24px;
-    border: 3px solid #F0EEE9;
+    border-radius: 20px;
+    /* 라이브러리와 통일 */
+    border: 2px solid #F0EEE9;
+    /* 라이브러리와 통일 */
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: left;
+    /* 전체 중앙 정렬 방지 */
 }
 
 .problem-card-refined:hover {
@@ -355,8 +362,9 @@
     justify-content: space-between;
     align-items: center;
     margin-top: auto;
-    padding-top: 1rem;
-    border-top: 2px solid #F8F9FA;
+    padding-top: 1.2rem;
+    border-top: 1px solid #F0EEE9;
+    /* 더 얇고 깔끔하게 */
 }
 
 .btn-action.start {
@@ -364,10 +372,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    background-color: var(--color-brand-orange);
+    gap: 0.6rem;
+    background: var(--color-brand-orange);
     color: white;
-    box-shadow: 0 4px 0 #EA580C;
+    box-shadow: 0 4px 0px #E65100;
+    /* 입체감 추가 */
     white-space: nowrap;
     min-width: 160px;
     padding: 0.8rem 1.2rem;
@@ -375,11 +384,20 @@
     border-radius: 12px;
     font-weight: 700;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s;
+    box-shadow: 0 4px 0px #E65100;
+    /* 입체감 추가 */
 }
 
 .btn-action.start:hover {
-    background: #E65100;
+    background: #FF9E67;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0px #E65100;
+}
+
+.btn-action.start:active {
+    transform: translateY(2px);
+    box-shadow: none;
 }
 
 .btn-icon-danger {
