@@ -410,28 +410,28 @@ const TeacherDashboard = () => {
                     </div>
                 ) : (
                     filteredProblems.map(problem => (
-                        <div key={problem.id} className="problem-card">
+                        <div key={problem.id} className="problem-card-refined">
                             <div className="card-top">
                                 <span className={`type-badge ${problem.type}`}>
                                     {getTypeIcon(problem.type)} {getTypeText(problem.type)}
                                 </span>
-                                <div className="card-actions">
+                                <div className="card-actions-fixed">
                                     <button
-                                        className="btn-icon-secondary"
+                                        className="btn-icon-subtle"
                                         onClick={() => handlePreview(problem)}
                                         title="학생 화면 미리보기"
                                     >
                                         <Eye size={18} />
                                     </button>
                                     <button
-                                        className="btn-icon-edit"
+                                        className="btn-icon-subtle"
                                         onClick={() => navigate(`/${problem.type}?id=${problem.id}`)}
                                         title="문제 수정"
                                     >
                                         <Edit2 size={18} />
                                     </button>
                                     <button
-                                        className="btn-icon-delete"
+                                        className="btn-icon-subtle danger"
                                         onClick={() => handleDelete(problem.id)}
                                         title="문제 삭제"
                                     >
@@ -440,42 +440,29 @@ const TeacherDashboard = () => {
                                 </div>
                             </div>
 
-                            <div className="card-body">
+                            <div className="card-body-centered">
                                 <h3 className="problem-title">{problem.title}</h3>
-                                <div className="card-metadata">
-                                    {problem.subject && <span className="meta-item subject">{SUBJECTS_MAP[problem.subject] || problem.subject}</span>}
-                                    {problem.schoolLevel && <span className="meta-item level">
+                                <div className="card-metadata-row">
+                                    {problem.subject && <span className="meta-badge subject">{SUBJECTS_MAP[problem.subject] || problem.subject}</span>}
+                                    {problem.schoolLevel && <span className="meta-badge level">
                                         {SCHOOL_LEVELS.find(l => l.value === problem.schoolLevel)?.label || problem.schoolLevel}
                                     </span>}
-                                    {problem.grade && <span className="meta-item grade">{problem.grade}학년</span>}
+                                    {problem.grade && <span className="meta-badge grade">{problem.grade}학년</span>}
                                 </div>
-                                <div className="card-stats">
-                                    <div className="stat-item">
-                                        <Clock size={14} />
-                                        <span>생성: {problem.createdAt?.seconds ? new Date(problem.createdAt.seconds * 1000).toLocaleDateString() : '최근'}</span>
-                                    </div>
-                                    <div className="stat-item public-status">
-                                        {problem.isPublic ? (
-                                            <><Globe size={14} className="icon-public" /> <span>전체 공개 중</span></>
-                                        ) : (
-                                            <><Lock size={14} className="icon-private" /> <span>나만 보기</span></>
-                                        )}
-                                    </div>
-                                </div>
+                                <p className="problem-author">제작: {nickname}</p>
                             </div>
 
-                            <div className="card-footer">
-                                <div className="pin-display" onClick={() => copyPin(problem.pinNumber)} title="클릭하여 PIN 복사">
-                                    <span className="pin-label">PIN:</span>
-                                    <span className="pin-value">{problem.pinNumber}</span>
-                                    <Copy size={16} className="pin-copy-icon" />
-                                </div>
+                            <div className="card-footer-refined">
                                 <button
                                     className="btn-action start"
                                     onClick={() => navigate(`/teacher/monitor/${problem.pinNumber}`)}
                                 >
                                     실시간 모니터링
                                 </button>
+                                <div className="pin-badge-compact" onClick={() => copyPin(problem.pinNumber)} title="클릭하여 PIN 복사">
+                                    <span className="pin-label">PIN:</span>
+                                    <span className="pin-value">{problem.pinNumber}</span>
+                                </div>
                             </div>
                         </div>
                     ))
