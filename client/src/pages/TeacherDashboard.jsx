@@ -425,7 +425,10 @@ const TeacherDashboard = () => {
                                     </button>
                                     <button
                                         className="btn-icon-subtle"
-                                        onClick={() => navigate(`/${problem.type}?id=${problem.id}`)}
+                                        onClick={() => {
+                                            const routeType = problem.type === 'free-drop' ? 'free-dnd' : problem.type;
+                                            navigate(`/${routeType}/${problem.id}`);
+                                        }}
                                         title="문제 수정"
                                     >
                                         <Edit2 size={18} />
