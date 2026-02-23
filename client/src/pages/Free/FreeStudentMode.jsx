@@ -107,6 +107,16 @@ const FreeStudentMode = () => {
 
         if (clientX === undefined || clientY === undefined) return;
 
+        // 카드 복사 허용 모드: 트레이에서 꺼낼 때 복사본 생성
+        if (fromTray && problem?.allowReuse) {
+            const cloneId = `${item.id}_copy_${Date.now()}`;
+            const clonedItem = { ...item, id: cloneId, isPlaced: false, x: 0, y: 0 };
+            setItems(prev => [...prev, clonedItem]);
+            setDraggingId(cloneId);
+            dragOffset.current = { x: 0, y: 0 };
+            return;
+        }
+
         setDraggingId(id);
 
         if (fromTray || !item.isPlaced) {
@@ -232,21 +242,27 @@ const FreeStudentMode = () => {
                         <Layout size={14} /> <span>카드 보관함</span>
                     </div>
                     <div className="student-tray">
-                        {items.filter(i => !i.isPlaced).map(item => (
-                            <div
-                                key={item.id}
-                                className={`tray-item ${item.type}`}
-                                onMouseDown={(e) => handleMouseDown(e, item.id, true)}
-                                onTouchStart={(e) => handleMouseDown(e, item.id, true)}
-                                style={{
-                                    fontSize: item.type === 'text' ? `${item.fontSize * fontScale}px` : 'inherit',
-                                    opacity: draggingId === item.id ? 0.5 : 1
-                                }}
-                            >
-                                {item.type === 'text' ? item.content : <img src={item.imageUrl} alt="img" draggable="false" />}
-                            </div>
-                        ))}
-                        {items.filter(i => !i.isPlaced).length === 0 && (
+                        {(() => {
+                            // allowReuse: 원본 카드만 트레이에 표시 (복사본은 숨김)
+                            const trayItems = problem?.allowReuse
+                                ? items.filter(i => !i.id.includes('_copy_'))
+                                : items.filter(i => !i.isPlaced);
+                            return trayItems.map(item => (
+                                <div
+                                    key={`tray-${item.id}`}
+                                    className={`tray-item ${item.type}`}
+                                    onMouseDown={(e) => handleMouseDown(e, item.id, true)}
+                                    onTouchStart={(e) => handleMouseDown(e, item.id, true)}
+                                    style={{
+                                        fontSize: item.type === 'text' ? `${item.fontSize * fontScale}px` : 'inherit',
+                                        opacity: draggingId === item.id ? 0.5 : 1
+                                    }}
+                                >
+                                    {item.type === 'text' ? item.content : <img src={item.imageUrl} alt="img" draggable="false" />}
+                                </div>
+                            ));
+                        })()}
+                        {items.filter(i => !i.isPlaced).length === 0 && !problem?.allowReuse && (
                             <div className="empty-msg">모든 카드를 배치했습니다!</div>
                         )}
                     </div>

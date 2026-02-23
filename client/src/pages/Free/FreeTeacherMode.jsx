@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Upload, Type, Save, ArrowLeft, Image as ImageIcon, Plus, Trash2, Layout, Maximize2, Loader2, Check } from 'lucide-react';
+import { Upload, Type, Save, ArrowLeft, Image as ImageIcon, Plus, Trash2, Layout, Maximize2, Loader2, Check, Copy } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import { useAuth } from '../../contexts/AuthContext';
@@ -26,6 +26,7 @@ const FreeTeacherMode = () => {
     const [aspectRatio, setAspectRatio] = useState(16 / 9);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [allowReuse, setAllowReuse] = useState(false);
     const [createdProblem, setCreatedProblem] = useState(null);
     const [subject, setSubject] = useState('');
     const [schoolLevel, setSchoolLevel] = useState('');
@@ -58,6 +59,7 @@ const FreeTeacherMode = () => {
                 setItems(data.items || []);
                 setAspectRatio(data.aspectRatio || 16 / 9);
                 setIsPublic(data.isPublic || false);
+                setAllowReuse(data.allowReuse || false);
                 setSubject(data.subject || '');
                 setSchoolLevel(data.schoolLevel || '');
                 setGrade(data.grade || '');
@@ -245,6 +247,7 @@ const FreeTeacherMode = () => {
                 teacherId: currentUser.uid,
                 teacherDisplayName: nickname || '선생님',
                 isPublic,
+                allowReuse,
                 subject: subject || null,
                 schoolLevel,
                 grade: grade || null,
@@ -394,6 +397,18 @@ const FreeTeacherMode = () => {
                                             <ImageIcon size={18} /> 이미지 카드 추가
                                         </button>
                                         <input type="file" ref={itemImageInputRef} hidden onChange={handleAddImage} accept="image/*" />
+
+                                        <div className="reuse-toggle-box">
+                                            <label className="toggle-label reuse-label">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={allowReuse}
+                                                    onChange={(e) => setAllowReuse(e.target.checked)}
+                                                />
+                                                <Copy size={14} />
+                                                <span className="toggle-text">카드 복사 허용 (여러 번 사용)</span>
+                                            </label>
+                                        </div>
                                     </div>
 
                                     <div className="divider"></div>
@@ -424,7 +439,7 @@ const FreeTeacherMode = () => {
                                                         <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
                                                     </div>
                                                 ) : (
-                                                    /* 이미지 카드: 썸네일 + S/M/L/XL 버튼 */
+                                                    /* 이미지 카드: 썸네일 + S/M/L/XL 버튼 + 슬라이더 */
                                                     <div className="tray-image-card">
                                                         <div className="tray-image-thumb">
                                                             <img src={item.imageUrl} alt="item" />
@@ -441,6 +456,17 @@ const FreeTeacherMode = () => {
                                                                 ))}
                                                             </div>
                                                             <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
+                                                        </div>
+                                                        <div className="image-slider-row">
+                                                            <input
+                                                                type="range"
+                                                                min="5"
+                                                                max="100"
+                                                                value={item.width}
+                                                                className="image-size-slider"
+                                                                onChange={(e) => updateItemWidth(item.id, parseInt(e.target.value))}
+                                                            />
+                                                            <span className="slider-value">{item.width}%</span>
                                                         </div>
                                                     </div>
                                                 )}
@@ -488,6 +514,23 @@ const FreeTeacherMode = () => {
                                     ) : (
                                         <div className="canvas-wrapper">
                                             <img src={backgroundUrl} alt="background" className="canvas-bg-img" />
+                                            {/* 이미지 카드 실제 크기 미리보기 */}
+                                            <div className="canvas-preview-layer">
+                                                {items.filter(i => i.type === 'image').map((item, idx) => (
+                                                    <div
+                                                        key={item.id}
+                                                        className="canvas-preview-item"
+                                                        style={{
+                                                            width: `${item.width}%`,
+                                                            left: `${10 + (idx * 5) % 60}%`,
+                                                            top: `${20 + (idx * 15) % 50}%`
+                                                        }}
+                                                    >
+                                                        <img src={item.imageUrl} alt="preview" draggable="false" />
+                                                        <span className="preview-size-badge">{item.width}%</span>
+                                                    </div>
+                                                ))}
+                                            </div>
                                             <div className="canvas-overlay-tools">
                                                 <button className="btn-change-bg-prominent" onClick={() => setBackgroundUrl('')}>
                                                     <ImageIcon size={18} /> 배경 다른 사진으로 변경하기
