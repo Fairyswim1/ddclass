@@ -28,6 +28,7 @@ import {
     getDocs
 } from 'firebase/firestore';
 import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
+import './LandingPage.css';
 
 const LandingPage = () => {
     const navigate = useNavigate();
