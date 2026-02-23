@@ -455,7 +455,7 @@ const TeacherDashboard = () => {
                             <div className="card-footer-refined">
                                 <button
                                     className="btn-action start"
-                                    onClick={() => navigate(`/teacher/monitor/${problem.pinNumber}`)}
+                                    onClick={() => navigate(`/teacher/monitor/${problem.id}`)}
                                 >
                                     실시간 모니터링
                                 </button>

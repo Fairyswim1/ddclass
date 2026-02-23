@@ -17,7 +17,7 @@ import './App.css';
 
 function App() {
   useEffect(() => {
-    console.log("Current API URL:", import.meta.env.VITE_API_URL);
+    console.log("Current API URL:", import.meta.env.VITE_API_URL || "https://ddclass-server.onrender.com (fallback)");
     console.log("Environment:", import.meta.env.MODE);
   }, []);
 
@@ -47,6 +47,7 @@ function App() {
           <Route path="/teacher/login" element={<TeacherLogin />} />
           <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
           <Route path="/teacher/library" element={<PublicLibrary />} />
+          <Route path="/teacher/monitor/:id" element={<MonitorPage />} />
           <Route path="/monitor/:id" element={<MonitorPage />} />
         </Routes>
       </div>
