@@ -365,8 +365,15 @@ const LandingPage = () => {
                                         </ul>
                                     </div>
                                     <div className="feature-visual">
-                                        <div className="visual-image-box">
-                                            <img src="/images/feature-free-board.png" alt="자유 보드 화면" className="feature-screenshot" />
+                                        <div className="visual-image-box video-box">
+                                            <video
+                                                src="/free.mp4"
+                                                autoPlay
+                                                loop
+                                                muted
+                                                playsInline
+                                                className="feature-video"
+                                            />
                                         </div>
                                     </div>
                                 </motion.div>
