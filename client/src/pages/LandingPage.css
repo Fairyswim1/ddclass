@@ -655,6 +655,10 @@
     background: #4FB6FF;
 }
 
+.feature-icon-box.purple {
+    background: #A855F7;
+}
+
 .feature-text h3 {
     font-size: 2.2rem;
     margin-bottom: 1.5rem;
@@ -702,16 +706,24 @@
 }
 
 .visual-image-box.video-box {
-    background: #000;
-    border: 6px solid #FFF;
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
+    background: #f8fafc;
+    border: 12px solid rgba(255, 255, 255, 0.9);
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.15),
+        0 10px 10px rgba(0, 0, 0, 0.05);
     aspect-ratio: auto;
-    /* 고정 비율 해제 */
-    max-height: 500px;
-    /* 너무 길어지는 것 방지 */
+    max-height: 520px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.4s ease;
+    padding: 0;
+}
+
+.visual-image-box.video-box:hover {
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25);
+    border-color: #fff;
+    transform: translateY(-5px);
 }
 
 .feature-video {
