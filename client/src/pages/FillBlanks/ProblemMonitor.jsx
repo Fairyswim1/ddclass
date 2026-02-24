@@ -26,13 +26,25 @@ const ProblemMonitor = ({ problemData }) => {
             studentName: 'TEACHER_MONITOR'
         });
 
+        newSocket.on('currentStudents', (currentStudents) => {
+            // 초기 학생 목록 수신 (교사가 나중에 들어온 경우 대비)
+            setStudents(currentStudents.map(s => ({
+                ...s,
+                answer: Array.isArray(s.answer) ? s.answer : []
+            })));
+        });
+
         newSocket.on('studentJoined', (student) => {
-            if (student.name === 'TEACHER_MONITOR' || !student.name) return; // 교사 및 이름 없는 접속 제외
+            if (student.name === 'TEACHER_MONITOR' || !student.name) return;
 
             setStudents(prev => {
-                if (prev.find(s => s.id === student.id)) return prev;
-                return [...prev, { ...student, answer: {} }];
+                if (prev.find(s => s.id === student.id || s.name === student.name)) return prev;
+                return [...prev, { ...student, answer: Array.isArray(student.answer) ? student.answer : [] }];
             });
+        });
+
+        newSocket.on('studentLeft', (data) => {
+            setStudents(prev => prev.filter(s => s.id !== data.id));
         });
 
         newSocket.on('answerUpdated', (studentData) => {

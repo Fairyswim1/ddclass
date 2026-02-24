@@ -115,12 +115,16 @@
     padding: 0.8rem 1.2rem;
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
-    border: 3px solid var(--color-brand-blue);
+    border: 2px solid var(--color-brand-blue);
     cursor: grab;
     touch-action: none;
     white-space: nowrap;
     user-select: none;
     font-weight: 700;
+}
+
+.placed-item.image {
+    padding: 0;
 }
 
 .placed-item.dragging {

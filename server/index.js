@@ -241,38 +241,63 @@ app.get('/api/find-problem/:pin', async (req, res) => {
   }
 });
 
+// -----------------------------------------------------
+// 실시간 상태 관리를 위한 메모리 저장소
+// -----------------------------------------------------
+const roomStates = {}; // { roomID: { students: { socketId: { name, answer } } } }
+
 // 소켓 연결 처리
 io.on('connection', (socket) => {
   console.log('사용자 연결됨:', socket.id);
 
-  // 방 입장 (학생)
+  // 방 입장 (학생/교사)
   socket.on('joinProblem', ({ problemId, studentName }) => {
-    if (!problemId || !studentName) return; // 유효성 검사
+    if (!problemId || !studentName) return;
 
     socket.join(problemId);
-    console.log(`${studentName} 학생이 문제 ${problemId}에 입장`);
+    console.log(`${studentName} (${socket.id})가 문제 ${problemId}에 입장`);
 
-    // 교사에게 알림
-    io.to(problemId).emit('studentJoined', {
-      id: socket.id,
-      name: studentName,
-      joinedAt: new Date()
-    });
+    // 방 상태 초기화
+    if (!roomStates[problemId]) {
+      roomStates[problemId] = { students: {} };
+    }
+
+    const isTeacher = studentName === 'TEACHER_MONITOR';
+
+    if (!isTeacher) {
+      // 학생 정보를 메모리에 저장
+      roomStates[problemId].students[socket.id] = {
+        id: socket.id,
+        name: studentName,
+        answer: [],
+        joinedAt: new Date()
+      };
+    }
+
+    // 현재 방의 모든 학생 목록을 새로 들어온 사용자에게 전송 (교사 모니터링 동기화용)
+    const currentStudents = Object.values(roomStates[problemId].students);
+    socket.emit('currentStudents', currentStudents);
+
+    // 다른 사람들에게 새로운 학생 입장 알림
+    if (!isTeacher) {
+      socket.to(problemId).emit('studentJoined', roomStates[problemId].students[socket.id]);
+    }
   });
 
   // 정답 제출/수정 (실시간)
   socket.on('submitAnswer', ({ problemId, studentName, answer }) => {
-    // answer: 
-    // Fill Blanks: { blankId: word }
-    // Order Matching: [{ id, text }]
-    // Free Drop: [{ id, x, y }]
+    if (!roomStates[problemId] || !roomStates[problemId].students[socket.id]) return;
 
-    // console.log(`답변 업데이트: ${studentName}`, answer); // 로그 너무 많으면 주석
-    io.to(problemId).emit('answerUpdated', {
+    // 메모리 상태 업데이트
+    roomStates[problemId].students[socket.id].answer = answer;
+    roomStates[problemId].students[socket.id].updatedAt = new Date();
+
+    // 다른 사람들에게(주로 교사) 답변 업데이트 브로드캐스트
+    socket.to(problemId).emit('answerUpdated', {
       id: socket.id,
       name: studentName,
       answer,
-      updatedAt: new Date()
+      updatedAt: roomStates[problemId].students[socket.id].updatedAt
     });
   });
 
@@ -288,6 +313,23 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('사용자 연결 해제:', socket.id);
+
+    // 모든 방 순회하며 해당 소켓 ID 제거
+    Object.keys(roomStates).forEach(problemId => {
+      if (roomStates[problemId].students[socket.id]) {
+        const studentName = roomStates[problemId].students[socket.id].name;
+        delete roomStates[problemId].students[socket.id];
+
+        // 교사에게 학생 퇴장 알림 (필요 시)
+        io.to(problemId).emit('studentLeft', { id: socket.id, name: studentName });
+
+        // 방에 아무도 없으면 방 상태 삭제
+        if (Object.keys(roomStates[problemId].students).length === 0) {
+          // 일정 시간 후 삭제하거나 즉시 삭제 (여기서는 즉시)
+          // delete roomStates[problemId]; 
+        }
+      }
+    });
   });
 });
 

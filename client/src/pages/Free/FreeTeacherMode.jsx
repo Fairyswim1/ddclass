@@ -179,7 +179,7 @@ const FreeTeacherMode = () => {
                     id: Date.now().toString(),
                     type: 'image',
                     imageUrl: data.url,
-                    width: 20
+                    width: 15
                 };
                 setItems([...items, newItem]);
             }

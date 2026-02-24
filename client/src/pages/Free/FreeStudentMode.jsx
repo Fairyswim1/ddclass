@@ -86,6 +86,19 @@ const FreeStudentMode = () => {
                     studentName: targetNickname
                 });
 
+                // 즉시 현재 상태 동기화 (교사 모니터링 대응)
+                const answerData = (probData.items || []).map(item => ({
+                    id: item.id,
+                    x: 0,
+                    y: 0,
+                    isPlaced: item.isPlaced || false
+                }));
+                newSocket.emit('submitAnswer', {
+                    problemId: problemId,
+                    studentName: targetNickname,
+                    answer: answerData
+                });
+
                 setStep('game');
             } else {
                 alert('유효하지 않은 PIN 번호입니다.');
