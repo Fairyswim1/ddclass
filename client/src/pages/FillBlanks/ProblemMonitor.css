@@ -236,6 +236,8 @@
     background: #f8fafc;
     border-radius: 12px;
     color: #334155;
+    text-align: center;
+    /* Center the inline-block canvas */
 }
 
 /* Free Board Detailed View (Mirror) */
@@ -247,17 +249,21 @@
 
 .mirror-canvas-wrapper {
     position: relative;
-    width: 100%;
-    background: #f1f5f9;
+    display: inline-block;
+    max-width: 100%;
+    margin: 0 auto;
+    background: white;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     border: 1px solid #e2e8f0;
 }
 
-.mirror-bg {
-    width: 100%;
+.mirror-canvas-wrapper .mirror-bg {
     display: block;
+    max-width: 100%;
+    max-height: 70vh;
+    pointer-events: none;
 }
 
 .mirror-items-layer {
@@ -276,20 +282,25 @@
 }
 
 .mirror-placed-token.text {
-    padding: 4px 8px;
+    padding: 0.8rem 1.2rem;
     background: white;
-    border: 1px solid #3b82f6;
-    border-radius: 4px;
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
     color: #1e40af;
-    font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.mirror-placed-token.image {
+    padding: 0;
 }
 
 .mirror-placed-token.image img {
     width: 100%;
     display: block;
     border-radius: 4px;
-    border: 1px solid #ef4444;
+    border: 2px solid #3b82f6;
+    /* Matching student blue border */
 }
 
 .mirror-tray-status {
@@ -513,17 +524,20 @@
 .mini-canvas {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    /* aspectRatio will be injected via inline style */
     background: #f1f5f9;
     border-radius: 6px;
     overflow: hidden;
     border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .mini-bg-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
     opacity: 0.5;
 }
 

@@ -195,7 +195,7 @@ const ProblemMonitor = ({ problemData }) => {
                         <div className="answer-preview-container">
                             {problemData.type === 'free-drop' ? (
                                 <div className="mini-board-preview">
-                                    <div className="mini-canvas">
+                                    <div className="mini-canvas" style={{ aspectRatio: problemData.aspectRatio || '16/9' }}>
                                         <img src={problemData.backgroundUrl} alt="bg" className="mini-bg-img" />
                                         <div className="mini-items-layer">
                                             {Array.isArray(student.answer) && student.answer.filter(i => i.isPlaced).map((item, idx) => {
