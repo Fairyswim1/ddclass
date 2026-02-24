@@ -15,11 +15,17 @@ const FreeStudentMode = () => {
     const [nickname, setNickname] = useState('');
     const [problem, setProblem] = useState(null);
     const [items, setItems] = useState([]);
+    const itemsRef = useRef([]); // Ref to track latest items for sync
     const [currentWidth, setCurrentWidth] = useState(1000);
     const [draggingId, setDraggingId] = useState(null);
     const dragOffset = useRef({ x: 0, y: 0 });
     const canvasRef = useRef(null);
     const [feedback, setFeedback] = useState(null);
+
+    // Keep Ref updated with latest items
+    useEffect(() => {
+        itemsRef.current = items;
+    }, [items]);
 
     const fontScale = problem ? currentWidth / (problem.baseWidth || 1000) : 1;
 
@@ -195,7 +201,7 @@ const FreeStudentMode = () => {
         syncAnswerWithServer(nextItems);
     };
 
-    const syncAnswerWithServer = (currentItems = items) => {
+    const syncAnswerWithServer = (currentItems = itemsRef.current) => {
         const answerData = currentItems.map(({ id, x, y, isPlaced }) => ({ id, x, y, isPlaced }));
         socket?.emit('submitAnswer', {
             problemId: problem.id,

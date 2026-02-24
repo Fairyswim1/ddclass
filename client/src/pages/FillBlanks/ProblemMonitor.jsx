@@ -199,7 +199,8 @@ const ProblemMonitor = ({ problemData }) => {
                                         <img src={problemData.backgroundUrl} alt="bg" className="mini-bg-img" />
                                         <div className="mini-items-layer">
                                             {Array.isArray(student.answer) && student.answer.filter(i => i.isPlaced).map((item, idx) => {
-                                                const original = problemData.items.find(pi => pi.id === item.id);
+                                                const originalId = item.id.split('_copy_')[0];
+                                                const original = problemData.items.find(pi => pi.id === originalId);
                                                 if (!original) return null;
                                                 return (
                                                     <div
@@ -277,7 +278,8 @@ const ProblemMonitor = ({ problemData }) => {
                                             <img src={problemData.backgroundUrl} alt="bg" className="mirror-bg" />
                                             <div className="mirror-items-layer">
                                                 {Array.isArray(selectedStudent?.answer) && selectedStudent.answer.filter(i => i.isPlaced).map(item => {
-                                                    const originalItem = problemData.items.find(pi => pi.id === item.id);
+                                                    const originalId = item.id.split('_copy_')[0];
+                                                    const originalItem = problemData.items.find(pi => pi.id === originalId);
                                                     if (!originalItem) return null;
                                                     return (
                                                         <div

@@ -538,11 +538,11 @@
 
 .mini-token {
     position: absolute;
-    width: 6px;
-    height: 6px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    box-shadow: 0 0 0 1px white;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3), 0 0 0 1px white;
 }
 
 .mini-token.text {
