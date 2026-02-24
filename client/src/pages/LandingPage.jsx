@@ -377,6 +377,39 @@ const LandingPage = () => {
                                         </div>
                                     </div>
                                 </motion.div>
+
+                                {/* Feature 4: Real-time Monitoring */}
+                                <motion.div
+                                    className="feature-item reverse"
+                                    initial={{ y: 50, opacity: 0 }}
+                                    whileInView={{ y: 0, opacity: 1 }}
+                                    viewport={{ once: true, margin: "-100px" }}
+                                >
+                                    <div className="feature-text">
+                                        <div className="feature-icon-box purple">
+                                            <MonitorPlay size={32} fill="white" />
+                                        </div>
+                                        <h3>실시간 학생 화면 모니터링</h3>
+                                        <p>선생님 화면 하나로 반 전체 학생의 활동을 한눈에 살펴보세요. 도움이 필요한 학생을 즉시 파악하고 피드백을 전달할 수 있습니다.</p>
+                                        <ul className="feature-bullets">
+                                            <li>학생 한 명 한 명의 화면을 실시간 대시보드로 확인</li>
+                                            <li>막히는 학생에게 즉시 메시지 및 칭찬 스티커 전송</li>
+                                            <li>수업 집중도 및 참여도를 즉각적으로 파악</li>
+                                        </ul>
+                                    </div>
+                                    <div className="feature-visual">
+                                        <div className="visual-image-box video-box monitor-video">
+                                            <video
+                                                src="/feed.mp4"
+                                                autoPlay
+                                                loop
+                                                muted
+                                                playsInline
+                                                className="feature-video"
+                                            />
+                                        </div>
+                                    </div>
+                                </motion.div>
                             </div>
                         </div>
                     </section>
