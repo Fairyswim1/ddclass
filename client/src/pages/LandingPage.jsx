@@ -15,7 +15,8 @@ import {
     Layers,
     MonitorPlay,
     Share2,
-    Zap
+    Zap,
+    User
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
