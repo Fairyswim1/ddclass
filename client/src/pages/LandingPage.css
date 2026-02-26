@@ -798,6 +798,13 @@
     margin-bottom: 1.5rem;
 }
 
+.library-teaser-text p {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
 .btn-secondary-large {
     background: white;
     color: #3D2B1F;
@@ -843,6 +850,12 @@
     font-size: 3rem;
     color: var(--color-brand-brown);
     margin-bottom: 1.5rem;
+}
+
+.cta-container p {
+    font-size: 1.3rem;
+    color: #8D7B75;
+    margin-bottom: 3.5rem;
 }
 
 .cta-btn-group {

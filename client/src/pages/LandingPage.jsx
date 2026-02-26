@@ -419,7 +419,7 @@ const LandingPage = () => {
                         <div className="container">
                             <header className="section-header text-center">
                                 <span className="section-badge">PROCESS</span>
-                                <h2>수업 준비부터 모니터링까지 단 3분!</h2>
+                                <h2>준비는 가볍게, 수업은 깊이 있게</h2>
                             </header>
 
                             <div className="process-grid">
