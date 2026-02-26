@@ -447,6 +447,56 @@
     /* 기존 버튼 숨김 */
 }
 
+/* Sidebar Footer */
+.sidebar-footer {
+    padding: 1.2rem;
+    border-top: 2px solid #F0EEE9;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: auto;
+    /* Push to bottom */
+}
+
+.visibility-toggle {
+    background: #FAF8F6;
+    padding: 0.8rem;
+    border-radius: 12px;
+    border: 1px solid #F0EEE9;
+}
+
+.btn-save-all {
+    width: 100%;
+    padding: 1rem;
+    background: #5D4037;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(93, 64, 55, 0.2);
+}
+
+.btn-save-all:hover {
+    background: #3D2B1F;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(93, 64, 55, 0.3);
+}
+
+.btn-save-all:disabled {
+    background: #A89B96;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 /* --- Right Guide Sidebar --- */
 
 /* Card Add Container */

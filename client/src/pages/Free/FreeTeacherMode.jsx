@@ -464,6 +464,23 @@ const FreeTeacherMode = () => {
                                         </div>
                                     ))}
                                 </div>
+
+                                <div className="sidebar-footer">
+                                    <div className="visibility-toggle">
+                                        <label className="toggle-label">
+                                            <input
+                                                type="checkbox"
+                                                checked={isPublic}
+                                                onChange={(e) => setIsPublic(e.target.checked)}
+                                            />
+                                            <span className="toggle-text">&nbsp; 다른 선생님께 이 문제 공개하기</span>
+                                        </label>
+                                    </div>
+                                    <button className="btn-save-all" onClick={handleSave} disabled={isSaving}>
+                                        {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                                        {isSaving ? '저장 중...' : '내 보관함에 저장 & 문제 생성'}
+                                    </button>
+                                </div>
                             </aside>
 
                             {/* Center: Workspace (Background Only) */}
