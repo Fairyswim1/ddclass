@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from 'lucide-react';
 import '../../pages/Free/FreeStudentMode.css';
+import { resolveApiUrl } from '../../utils/url';
 
 const FreeBoardPreview = ({ problem }) => {
     const [items, setItems] = useState([]);
@@ -75,18 +76,18 @@ const FreeBoardPreview = ({ problem }) => {
                     <div className="student-tray">
                         {items.filter(i => !i.isPlaced).map(item => (
                             <div key={item.id} className={`tray-item ${item.type}`} onMouseDown={(e) => handleMouseDown(e, item.id, true)} onTouchStart={(e) => handleMouseDown(e, item.id, true)} style={{ fontSize: item.type === 'text' ? `${item.fontSize * fontScale}px` : 'inherit' }}>
-                                {item.type === 'text' ? item.content : <img src={item.imageUrl} alt="img" draggable="false" />}
+                                {item.type === 'text' ? item.content : <img src={resolveApiUrl(item.imageUrl)} alt="img" draggable="false" />}
                             </div>
                         ))}
                     </div>
                 </section>
                 <section className="student-canvas-workspace">
                     <div className="student-canvas-container" style={{ position: 'relative' }}>
-                        <img src={problem.backgroundUrl} alt="bg" style={{ display: 'block', maxWidth: '100%', maxHeight: '100%' }} />
+                        <img src={resolveApiUrl(problem.backgroundUrl)} alt="bg" style={{ display: 'block', maxWidth: '100%', maxHeight: '100%' }} />
                         <div className="student-master-canvas" ref={canvasRef}>
                             {items.filter(i => i.isPlaced).map(item => (
                                 <div key={item.id} className={`placed-item ${item.type}`} onMouseDown={(e) => handleMouseDown(e, item.id)} onTouchStart={(e) => handleMouseDown(e, item.id)} style={{ left: `${item.x}%`, top: `${item.y}%`, width: item.type === 'image' ? `${item.width || 15}%` : 'auto', fontSize: item.type === 'text' ? `${item.fontSize * fontScale}px` : 'inherit', transform: 'translate(-50%, -50%)' }}>
-                                    {item.type === 'text' ? item.content : <img src={item.imageUrl} alt="img" style={{ width: '100%' }} />}
+                                    {item.type === 'text' ? item.content : <img src={resolveApiUrl(item.imageUrl)} alt="img" style={{ width: '100%' }} />}
                                     <button className="item-return-btn" onClick={(e) => { e.stopPropagation(); handleReturnToTray(item.id); }}>×</button>
                                 </div>
                             ))}

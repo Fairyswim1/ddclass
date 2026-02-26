@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { ArrowLeft, Users, Layout, Send } from 'lucide-react';
 import './FreeMonitor.css';
+import { resolveApiUrl } from '../../utils/url';
 
 const FreeMonitor = () => {
     const { id } = useParams();
@@ -170,7 +171,7 @@ const FreeMonitor = () => {
                                             }}
                                         >
                                             {originalItem?.type === 'image' ? (
-                                                <img src={originalItem.imageUrl} alt="img" style={{ width: '100%' }} />
+                                                <img src={resolveApiUrl(originalItem.imageUrl)} alt="img" style={{ width: '100%' }} />
                                             ) : (
                                                 originalItem?.content
                                             )}
@@ -225,7 +226,7 @@ const FreeMonitor = () => {
                                 }}
                             >
                                 <img
-                                    src={problem?.backgroundUrl}
+                                    src={resolveApiUrl(problem?.backgroundUrl)}
                                     alt="detail"
                                     style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', pointerEvents: 'none' }}
                                 />
@@ -258,7 +259,7 @@ const FreeMonitor = () => {
                                                 }}
                                             >
                                                 {originalItem?.type === 'image' ? (
-                                                    <img src={originalItem.imageUrl} alt="item" style={{ width: '100%' }} />
+                                                    <img src={resolveApiUrl(originalItem.imageUrl)} alt="item" style={{ width: '100%' }} />
                                                 ) : (
                                                     <div className="detail-text-card">
                                                         {originalItem?.content}

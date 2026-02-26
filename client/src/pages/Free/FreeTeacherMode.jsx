@@ -9,6 +9,7 @@ import { collection, doc, setDoc, getDoc, serverTimestamp } from 'firebase/fires
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import './FreeTeacherMode.css';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
+import { resolveApiUrl } from '../../utils/url';
 
 // Set worker for PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -513,7 +514,7 @@ const FreeTeacherMode = () => {
                                         </div>
                                     ) : (
                                         <div className="canvas-wrapper">
-                                            <img src={backgroundUrl} alt="background" className="canvas-bg-img" />
+                                            <img src={resolveApiUrl(backgroundUrl)} alt="background" className="canvas-bg-img" />
                                             {/* 이미지 카드 실제 크기 미리보기 */}
                                             <div className="canvas-preview-layer">
                                                 {items.filter(i => i.type === 'image').map((item, idx) => (
@@ -526,7 +527,7 @@ const FreeTeacherMode = () => {
                                                             top: `${20 + (idx * 15) % 50}%`
                                                         }}
                                                     >
-                                                        <img src={item.imageUrl} alt="preview" draggable="false" />
+                                                        <img src={resolveApiUrl(item.imageUrl)} alt="preview" draggable="false" />
                                                         <span className="preview-size-badge">{item.width}%</span>
                                                     </div>
                                                 ))}

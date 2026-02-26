@@ -165,9 +165,8 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: '파일이 업로드되지 않았습니다.' });
   }
-  // 클라이언트에서 접근 가능한 URL 반환
-  const baseUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
-  const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+  // 클라이언트에서 환경 변수에 따라 조합할 수 있도록 상대 경로만 반환
+  const fileUrl = `/uploads/${req.file.filename}`;
   res.json({ success: true, url: fileUrl });
 });
 

@@ -5,6 +5,7 @@ import { ArrowLeft, User, Layout, MessageCircle, Loader2 } from 'lucide-react';
 import './FreeStudentMode.css';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import { resolveApiUrl } from '../../utils/url';
 
 const FreeStudentMode = () => {
     const location = useLocation();
@@ -277,7 +278,7 @@ const FreeStudentMode = () => {
                                         opacity: draggingId === item.id ? 0.5 : 1
                                     }}
                                 >
-                                    {item.type === 'text' ? item.content : <img src={item.imageUrl} alt="img" draggable="false" />}
+                                    {item.type === 'text' ? item.content : <img src={resolveApiUrl(item.imageUrl)} alt="img" draggable="false" />}
                                 </div>
                             ));
                         })()}
@@ -301,7 +302,7 @@ const FreeStudentMode = () => {
                         }}
                     >
                         <img
-                            src={problem.backgroundUrl}
+                            src={resolveApiUrl(problem.backgroundUrl)}
                             alt="background"
                             style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', pointerEvents: 'none' }}
                         />
@@ -331,7 +332,7 @@ const FreeStudentMode = () => {
                                         transform: 'translate(-50%, -50%)'
                                     }}
                                 >
-                                    {item.type === 'text' ? item.content : <img src={item.imageUrl} alt="img" style={{ width: '100%' }} draggable="false" />}
+                                    {item.type === 'text' ? item.content : <img src={resolveApiUrl(item.imageUrl)} alt="img" style={{ width: '100%' }} draggable="false" />}
                                     <button
                                         className="item-return-btn"
                                         onClick={(e) => {
