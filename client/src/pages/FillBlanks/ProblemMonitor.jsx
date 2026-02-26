@@ -25,9 +25,13 @@ const ProblemMonitor = ({ problemData }) => {
         const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
         setSocket(newSocket);
 
-        newSocket.emit('joinProblem', {
-            problemId: problemData?.id,
-            studentName: 'TEACHER_MONITOR'
+        // 연결 시 또는 재연결 시 자동으로 방 입장 수행
+        newSocket.on('connect', () => {
+            console.log('Teacher Monitor Socket Connected. Re-joining room:', problemData?.id);
+            newSocket.emit('joinProblem', {
+                problemId: problemData?.id,
+                studentName: 'TEACHER_MONITOR'
+            });
         });
 
         newSocket.on('currentStudents', (currentStudents) => {

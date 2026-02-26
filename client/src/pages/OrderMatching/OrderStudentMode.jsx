@@ -85,9 +85,13 @@ const OrderStudentMode = () => {
                 const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
                 setSocket(newSocket);
 
-                newSocket.emit('joinProblem', {
-                    problemId: problemId,
-                    studentName: targetNick
+                // 연결 시 또는 재연결 시 자동으로 방 입장 수행
+                newSocket.on('connect', () => {
+                    console.log('Socket Connected. Joining/Re-joining room:', problemId);
+                    newSocket.emit('joinProblem', {
+                        problemId: problemId,
+                        studentName: targetNick
+                    });
                 });
 
                 setStep('game');
