@@ -173,20 +173,12 @@
 }
 
 .sidebar-header {
-    padding: 1.2rem;
-    border-bottom: 2px solid #F0EEE9;
-}
-
-.sidebar-header h3 {
-    margin: 0;
-    font-size: 1.1rem;
-    color: #8D7B75;
-    font-weight: 800;
+    display: none;
 }
 
 .sidebar-content {
     flex: 1;
-    padding: 1.5rem;
+    padding: 1.2rem;
     overflow-y: auto;
 }
 
@@ -457,20 +449,125 @@
 
 /* --- Right Guide Sidebar --- */
 
-/* Reuse Toggle */
+/* Card Add Container */
+.card-add-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-type-section {
+    background: #FAF8F6;
+    border: 2px solid #F0EEE9;
+    border-radius: 16px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    transition: all 0.2s;
+}
+
+.card-type-section:hover {
+    border-color: #E6B400;
+    background: white;
+    box-shadow: 0 4px 12px rgba(230, 180, 0, 0.08);
+}
+
+.section-label {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #8D7B75;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-add-circle {
+    width: 38px;
+    height: 38px;
+    background: #E6B400;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-add-circle:hover {
+    transform: rotate(90deg) scale(1.1);
+    background: #FFD700;
+}
+
+.btn-sidebar-primary-large {
+    width: 100%;
+    padding: 0.8rem;
+    background: white;
+    border: 2px dashed #E0D8CC;
+    border-radius: 12px;
+    color: #8D7B75;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-sidebar-primary-large:hover {
+    border-color: #E6B400;
+    color: #5D4037;
+    background: #FFFDF5;
+}
+
+.font-size-group {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.btn-size-toggle {
+    flex: 1;
+    padding: 0.4rem;
+    border: 1px solid #F0EEE9;
+    background: white;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: #8D7B75;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-size-toggle:hover {
+    background: #FAF8F6;
+}
+
+.btn-size-toggle.active {
+    background: #5D4037;
+    color: white;
+    border-color: #5D4037;
+}
+
+/* Reuse Toggle Improved */
 .reuse-toggle-box {
-    margin-top: 0.5rem;
-    padding: 0.5rem 0.6rem;
+    margin-top: 0.2rem;
+    padding: 0.8rem;
     background: #F0F9FF;
     border: 1px solid #BAE6FD;
-    border-radius: 10px;
+    border-radius: 12px;
 }
 
 .reuse-label {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
+    gap: 0.6rem;
+    /* Ensure gap between icon and text */
+    font-size: 0.85rem;
     color: #0369A1;
     cursor: pointer;
 }

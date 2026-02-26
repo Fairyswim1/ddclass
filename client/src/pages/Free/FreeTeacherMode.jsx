@@ -330,10 +330,6 @@ const FreeTeacherMode = () => {
                         <div className="workspace-container-flex">
                             {/* Left Sidebar: Tools & List */}
                             <aside className="tool-sidebar">
-                                <div className="sidebar-header">
-                                    <h3>보드 도구 🛠️</h3>
-                                </div>
-
                                 <div className="sidebar-content">
                                     <div className="form-group">
                                         <label>문제 제목</label>
@@ -357,140 +353,116 @@ const FreeTeacherMode = () => {
 
                                     <div className="divider"></div>
 
-                                    <div className="form-group">
-                                        <label>카드 추가</label>
-
-                                        {/* Text Input */}
-                                        <div className="input-with-button" style={{ marginBottom: '0.5rem' }}>
-                                            <input
-                                                type="text"
-                                                placeholder="텍스트 입력..."
-                                                value={inputText}
-                                                className="styled-input-mini"
-                                                onChange={(e) => setInputText(e.target.value)}
-                                                onKeyDown={(e) => e.key === 'Enter' && handleAddText()}
-                                            />
-                                            <button className="btn-add" onClick={handleAddText}>+</button>
-                                        </div>
-                                        <div className="font-size-group" style={{ marginBottom: '0.5rem' }}>
-                                            {[{ scale: 'S', px: 16 }, { scale: 'M', px: 24 }, { scale: 'L', px: 32 }].map(({ scale, px }) => (
-                                                <button
-                                                    key={scale}
-                                                    className={`btn-size-toggle ${fontSizeScale === scale ? 'active' : ''}`}
-                                                    onClick={() => setFontSizeScale(scale)}
-                                                    style={{ fontSize: `${px * 0.55}px`, fontWeight: 800, lineHeight: 1 }}
-                                                >
-                                                    {scale}
-                                                </button>
-                                            ))}
-                                        </div>
-                                        {/* 텍스트 실시간 미리보기 */}
-                                        {inputText && (
-                                            <div className="text-preview-box">
-                                                <span style={{ fontSize: `${{ S: 16, M: 24, L: 32 }[fontSizeScale]}px`, fontWeight: 700, color: '#3D2B1F', wordBreak: 'break-all' }}>
-                                                    {inputText}
-                                                </span>
-                                            </div>
-                                        )}
-
-                                        {/* Image Upload Button */}
-                                        <button className="btn-sidebar-secondary" onClick={() => itemImageInputRef.current.click()}>
-                                            <ImageIcon size={18} /> 이미지 카드 추가
-                                        </button>
-                                        <input type="file" ref={itemImageInputRef} hidden onChange={handleAddImage} accept="image/*" />
-
-                                        <div className="reuse-toggle-box">
-                                            <label className="toggle-label reuse-label">
+                                    <div className="card-add-container">
+                                        <div className="card-type-section text-type">
+                                            <div className="section-label"><Type size={16} /> 텍스트 카드</div>
+                                            <div className="input-with-button">
                                                 <input
-                                                    type="checkbox"
-                                                    checked={allowReuse}
-                                                    onChange={(e) => setAllowReuse(e.target.checked)}
+                                                    type="text"
+                                                    placeholder="내용을 입력하세요..."
+                                                    value={inputText}
+                                                    className="styled-input-mini"
+                                                    onChange={(e) => setInputText(e.target.value)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && handleAddText()}
                                                 />
-                                                <Copy size={14} />
-                                                <span className="toggle-text">&nbsp; 카드 복사 허용 (여러 번 사용)</span>
-                                            </label>
+                                                <button className="btn-add-circle" onClick={handleAddText} title="추가"><Plus size={20} /></button>
+                                            </div>
+                                            <div className="font-size-group">
+                                                {[{ scale: 'S', px: 16 }, { scale: 'M', px: 24 }, { scale: 'L', px: 32 }].map(({ scale, px }) => (
+                                                    <button
+                                                        key={scale}
+                                                        className={`btn-size-toggle ${fontSizeScale === scale ? 'active' : ''}`}
+                                                        onClick={() => setFontSizeScale(scale)}
+                                                    >
+                                                        {scale}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="card-type-section image-type">
+                                            <div className="section-label"><ImageIcon size={16} /> 이미지 카드</div>
+                                            <button className="btn-sidebar-primary-large" onClick={() => itemImageInputRef.current.click()}>
+                                                <Upload size={18} /> 이미지 업로드
+                                            </button>
+                                            <input type="file" ref={itemImageInputRef} hidden onChange={handleAddImage} accept="image/*" />
                                         </div>
                                     </div>
 
-                                    <div className="divider"></div>
-
-                                    <div className="sidebar-tray-header">
-                                        <Layout size={16} /> 생성된 카드 목록 ({items.length})
-                                    </div>
-
-                                    <div className="sidebar-tray-list">
-                                        {items.length === 0 && (
-                                            <div className="empty-tray-msg-small">카드가 없습니다.</div>
-                                        )}
-                                        {items.map(item => (
-                                            <div key={item.id} className={`sidebar-tray-item ${item.type === 'image' ? 'sidebar-tray-item--image' : ''}`}>
-                                                {item.type === 'text' ? (
-                                                    /* 텍스트 카드: 실제 크기 미리보기 */
-                                                    <div className="tray-text-preview">
-                                                        <div className="tray-text-badge">{item.fontSizeScale || 'M'}</div>
-                                                        <span style={{
-                                                            fontSize: `${item.fontSize}px`,
-                                                            fontWeight: 700,
-                                                            color: '#3D2B1F',
-                                                            flex: 1,
-                                                            overflow: 'hidden',
-                                                            textOverflow: 'ellipsis',
-                                                            whiteSpace: 'nowrap'
-                                                        }}>{item.content}</span>
-                                                        <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
-                                                    </div>
-                                                ) : (
-                                                    /* 이미지 카드: 썸네일 + S/M/L/XL 버튼 + 슬라이더 */
-                                                    <div className="tray-image-card">
-                                                        <div className="tray-image-thumb">
-                                                            <img src={item.imageUrl} alt="item" />
-                                                            <div className="tray-image-size-label">{item.width}%</div>
-                                                        </div>
-                                                        <div className="tray-image-controls">
-                                                            <div className="image-size-buttons">
-                                                                {['S', 'M', 'L', 'XL'].map(s => (
-                                                                    <button
-                                                                        key={s}
-                                                                        className={`btn-img-size ${getImageSizeLabel(item.width) === s ? 'active' : ''}`}
-                                                                        onClick={() => updateItemWidthByScale(item.id, s)}
-                                                                    >{s}</button>
-                                                                ))}
-                                                            </div>
-                                                            <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
-                                                        </div>
-                                                        <div className="image-slider-row">
-                                                            <input
-                                                                type="range"
-                                                                min="5"
-                                                                max="100"
-                                                                value={item.width}
-                                                                className="image-size-slider"
-                                                                onChange={(e) => updateItemWidth(item.id, parseInt(e.target.value))}
-                                                            />
-                                                            <span className="slider-value">{item.width}%</span>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
+                                    <div className="reuse-toggle-box">
+                                        <label className="toggle-label reuse-label">
+                                            <input
+                                                type="checkbox"
+                                                checked={allowReuse}
+                                                onChange={(e) => setAllowReuse(e.target.checked)}
+                                            />
+                                            <Copy size={14} />
+                                            <span className="toggle-text">&nbsp; 카드 복사 허용 (여러 번 사용)</span>
+                                        </label>
                                     </div>
                                 </div>
 
-                                <div className="sidebar-footer">
-                                    <div className="visibility-toggle">
-                                        <label className="toggle-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={isPublic}
-                                                onChange={(e) => setIsPublic(e.target.checked)}
-                                            />
-                                            <span className="toggle-text">&nbsp; 다른 선생님께 이 문제 공개하기</span>
-                                        </label>
-                                    </div>
-                                    <button className="btn-save-all" onClick={handleSave} disabled={isSaving}>
-                                        {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                                        {isSaving ? '저장 중...' : '내 보관함에 저장 & 문제 생성'}
-                                    </button>
+                                <div className="divider"></div>
+
+                                <div className="sidebar-tray-header">
+                                    <Layout size={16} /> 생성된 카드 목록 ({items.length})
+                                </div>
+
+                                <div className="sidebar-tray-list">
+                                    {items.length === 0 && (
+                                        <div className="empty-tray-msg-small">카드가 없습니다.</div>
+                                    )}
+                                    {items.map(item => (
+                                        <div key={item.id} className={`sidebar-tray-item ${item.type === 'image' ? 'sidebar-tray-item--image' : ''}`}>
+                                            {item.type === 'text' ? (
+                                                /* 텍스트 카드: 실제 크기 미리보기 */
+                                                <div className="tray-text-preview">
+                                                    <div className="tray-text-badge">{item.fontSizeScale || 'M'}</div>
+                                                    <span style={{
+                                                        fontSize: `${item.fontSize}px`,
+                                                        fontWeight: 700,
+                                                        color: '#3D2B1F',
+                                                        flex: 1,
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap'
+                                                    }}>{item.content}</span>
+                                                    <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
+                                                </div>
+                                            ) : (
+                                                /* 이미지 카드: 썸네일 + S/M/L/XL 버튼 + 슬라이더 */
+                                                <div className="tray-image-card">
+                                                    <div className="tray-image-thumb">
+                                                        <img src={item.imageUrl} alt="item" />
+                                                        <div className="tray-image-size-label">{item.width}%</div>
+                                                    </div>
+                                                    <div className="tray-image-controls">
+                                                        <div className="image-size-buttons">
+                                                            {['S', 'M', 'L', 'XL'].map(s => (
+                                                                <button
+                                                                    key={s}
+                                                                    className={`btn-img-size ${getImageSizeLabel(item.width) === s ? 'active' : ''}`}
+                                                                    onClick={() => updateItemWidthByScale(item.id, s)}
+                                                                >{s}</button>
+                                                            ))}
+                                                        </div>
+                                                        <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
+                                                    </div>
+                                                    <div className="image-slider-row">
+                                                        <input
+                                                            type="range"
+                                                            min="5"
+                                                            max="100"
+                                                            value={item.width}
+                                                            className="image-size-slider"
+                                                            onChange={(e) => updateItemWidth(item.id, parseInt(e.target.value))}
+                                                        />
+                                                        <span className="slider-value">{item.width}%</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
                             </aside>
 
