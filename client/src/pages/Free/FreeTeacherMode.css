@@ -534,22 +534,27 @@
 }
 
 .btn-add-circle {
-    width: 38px;
-    height: 38px;
-    background: none;
-    color: #333;
-    border: none;
+    width: 40px;
+    height: 40px;
+    background: transparent !important;
+    border: none !important;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
     flex-shrink: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.btn-add-circle svg {
+    color: #000000 !important;
+    stroke: #000000 !important;
 }
 
 .btn-add-circle:hover {
     transform: scale(1.2);
-    color: #000;
 }
 
 .btn-sidebar-primary-large {
