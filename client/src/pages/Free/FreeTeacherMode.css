@@ -468,20 +468,23 @@
 
 .btn-save-all {
     width: 100%;
-    padding: 1rem;
+    padding: 0.8rem;
     background: #5D4037;
     color: white;
     border: none;
     border-radius: 14px;
-    font-size: 1rem;
+    font-size: 0.92rem;
+    /* 공간에 맞춰 폰트 크기 미세 조정 */
     font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.8rem;
+    gap: 0.5rem;
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 4px 12px rgba(93, 64, 55, 0.2);
+    white-space: nowrap;
+    /* 줄바꿈 방지 */
 }
 
 .btn-save-all:hover {
