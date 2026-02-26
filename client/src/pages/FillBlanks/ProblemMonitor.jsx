@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import { X, Send, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import './ProblemMonitor.css';
 import LatexRenderer from '../../components/LatexRenderer';
+import { resolveApiUrl } from '../../utils/url';
 
 const ProblemMonitor = ({ problemData }) => {
     const [socket, setSocket] = useState(null);
@@ -14,23 +15,25 @@ const ProblemMonitor = ({ problemData }) => {
     const [mirrorWidth, setMirrorWidth] = useState(1000);
 
     const selectedStudent = students.find(s => s.name === selectedStudentName);
-    const currentProblemWidth = problemData.baseWidth || 1000;
+    const currentProblemWidth = problemData?.baseWidth || 1000;
     const fontScale = mirrorWidth / currentProblemWidth;
+
+    // 문제 유형에 따른 공통 항목 (blanks 또는 steps)
+    const activeBlanks = problemData?.blanks || problemData?.steps || [];
 
     useEffect(() => {
         const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
         setSocket(newSocket);
 
         newSocket.emit('joinProblem', {
-            problemId: problemData.id,
+            problemId: problemData?.id,
             studentName: 'TEACHER_MONITOR'
         });
 
         newSocket.on('currentStudents', (currentStudents) => {
-            // 초기 학생 목록 수신 (교사가 나중에 들어온 경우 대비)
-            setStudents(currentStudents.map(s => ({
+            setStudents((currentStudents || []).map(s => ({
                 ...s,
-                answer: Array.isArray(s.answer) ? s.answer : []
+                answer: s.answer || (problemData?.type === 'fill-blanks' ? {} : [])
             })));
         });
 
@@ -39,7 +42,7 @@ const ProblemMonitor = ({ problemData }) => {
 
             setStudents(prev => {
                 if (prev.find(s => s.id === student.id || s.name === student.name)) return prev;
-                return [...prev, { ...student, answer: Array.isArray(student.answer) ? student.answer : [] }];
+                return [...prev, { ...student, answer: student.answer || (problemData?.type === 'fill-blanks' ? {} : []) }];
             });
         });
 
@@ -66,17 +69,19 @@ const ProblemMonitor = ({ problemData }) => {
     }, [problemData.id]);
 
     const calculateProgress = (studentAnswer) => {
-        if (!problemData.blanks && !problemData.items) return 0;
+        if (!problemData) return 0;
 
         // Free Board (free-drop)
         if (problemData.type === 'free-drop') {
             if (!Array.isArray(studentAnswer)) return 0;
-            const placedCount = studentAnswer.filter(item => item.isPlaced).length;
-            const totalItems = problemData.items.length;
-            return Math.round((placedCount / totalItems) * 100);
+            const placedCount = studentAnswer.filter(item => item?.isPlaced).length;
+            const totalItems = (problemData.items || []).length;
+            return totalItems > 0 ? Math.round((placedCount / totalItems) * 100) : 0;
         }
 
-        const totalBlanks = problemData.blanks.length;
+        const totalBlanks = activeBlanks.length;
+        if (totalBlanks === 0) return 0;
+
         // Array check (for Order Matching)
         if (Array.isArray(studentAnswer)) {
             return Math.round((studentAnswer.length / totalBlanks) * 100);
@@ -87,25 +92,26 @@ const ProblemMonitor = ({ problemData }) => {
     };
 
     const getAccuracy = (studentAnswer) => {
+        if (!problemData) return { correct: 0, total: 0, percentage: 0 };
+
         if (problemData.type === 'free-drop') {
-            return { correct: 0, total: 0, percentage: 100 }; // 자유 보드는 정답 개념이 없으므로 100%로 표시하거나 무시
+            return { correct: 0, total: 0, percentage: 100 };
         }
 
-        if (!problemData.blanks || !studentAnswer) return { correct: 0, total: 0, percentage: 0 };
-        const total = problemData.blanks.length;
+        const total = activeBlanks.length;
+        if (total === 0 || !studentAnswer) return { correct: 0, total: 0, percentage: 0 };
         let correctCount = 0;
 
         if (Array.isArray(studentAnswer)) {
-            // Order Matching: Check if items are in correct position
-            // problemData.blanks (mockBlanks) contains the correct order
-            problemData.blanks.forEach((blank, index) => {
+            // Order Matching
+            activeBlanks.forEach((blank, index) => {
                 if (studentAnswer[index] && studentAnswer[index].id === blank.id) {
                     correctCount++;
                 }
             });
         } else {
             // Fill Blanks
-            problemData.blanks.forEach(blank => {
+            activeBlanks.forEach(blank => {
                 if (studentAnswer[blank.id] === blank.word) {
                     correctCount++;
                 }
@@ -147,8 +153,8 @@ const ProblemMonitor = ({ problemData }) => {
     const getValueDisplay = (val) => {
         if (typeof val === 'object' && val !== null) {
             // Free Board case: match with problemData.items to show actual content
-            if (problemData.type === 'free-drop' && val.id) {
-                const original = problemData.items.find(pi => pi.id === val.id);
+            if (problemData?.type === 'free-drop' && val.id) {
+                const original = (problemData?.items || []).find(pi => pi.id === val.id);
                 if (original) {
                     return original.type === 'text' ? original.content : '📷 이미지';
                 }
@@ -156,7 +162,7 @@ const ProblemMonitor = ({ problemData }) => {
             return val.text || val.word || val.content || '(내용 없음)';
         }
         return val;
-    }
+    };
 
     return (
         <div className="monitor-container">
@@ -193,14 +199,14 @@ const ProblemMonitor = ({ problemData }) => {
                             ></div>
                         </div>
                         <div className="answer-preview-container">
-                            {problemData.type === 'free-drop' ? (
+                            {problemData?.type === 'free-drop' ? (
                                 <div className="mini-board-preview">
-                                    <div className="mini-canvas" style={{ aspectRatio: problemData.aspectRatio || '16/9' }}>
-                                        <img src={problemData.backgroundUrl} alt="bg" className="mini-bg-img" />
+                                    <div className="mini-canvas" style={{ aspectRatio: problemData?.aspectRatio || '16/9' }}>
+                                        <img src={resolveApiUrl(problemData?.backgroundUrl)} alt="bg" className="mini-bg-img" />
                                         <div className="mini-items-layer">
-                                            {Array.isArray(student.answer) && student.answer.filter(i => i.isPlaced).map((item, idx) => {
+                                            {Array.isArray(student.answer) && student.answer.filter(i => i?.isPlaced).map((item, idx) => {
                                                 const originalId = item.id.split('_copy_')[0];
-                                                const original = problemData.items.find(pi => pi.id === originalId);
+                                                const original = (problemData?.items || []).find(pi => pi.id === originalId);
                                                 if (!original) return null;
                                                 return (
                                                     <div
@@ -217,7 +223,7 @@ const ProblemMonitor = ({ problemData }) => {
                                             })}
                                         </div>
                                     </div>
-                                    <div className="mini-stats">배치 {Array.isArray(student.answer) ? student.answer.filter(i => i.isPlaced).length : 0}개</div>
+                                    <div className="mini-stats">배치 {Array.isArray(student.answer) ? student.answer.filter(i => i?.isPlaced).length : 0}개</div>
                                 </div>
                             ) : (
                                 <div className="answer-preview">
@@ -271,15 +277,15 @@ const ProblemMonitor = ({ problemData }) => {
                         <div className="modal-body">
                             {/* Mirrored Text View */}
                             <div className="mirrored-text-view">
-                                {problemData.type === 'free-drop' ? (
+                                {problemData?.type === 'free-drop' ? (
                                     // Free Board View
                                     <div className="free-board-mirror-container">
                                         <div className="mirror-canvas-wrapper" ref={mirrorRef}>
-                                            <img src={problemData.backgroundUrl} alt="bg" className="mirror-bg" />
+                                            <img src={resolveApiUrl(problemData?.backgroundUrl)} alt="bg" className="mirror-bg" />
                                             <div className="mirror-items-layer">
-                                                {Array.isArray(selectedStudent?.answer) && selectedStudent.answer.filter(i => i.isPlaced).map(item => {
+                                                {Array.isArray(selectedStudent?.answer) && selectedStudent.answer.filter(i => i?.isPlaced).map(item => {
                                                     const originalId = item.id.split('_copy_')[0];
-                                                    const originalItem = problemData.items.find(pi => pi.id === originalId);
+                                                    const originalItem = (problemData?.items || []).find(pi => pi.id === originalId);
                                                     if (!originalItem) return null;
                                                     return (
                                                         <div
@@ -293,24 +299,24 @@ const ProblemMonitor = ({ problemData }) => {
                                                                 zIndex: 10
                                                             }}
                                                         >
-                                                            {originalItem.type === 'text' ? originalItem.content : <img src={originalItem.imageUrl} alt="img" />}
+                                                            {originalItem.type === 'text' ? originalItem.content : <img src={resolveApiUrl(originalItem.imageUrl)} alt="img" />}
                                                         </div>
                                                     );
                                                 })}
                                             </div>
                                         </div>
                                         <div className="mirror-tray-status">
-                                            <p>남은 카드: {problemData.items.length - (Array.isArray(selectedStudent?.answer) ? selectedStudent.answer.filter(i => i.isPlaced).length : 0)}개</p>
+                                            <p>남은 카드: {(problemData?.items || []).length - (Array.isArray(selectedStudent?.answer) ? selectedStudent.answer.filter(i => i?.isPlaced).length : 0)}개</p>
                                         </div>
                                     </div>
-                                ) : Array.isArray(selectedStudent.answer) ? (
+                                ) : (problemData?.type === 'order-matching' || Array.isArray(selectedStudent?.answer)) ? (
                                     // Order Matching View
                                     <div className="order-matching-view">
                                         <p className="helper-text">학생이 제출한 순서:</p>
                                         <ul className="order-list">
-                                            {selectedStudent.answer.map((item, idx) => {
+                                            {Array.isArray(selectedStudent?.answer) && selectedStudent.answer.map((item, idx) => {
                                                 // Check if this position is correct
-                                                const correctItem = problemData.blanks[idx];
+                                                const correctItem = activeBlanks[idx];
                                                 const isCorrect = correctItem && correctItem.id === item.id;
 
                                                 return (
@@ -323,25 +329,25 @@ const ProblemMonitor = ({ problemData }) => {
                                                 );
                                             })}
                                         </ul>
-                                        {selectedStudent.answer.length === 0 && <p className="empty-msg">아직 제출한 카드가 없습니다.</p>}
+                                        {(!selectedStudent?.answer || selectedStudent.answer.length === 0) && <p className="empty-msg">아직 제출한 카드가 없습니다.</p>}
                                     </div>
                                 ) : (
                                     // Fill Blanks View
-                                    problemData.originalText.split(/\s+/).map((word, index) => {
+                                    (problemData?.originalText || '').split(/\s+/).map((word, index) => {
                                         // Find if this index matches a blank
-                                        const blank = problemData.blanks.find(b => b.index === index);
+                                        const blank = activeBlanks.find(b => b.index === index);
 
                                         if (blank) {
-                                            const studentAnswer = selectedStudent.answer?.[blank.id];
-                                            const isCorrect = studentAnswer === blank.word;
-                                            const isFilled = !!studentAnswer;
+                                            const studentAns = selectedStudent?.answer?.[blank.id];
+                                            const isCorrect = studentAns === blank.word;
+                                            const isFilled = !!studentAns;
 
                                             return (
                                                 <span
                                                     key={index}
                                                     className={`mirrored-blank ${isFilled ? (isCorrect ? 'correct' : 'incorrect') : 'empty'}`}
                                                 >
-                                                    <LatexRenderer text={studentAnswer || '(빈칸)'} />
+                                                    <LatexRenderer text={studentAns || '(빈칸)'} />
                                                     {isFilled && !isCorrect && <span className="correct-answer-hint">(<LatexRenderer text={blank.word} />)</span>}
                                                 </span>
                                             );
