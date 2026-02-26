@@ -407,7 +407,7 @@ const FreeTeacherMode = () => {
                                                     onChange={(e) => setAllowReuse(e.target.checked)}
                                                 />
                                                 <Copy size={14} />
-                                                <span className="toggle-text">카드 복사 허용 (여러 번 사용)</span>
+                                                <span className="toggle-text">&nbsp; 카드 복사 허용 (여러 번 사용)</span>
                                             </label>
                                         </div>
                                     </div>
