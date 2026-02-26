@@ -42,6 +42,8 @@ function App() {
 
           {/* 학생 공통 진입 (Dispatcher) */}
           <Route path="/student/join" element={<StudentLogin />} />
+          <Route path="/s" element={<StudentLogin />} />
+          <Route path="/join" element={<StudentLogin />} />
 
           {/* 선생님 전용 공간 */}
           <Route path="/teacher/login" element={<TeacherLogin />} />

@@ -109,7 +109,7 @@ const LandingPage = () => {
                     <button className="btn-nav-library" onClick={() => navigate('/teacher/library')}>
                         <BookOpen size={18} /> 라이브러리
                     </button>
-                    <button className="btn-nav-student" onClick={() => navigate('/student/join')}>
+                    <button className="btn-nav-student" onClick={() => navigate('/join')}>
                         <Gamepad2 size={18} /> 학생 참여 (PIN)
                     </button>
                     {currentUser ? (
@@ -486,8 +486,8 @@ const LandingPage = () => {
                                 <button className="btn-cta-primary" onClick={() => navigate('/teacher/login')}>
                                     선생님으로 시작하기
                                 </button>
-                                <button className="btn-cta-outline" onClick={() => navigate('/student/join')}>
-                                    학생으로 참여하기
+                                <button className="btn-secondary" onClick={() => navigate('/join')}>
+                                    <User size={18} /> 학생으로 참여
                                 </button>
                             </div>
                         </motion.div>
