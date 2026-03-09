@@ -371,6 +371,43 @@
     transform: translateX(5px);
 }
 
+@media (max-width: 600px) {
+    .modes-section {
+        padding: 1.5rem;
+    }
+
+    .cards-header h3 {
+        text-align: center;
+        font-size: 1.2rem;
+    }
+
+    .mode-round-card {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .mode-icon-box {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+    }
+
+    .mode-info h4 {
+        font-size: 1rem;
+        word-break: keep-all;
+    }
+
+    .mode-info p {
+        font-size: 0.8rem;
+        line-height: 1.3;
+        word-break: keep-all;
+    }
+
+    .mode-arrow {
+        display: none;
+    }
+}
+
 /* Popular Content Section (EBSMath Style) */
 .popular-content-section {
     margin-bottom: 8rem;
@@ -655,6 +692,13 @@
     font-size: 2.8rem;
     color: var(--color-brand-brown);
     line-height: 1.3;
+    word-break: keep-all;
+}
+
+@media (max-width: 600px) {
+    .section-header h2 {
+        font-size: 1.8rem;
+    }
 }
 
 .feature-detail-list {

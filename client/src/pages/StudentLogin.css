@@ -38,6 +38,35 @@
     font-size: 2rem;
     color: var(--color-brand-brown);
     margin-bottom: 0.5rem;
+    word-break: keep-all;
+}
+
+@media (max-width: 480px) {
+    .student-login-container {
+        padding: 1rem;
+    }
+
+    .login-card-round {
+        padding: 2rem 1.5rem;
+    }
+
+    .login-card-round h2 {
+        font-size: 1.6rem;
+    }
+
+    .login-card-round p {
+        font-size: 0.9rem;
+        word-break: keep-all;
+    }
+
+    .login-character-mini {
+        width: 90px;
+    }
+
+    .login-card-round input {
+        padding: 0.9rem;
+        font-size: 0.95rem;
+    }
 }
 
 .login-card-round input {
