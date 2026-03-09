@@ -140,6 +140,11 @@
     .character-container {
         margin: 0 auto;
     }
+
+    .main-character-refined {
+        width: 100%;
+        max-width: 300px;
+    }
 }
 
 .main-character-refined {
@@ -209,6 +214,50 @@
     font-size: 1.2rem;
     color: #8D7B75;
     line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+    .header-nav {
+        padding: 1rem 5%;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .nav-btns {
+        width: 100%;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-nav-library,
+    .btn-nav-student {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        flex: 1;
+    }
+
+    .hero-text .title-text {
+        font-size: 2.2rem;
+    }
+
+    .subtitle-text {
+        font-size: 1rem;
+    }
+
+    .welcome-section {
+        min-height: auto;
+        gap: 1.5rem;
+    }
+
+    .hero-text {
+        margin-top: 0;
+    }
+
+    .original-speech-bubble {
+        right: 0;
+        top: -40px;
+        font-size: 0.9rem;
+    }
 }
 
 .floating-deco-container {
