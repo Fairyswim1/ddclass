@@ -185,10 +185,10 @@ const PublicLibrary = () => {
                 <div className="header-left">
                     <div className="header-nav-btns">
                         <button className="btn-back" onClick={() => navigate('/')} title="홈으로">
-                            <Home size={20} />
+                            <Home size={24} />
                         </button>
                         <button className="btn-back" onClick={() => navigate('/teacher/dashboard')} title="대시보드로">
-                            <ArrowLeft size={20} />
+                            <ArrowLeft size={24} />
                         </button>
                     </div>
                     <h1>공유 라이브러리 🌍</h1>

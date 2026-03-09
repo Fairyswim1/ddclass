@@ -21,18 +21,25 @@
 .btn-back {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    background: none;
-    border: none;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: white;
+    border: 2px solid #F0EEE9;
+    border-radius: 50%;
     color: #8D7B75;
     cursor: pointer;
-    font-weight: 600;
+    transition: all 0.2s ease;
     padding: 0;
     margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .btn-back:hover {
     color: var(--color-brand-orange);
+    border-color: var(--color-brand-orange);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .library-select {
