@@ -1092,4 +1092,42 @@
     .library-teaser-visual {
         display: none;
     }
+
+    .cta-final-section {
+        padding: 5rem 0;
+    }
+
+    .cta-container h2 {
+        font-size: 1.8rem;
+        word-break: keep-all;
+        padding: 0 1.5rem;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+
+    .cta-container p {
+        font-size: 1rem;
+        word-break: keep-all;
+        padding: 0 1.5rem;
+        margin-bottom: 2.5rem;
+        color: #8D7B75;
+    }
+
+    .cta-btn-group {
+        flex-direction: column;
+        padding: 0 2rem;
+        gap: 12px;
+    }
+
+    .btn-cta-primary,
+    .btn-cta-outline,
+    .btn-secondary {
+        width: 100%;
+        padding: 1.1rem;
+        font-size: 1.1rem;
+        margin: 0;
+        justify-content: center;
+        display: flex;
+        align-items: center;
+    }
 }
