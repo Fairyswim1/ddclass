@@ -268,7 +268,7 @@ const TeacherMode = () => {
                                     <label>본문 내용</label>
                                     <textarea
                                         className="styled-textarea"
-                                        placeholder={"여기에 문제로 낼 지문을 입력하거나 붙여넣으세요.\n(띄어쓰기 단위로 빈칸을 만들 수 있습니다.)"}
+                                        placeholder={"여기에 문제로 낼 지문을 입력하거나 붙여넣으세요.\n(💡 은, 는, 이, 가 등 조사는 띄어쓰지 않아도 자동으로 분리되어 단어만 선택할 수 있습니다!)"}
                                         value={inputText}
                                         onChange={(e) => setInputText(e.target.value)}
                                         rows={12}
@@ -291,6 +291,11 @@ const TeacherMode = () => {
                             <div className="card-header">
                                 <h3>빈칸을 선택해주세요</h3>
                                 <p>👆 <strong>단어를 클릭</strong>하여 빈칸으로 만드세요. 다시 클릭하면 취소됩니다.</p>
+                                <div style={{ marginTop: '0.8rem', padding: '0.8rem 1rem', background: '#F0F9FF', borderRadius: '8px', display: 'inline-block', border: '1px solid #D0EFFF' }}>
+                                    <span style={{ color: '#2D6A8D', fontSize: '0.9rem', fontWeight: '600' }}>
+                                        💡 은/는/이/가 등 조사는 띄어쓰지 않아도 쏙쏙 분리되니 핵심 단어만 묶어서 선택해보세요!
+                                    </span>
+                                </div>
                             </div>
 
                             <div className="word-editor-refined">
@@ -413,7 +418,15 @@ const TeacherMode = () => {
 
                         <div className="tip-box">
                             <h5>💡 디디의 꿀팁</h5>
-                            <p>수학 선생님이라면 <strong>latex 수식</strong>을<br />사용해 수식을 입력해보세요!</p>
+                            <ul style={{ paddingLeft: '1.2rem', margin: 0, color: '#4A7A96', fontSize: '0.85rem', lineHeight: '1.5' }}>
+                                <li style={{ marginBottom: '0.5rem' }}>
+                                    <strong>조사 자동 분리!</strong><br />
+                                    '대한민국은' 처럼 붙여 써도 '대한민국'만 빈칸으로 뚫을 수 있어요.
+                                </li>
+                                <li>
+                                    수학 선생님이라면 <strong>latex 수식</strong>을 사용해 수식을 입력해보세요! ($ 기호 사용)
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </aside>
