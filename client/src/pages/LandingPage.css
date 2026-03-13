@@ -189,6 +189,8 @@
     line-height: 1.2;
     margin-bottom: 1.5rem;
     color: var(--color-brand-brown);
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 .hero-text .accent {
@@ -214,6 +216,8 @@
     font-size: 1.2rem;
     color: #8D7B75;
     line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 @media (max-width: 600px) {
@@ -464,11 +468,13 @@
     font-size: 2.4rem;
     color: var(--color-brand-brown);
     margin-bottom: 0.5rem;
+    word-break: keep-all;
 }
 
 .popular-header p {
     color: #8D7B75;
     font-size: 1.1rem;
+    word-break: keep-all;
 }
 
 .btn-text-more {
@@ -785,6 +791,7 @@
     font-size: 2.2rem;
     margin-bottom: 1.5rem;
     color: var(--color-brand-brown);
+    word-break: keep-all;
 }
 
 .feature-text p {
@@ -792,6 +799,7 @@
     color: #7A6A64;
     line-height: 1.6;
     margin-bottom: 2rem;
+    word-break: keep-all;
 }
 
 .feature-bullets {
@@ -807,6 +815,7 @@
     padding-left: 2rem;
     font-weight: 600;
     color: var(--color-brand-brown);
+    word-break: keep-all;
 }
 
 .feature-bullets li::before {
@@ -900,6 +909,11 @@
     font-size: 1.4rem;
     margin-bottom: 1rem;
     color: var(--color-brand-brown);
+    word-break: keep-all;
+}
+
+.process-card p {
+    word-break: keep-all;
 }
 
 .library-teaser-box {
@@ -918,6 +932,7 @@
     color: white;
     font-size: 2.5rem;
     margin-bottom: 1.5rem;
+    word-break: keep-all;
 }
 
 .library-teaser-text p {
@@ -925,6 +940,7 @@
     line-height: 1.6;
     margin-bottom: 2.5rem;
     color: rgba(255, 255, 255, 0.8);
+    word-break: keep-all;
 }
 
 .btn-secondary-large {
@@ -972,12 +988,14 @@
     font-size: 3rem;
     color: var(--color-brand-brown);
     margin-bottom: 1.5rem;
+    word-break: keep-all;
 }
 
 .cta-container p {
     font-size: 1.3rem;
     color: #8D7B75;
     margin-bottom: 3.5rem;
+    word-break: keep-all;
 }
 
 .cta-btn-group {
