@@ -64,6 +64,11 @@ const PublicLibrary = () => {
     // Filter states
     const [selectedSubject, setSelectedSubject] = useState('all');
     const [filterSchoolLevel, setFilterSchoolLevel] = useState('all');
+    const [expandedLevels, setExpandedLevels] = useState({
+        elementary: true,
+        middle: false,
+        high: false
+    });
 
     useEffect(() => {
         fetchPublicProblems();
@@ -87,6 +92,13 @@ const PublicLibrary = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const toggleLevel = (level) => {
+        setExpandedLevels(prev => ({
+            ...prev,
+            [level]: !prev[level]
+        }));
     };
 
     const handleImport = async (problem) => {
@@ -201,28 +213,34 @@ const PublicLibrary = () => {
                                 setSelectedSubject('all');
                             }}
                         >
-                            전체보기 🌐
+                            <span className="item-label">전체보기 🌐</span>
                         </div>
 
-                        {SCHOOL_LEVELS.filter(l => l.value !== 'all').map(level => (
-                            <div key={level.value} className="sidebar-level-group">
-                                <div className="level-title">{level.label}</div>
-                                <div className="subject-list">
-                                    {Object.entries(SUBJECTS_MAP).map(([key, label]) => (
-                                        <div
-                                            key={key}
-                                            className={`sidebar-item subject-item ${filterSchoolLevel === level.value && selectedSubject === key ? 'active' : ''}`}
-                                            onClick={() => {
-                                                setFilterSchoolLevel(level.value);
-                                                setSelectedSubject(key);
-                                            }}
-                                        >
-                                            {label}
-                                        </div>
-                                    ))}
+                        {SCHOOL_LEVELS.filter(l => l.value !== 'all').map(level => {
+                            const isExpanded = expandedLevels[level.value];
+                            return (
+                                <div key={level.value} className={`sidebar-level-group ${isExpanded ? 'is-expanded' : ''}`}>
+                                    <div className="level-header" onClick={() => toggleLevel(level.value)}>
+                                        <span className="level-title">{level.label}</span>
+                                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                    </div>
+                                    <div className="subject-list">
+                                        {Object.entries(SUBJECTS_MAP).map(([key, label]) => (
+                                            <div
+                                                key={key}
+                                                className={`sidebar-item subject-item ${filterSchoolLevel === level.value && selectedSubject === key ? 'active' : ''}`}
+                                                onClick={() => {
+                                                    setFilterSchoolLevel(level.value);
+                                                    setSelectedSubject(key);
+                                                }}
+                                            >
+                                                {label}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </nav>
                 </aside>
 
