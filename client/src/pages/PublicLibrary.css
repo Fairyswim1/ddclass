@@ -18,7 +18,7 @@
     margin-bottom: 3rem;
 }
 
-.btn-back {
+.public-library .btn-back {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -35,7 +35,7 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.btn-back:hover {
+.public-library .btn-back:hover {
     color: var(--color-brand-orange);
     border-color: var(--color-brand-orange);
     transform: translateY(-2px);
