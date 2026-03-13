@@ -71,6 +71,43 @@ const TeacherMode = () => {
         }
     };
 
+    // 한국어 조사 분리 헬퍼
+    const KOREAN_PARTICLES = [
+        '에서는', '에서도', '으로는', '으로도', '부터는', '까지는', '에서', '부터', '까지', '보다',
+        '밖에', '조차', '마저', '처럼', '만큼', '대로',
+        '으로', '에게', '한테', '께서',
+        '은', '는', '이', '가', '을', '를', '의', '에', '도', '로', '와', '과', '만', '요'
+    ];
+
+    const splitKoreanParticles = (tokens) => {
+        const result = [];
+        for (const token of tokens) {
+            if (token === '\n' || token.startsWith('$') || token.startsWith('\\')) {
+                result.push(token);
+                continue;
+            }
+            // 한글이 포함된 토큰만 조사 분리 시도
+            if (/[가-힣]/.test(token)) {
+                let found = false;
+                for (const particle of KOREAN_PARTICLES) {
+                    if (token.endsWith(particle) && token.length > particle.length) {
+                        const stem = token.slice(0, -particle.length);
+                        // stem에 한글이 최소 1자 이상 있어야 분리
+                        if (/[가-힣]/.test(stem)) {
+                            result.push(stem, particle);
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found) result.push(token);
+            } else {
+                result.push(token);
+            }
+        }
+        return result;
+    };
+
     const handleAnalyzeText = () => {
         if (!title.trim() || !inputText.trim()) {
             alert('제목과 내용을 모두 입력해주세요.');
@@ -84,7 +121,10 @@ const TeacherMode = () => {
         const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\n|\S+)/g;
         const matches = inputText.match(regex) || [];
 
-        setWords(matches);
+        // 한국어 조사 분리 적용
+        const splitWords = splitKoreanParticles(matches);
+
+        setWords(splitWords);
         setStep('create');
     };
 
@@ -137,6 +177,7 @@ const TeacherMode = () => {
                 pinNumber,
                 title,
                 originalText: inputText,
+                words, // 토큰 배열 저장 (미리보기/학생 모드 호환용)
                 blanks: blankList,
                 allowDuplicates,
                 teacherId: currentUser.uid,

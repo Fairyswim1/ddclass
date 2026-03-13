@@ -145,9 +145,14 @@ const StudentMode = () => {
     const renderTextWithBlanks = () => {
         if (!problem) return null;
 
-        // TeacherMode와 동일한 기법으로 가공
-        const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\n|\S+)/g;
-        const words = problem.originalText.match(regex) || [];
+        // 저장된 words 배열이 있으면 사용 (조사 분리 적용된 새 문제), 없으면 regex fallback (구 문제 호환)
+        let words;
+        if (problem.words && Array.isArray(problem.words)) {
+            words = problem.words;
+        } else {
+            const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\n|\S+)/g;
+            words = problem.originalText.match(regex) || [];
+        }
         const blankMap = new Map(problem.blanks.map(b => [b.index, b]));
 
         return (
