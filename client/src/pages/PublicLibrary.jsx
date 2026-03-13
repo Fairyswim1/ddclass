@@ -263,7 +263,10 @@ const PublicLibrary = () => {
                                     총 {filteredProblems.length}건의 콘텐츠가 있습니다.
                                 </p>
                             </div>
-                            <div className="header-actions">
+                            <div className="header-actions" style={{ flexDirection: 'row', alignItems: 'center', gap: '1rem' }}>
+                                <button className="btn-back-dash" onClick={() => navigate('/')}>
+                                    <Home size={18} /> 홈으로
+                                </button>
                                 <button className="btn-back-dash" onClick={() => navigate('/teacher/dashboard')}>
                                     <ArrowLeft size={18} /> 내 보관함 가기
                                 </button>
