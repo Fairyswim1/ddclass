@@ -299,8 +299,14 @@
 .action-bar-refined {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-top: 2rem;
     gap: 1rem;
+}
+
+.action-bar-refined .btn-ghost {
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* PIN Box Refined */
