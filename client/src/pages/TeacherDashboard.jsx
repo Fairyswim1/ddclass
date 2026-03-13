@@ -28,7 +28,7 @@ import './TeacherDashboard.css';
 
 const SUBJECTS_MAP = {
     korean: '국어', english: '영어', math: '수학', social: '사회',
-    science: '과학', arts: '예체능', other: '기타'
+    science: '과학', arts: '예체능', informatics: '정보', other: '기타'
 };
 
 const SCHOOL_LEVELS = [

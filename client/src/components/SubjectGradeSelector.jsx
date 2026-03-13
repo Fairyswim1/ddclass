@@ -7,6 +7,7 @@ const SUBJECTS = [
     { value: 'math', label: '수학' },
     { value: 'social', label: '사회' },
     { value: 'science', label: '과학' },
+    { value: 'informatics', label: '정보' },
     { value: 'arts', label: '예체능' },
     { value: 'other', label: '기타' },
 ];
