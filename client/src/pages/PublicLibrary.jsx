@@ -64,7 +64,6 @@ const PublicLibrary = () => {
     // Filter states
     const [selectedSubject, setSelectedSubject] = useState('all');
     const [filterSchoolLevel, setFilterSchoolLevel] = useState('all');
-    const [filterGrade, setFilterGrade] = useState('all');
 
     useEffect(() => {
         fetchPublicProblems();
@@ -155,10 +154,9 @@ const PublicLibrary = () => {
 
     const filteredProblems = publicProblems.filter(p => {
         const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesType = selectedSubject === 'all' || p.type === selectedSubject;
+        const matchesType = selectedSubject === 'all' || p.subject === selectedSubject;
         const matchesSchool = filterSchoolLevel === 'all' || p.schoolLevel === filterSchoolLevel;
-        const matchesGrade = filterGrade === 'all' || String(p.grade) === String(filterGrade);
-        return matchesSearch && matchesType && matchesSchool && matchesGrade;
+        return matchesSearch && matchesType && matchesSchool;
     });
 
     const getTypeText = (type) => {
@@ -166,6 +164,7 @@ const PublicLibrary = () => {
             case 'fill-blanks': return '빈칸 채우기';
             case 'order-matching': return '순서 맞추기';
             case 'free-drop': return '자유 보드';
+            case 'free-dnd': return '자유 보드';
             default: return '기타';
         }
     };
@@ -179,135 +178,149 @@ const PublicLibrary = () => {
         );
     }
 
+    const currentTitle = filterSchoolLevel === 'all'
+        ? '전체 라이브러리'
+        : `${SCHOOL_LEVELS.find(l => l.value === filterSchoolLevel)?.label} ${selectedSubject !== 'all' ? SUBJECTS_MAP[selectedSubject] : ''}`;
+
     return (
         <div className="public-library">
-            <header className="library-header">
-                <div className="header-left">
-                    <div className="header-nav-btns">
-                        <button className="btn-back" onClick={() => navigate('/')} title="홈으로">
-                            <Home size={24} />
-                        </button>
-                        <button className="btn-back" onClick={() => navigate('/teacher/dashboard')} title="대시보드로">
-                            <ArrowLeft size={24} />
+            <div className="library-layout">
+                {/* 1. Sidebar */}
+                <aside className="library-sidebar">
+                    <div className="sidebar-header">
+                        <button className="btn-home-link" onClick={() => navigate('/')}>
+                            <Home size={20} /> DD Class
                         </button>
                     </div>
-                    <h1>공유 라이브러리 🌍</h1>
-                    <p>전국의 선생님들이 공유해주신 소중한 문제들입니다.</p>
-                </div>
-            </header>
 
-            <div className="library-controls">
-                <div className="search-bar">
-                    <Search size={20} />
-                    <input
-                        type="text"
-                        placeholder="전체 라이브러리에서 검색..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="filter-group">
-                    <select
-                        className="library-select"
-                        value={selectedSubject}
-                        onChange={(e) => setSelectedSubject(e.target.value)}
-                    >
-                        <option value="all">모든 유형</option>
-                        <option value="fill-blanks">빈칸 채우기</option>
-                        <option value="order-matching">순서 맞추기</option>
-                        <option value="free-drop">자유 보드</option>
-                    </select>
+                    <nav className="sidebar-nav">
+                        <div
+                            className={`sidebar-item main-item ${filterSchoolLevel === 'all' ? 'active' : ''}`}
+                            onClick={() => {
+                                setFilterSchoolLevel('all');
+                                setSelectedSubject('all');
+                            }}
+                        >
+                            전체보기 🌐
+                        </div>
 
-                    <select
-                        className="library-select"
-                        value={filterSchoolLevel}
-                        onChange={(e) => {
-                            setFilterSchoolLevel(e.target.value);
-                            setFilterGrade('all');
-                        }}
-                    >
-                        {SCHOOL_LEVELS.map(l => (
-                            <option key={l.value} value={l.value}>{l.label}</option>
-                        ))}
-                    </select>
-
-                    <select
-                        className="library-select"
-                        value={filterGrade}
-                        onChange={(e) => setFilterGrade(e.target.value)}
-                        disabled={filterSchoolLevel === 'all'}
-                    >
-                        <option value="all">모든 학년</option>
-                        {filterSchoolLevel !== 'all' && GRADES_MAP[filterSchoolLevel]?.map(g => (
-                            <option key={g} value={g}>{g}학년</option>
-                        ))}
-                    </select>
-                </div>
-            </div>
-
-            <main className="library-grid">
-                {filteredProblems.length === 0 ? (
-                    <div className="empty-state">
-                        <SearchX size={48} className="empty-icon" />
-                        <h3>검색 결과가 없습니다.</h3>
-                        <p>다른 검색어나 필터를 선택해보세요.</p>
-                    </div>
-                ) : (
-                    filteredProblems.map(problem => {
-                        const isLiked = currentUser && problem.likedBy?.includes(currentUser.uid);
-                        return (
-                            <div key={problem.id} className="library-card">
-                                <div className="card-top">
-                                    <span className={`type-badge ${problem.type}`}>
-                                        {getTypeText(problem.type)}
-                                    </span>
-                                    <button
-                                        className={`btn-like ${isLiked ? 'active' : ''}`}
-                                        onClick={(e) => handleLike(e, problem.id, isLiked)}
-                                    >
-                                        <Heart size={18} fill={isLiked ? "#FF5252" : "none"} color={isLiked ? "#FF5252" : "#999"} />
-                                        <span>{problem.likeCount || 0}</span>
-                                    </button>
-                                </div>
-
-                                <div className="card-body">
-                                    <h3 className="problem-title">{problem.title}</h3>
-                                    <div className="card-metadata-row">
-                                        {problem.subject && <span className="meta-badge subject">{SUBJECTS_MAP[problem.subject] || problem.subject}</span>}
-                                        {problem.schoolLevel && <span className="meta-badge level">
-                                            {SCHOOL_LEVELS.find(l => l.value === problem.schoolLevel)?.label || problem.schoolLevel}
-                                        </span>}
-                                        {problem.grade && <span className="meta-badge grade">{problem.grade}학년</span>}
-                                    </div>
-                                    <p className="problem-author">제작: {problem.teacherDisplayName || '선생님'}</p>
-                                </div>
-
-                                <div className="card-footer" style={{ gap: '0.5rem' }}>
-                                    <button
-                                        className="btn-import"
-                                        onClick={() => handleImport(problem)}
-                                        style={{ flex: 1 }}
-                                    >
-                                        <Download size={18} /> 가져오기
-                                    </button>
-                                    <button
-                                        className="btn-icon-secondary"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setPreviewProblem(problem);
-                                            setIsPreviewOpen(true);
-                                        }}
-                                        title="미리보기"
-                                        style={{ padding: '0.8rem' }}
-                                    >
-                                        <Eye size={20} />
-                                    </button>
+                        {SCHOOL_LEVELS.filter(l => l.value !== 'all').map(level => (
+                            <div key={level.value} className="sidebar-level-group">
+                                <div className="level-title">{level.label}</div>
+                                <div className="subject-list">
+                                    {Object.entries(SUBJECTS_MAP).map(([key, label]) => (
+                                        <div
+                                            key={key}
+                                            className={`sidebar-item subject-item ${filterSchoolLevel === level.value && selectedSubject === key ? 'active' : ''}`}
+                                            onClick={() => {
+                                                setFilterSchoolLevel(level.value);
+                                                setSelectedSubject(key);
+                                            }}
+                                        >
+                                            {label}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        );
-                    })
-                )}
-            </main>
+                        ))}
+                    </nav>
+                </aside>
+
+                {/* 2. Main Content */}
+                <main className="library-main">
+                    <header className="main-header">
+                        <div className="header-top">
+                            <div className="title-area">
+                                <h1>{currentTitle}</h1>
+                                <p className="selection-desc">
+                                    총 {filteredProblems.length}건의 콘텐츠가 있습니다.
+                                </p>
+                            </div>
+                            <div className="header-actions">
+                                <button className="btn-back-dash" onClick={() => navigate('/teacher/dashboard')}>
+                                    <ArrowLeft size={18} /> 내 보관함 가기
+                                </button>
+                                <div className="main-search">
+                                    <Search size={18} />
+                                    <input
+                                        type="text"
+                                        placeholder="결과 내 검색..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div className="library-grid-container">
+                        {filteredProblems.length === 0 ? (
+                            <div className="empty-state">
+                                <SearchX size={48} className="empty-icon" />
+                                <h3>검색 결과가 없습니다.</h3>
+                                <p>다른 검색어나 카테고리를 선택해보세요.</p>
+                            </div>
+                        ) : (
+                            <div className="library-grid">
+                                {filteredProblems.map(problem => {
+                                    const isLiked = currentUser && problem.likedBy?.includes(currentUser.uid);
+                                    return (
+                                        <div key={problem.id} className="library-card">
+                                            <div className={`card-thumb-box ${problem.type}`}>
+                                                <div className="thumb-icon-overlay">
+                                                    <BookOpen size={32} color="white" />
+                                                </div>
+                                                <span className="thumb-type-badge">{getTypeText(problem.type)}</span>
+                                            </div>
+
+                                            <div className="card-body">
+                                                <div className="card-meta">
+                                                    <span className="c-badge level">
+                                                        {SCHOOL_LEVELS.find(l => l.value === problem.schoolLevel)?.label}
+                                                    </span>
+                                                    <span className="c-badge subject">
+                                                        {SUBJECTS_MAP[problem.subject]}
+                                                    </span>
+                                                </div>
+                                                <h3 className="problem-title">{problem.title}</h3>
+
+                                                <div className="card-stats">
+                                                    <span className="p-author"><User size={14} /> {problem.teacherDisplayName || '선생님'}</span>
+                                                    <button
+                                                        className={`card-like-btn ${isLiked ? 'active' : ''}`}
+                                                        onClick={(e) => handleLike(e, problem.id, isLiked)}
+                                                    >
+                                                        <Heart size={14} fill={isLiked ? "#FF5252" : "none"} color={isLiked ? "#FF5252" : "#ccc"} />
+                                                        {problem.likeCount || 0}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="card-hover-actions">
+                                                <button
+                                                    className="btn-action-preview"
+                                                    onClick={() => {
+                                                        setPreviewProblem(problem);
+                                                        setIsPreviewOpen(true);
+                                                    }}
+                                                >
+                                                    <Eye size={18} /> 미리보기
+                                                </button>
+                                                <button
+                                                    className="btn-action-import"
+                                                    onClick={() => handleImport(problem)}
+                                                >
+                                                    <Download size={18} /> 가져오기
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </main>
+            </div>
 
             <StudentPreviewModal
                 isOpen={isPreviewOpen}
