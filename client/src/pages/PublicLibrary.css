@@ -365,6 +365,10 @@
     transition: color 0.2s;
 }
 
+.card-like-btn:hover {
+    color: #FF8A8A;
+}
+
 .card-like-btn.active {
     color: #FF5252;
 }

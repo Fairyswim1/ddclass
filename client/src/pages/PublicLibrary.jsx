@@ -301,6 +301,23 @@ const PublicLibrary = () => {
                                                     <BookOpen size={32} color="white" />
                                                 </div>
                                                 <span className="thumb-type-badge">{getTypeText(problem.type)}</span>
+                                                <div className="card-hover-actions">
+                                                    <button
+                                                        className="btn-action-preview"
+                                                        onClick={() => {
+                                                            setPreviewProblem(problem);
+                                                            setIsPreviewOpen(true);
+                                                        }}
+                                                    >
+                                                        <Eye size={18} /> 미리보기
+                                                    </button>
+                                                    <button
+                                                        className="btn-action-import"
+                                                        onClick={() => handleImport(problem)}
+                                                    >
+                                                        <Download size={18} /> 가져오기
+                                                    </button>
+                                                </div>
                                             </div>
 
                                             <div className="card-body">
@@ -326,23 +343,6 @@ const PublicLibrary = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="card-hover-actions">
-                                                <button
-                                                    className="btn-action-preview"
-                                                    onClick={() => {
-                                                        setPreviewProblem(problem);
-                                                        setIsPreviewOpen(true);
-                                                    }}
-                                                >
-                                                    <Eye size={18} /> 미리보기
-                                                </button>
-                                                <button
-                                                    className="btn-action-import"
-                                                    onClick={() => handleImport(problem)}
-                                                >
-                                                    <Download size={18} /> 가져오기
-                                                </button>
-                                            </div>
                                         </div>
                                     );
                                 })}
