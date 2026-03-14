@@ -8,9 +8,9 @@
 .game-nav {
     display: flex;
     justify-content: space-between;
-    padding: 1rem 5%;
-    background: white;
-    border-bottom: 3px solid #F0EEE9;
+    align-items: center;
+    padding: 1.2rem 5% 0.5rem 5%;
+    background: transparent;
 }
 
 .btn-back {
