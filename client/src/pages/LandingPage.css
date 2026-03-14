@@ -172,11 +172,13 @@
 
     0%,
     100% {
-        transform: translateY(0);
+        transform: translateY(0) translateZ(0);
+        /* Anti-aliasing text fix */
     }
 
     50% {
-        transform: translateY(-10px);
+        transform: translateY(-10px) translateZ(0);
+        /* Anti-aliasing text fix */
     }
 }
 
