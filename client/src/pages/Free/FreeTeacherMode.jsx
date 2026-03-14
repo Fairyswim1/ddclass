@@ -4,8 +4,9 @@ import { Upload, Type, Save, ArrowLeft, Image as ImageIcon, Plus, Trash2, Layout
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import { useAuth } from '../../contexts/AuthContext';
-import { db } from '../../firebase';
+import { db, storage } from '../../firebase';
 import { collection, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import './FreeTeacherMode.css';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
@@ -96,40 +97,33 @@ const FreeTeacherMode = () => {
                     await page.render({ canvasContext: context, viewport: viewport }).promise;
                     const dataUrl = canvas.toDataURL('image/png');
                     const blob = await (await fetch(dataUrl)).blob();
-                    const formData = new FormData();
-                    formData.append('image', blob, 'pdf-bg.png');
 
-                    const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/upload`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        setBackgroundUrl(data.url);
-                        setAspectRatio(viewport.width / viewport.height);
-                    }
+                    const fileName = `problems/bg_${Date.now()}.png`;
+                    const storageRef = ref(storage, fileName);
+                    await uploadBytes(storageRef, blob);
+                    const downloadUrl = await getDownloadURL(storageRef);
+
+                    setBackgroundUrl(downloadUrl);
+                    setAspectRatio(viewport.width / viewport.height);
                 } catch (err) {
                     alert('PDF 변환 오류: ' + err.message);
                 }
             };
             reader.readAsArrayBuffer(file);
         } else {
-            const formData = new FormData();
-            formData.append('image', file);
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                if (data.success) {
-                    setBackgroundUrl(data.url);
-                    const img = new Image();
-                    img.onload = () => setAspectRatio(img.naturalWidth / img.naturalHeight);
-                    img.src = data.url;
-                }
+                const fileName = `problems/bg_${Date.now()}_${file.name}`;
+                const storageRef = ref(storage, fileName);
+                await uploadBytes(storageRef, file);
+                const downloadUrl = await getDownloadURL(storageRef);
+
+                setBackgroundUrl(downloadUrl);
+                const img = new Image();
+                img.onload = () => setAspectRatio(img.naturalWidth / img.naturalHeight);
+                img.src = downloadUrl;
             } catch (error) {
-                console.error(error);
+                console.error('배경 이미지 업로드 오류:', error);
+                alert('이미지 업로드에 실패했습니다.');
             }
         }
     };
@@ -167,26 +161,24 @@ const FreeTeacherMode = () => {
     const handleAddImage = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const formData = new FormData();
-        formData.append('image', file);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com'}/api/upload`, {
-                method: 'POST',
-                body: formData
-            });
-            const data = await response.json();
-            if (data.success) {
-                const newItem = {
-                    id: Date.now().toString(),
-                    type: 'image',
-                    imageUrl: data.url,
-                    width: 15
-                };
-                setItems([...items, newItem]);
-            }
+            const fileName = `problems/item_${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, fileName);
+            await uploadBytes(storageRef, file);
+            const downloadUrl = await getDownloadURL(storageRef);
+
+            const newItem = {
+                id: Date.now().toString(),
+                type: 'image',
+                imageUrl: downloadUrl,
+                width: 15
+            };
+            setItems([...items, newItem]);
         } catch (error) {
-            console.error(error);
+            console.error('아이템 이미지 업로드 오류:', error);
+            alert('이미지 업로드에 실패했습니다.');
         }
+        e.target.value = ''; // Reset input so same file can be selected again
     };
 
     const updateItemWidth = (id, newWidth) => {

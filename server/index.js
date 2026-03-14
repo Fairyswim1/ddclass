@@ -134,43 +134,8 @@ app.get('/api/order-matching/:id', async (req, res) => {
 // -----------------------------------------------------
 // Feature 3: 자유 드래그앤드롭 API [NEW]
 // -----------------------------------------------------
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
-// 업로드 디렉토리 확인 및 생성
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
-
-// Multer 설정
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ storage: storage });
-
-// 정적 파일 서빙: 업로드된 이미지 접근
-app.use('/uploads', express.static('uploads'));
-
-// 1. 이미지 업로드 (배경 이미지 등)
-app.post('/api/upload', upload.single('image'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ success: false, message: '파일이 업로드되지 않았습니다.' });
-  }
-  // 클라이언트에서 환경 변수에 따라 조합할 수 있도록 상대 경로만 반환
-  const fileUrl = `/uploads/${req.file.filename}`;
-  res.json({ success: true, url: fileUrl });
-});
-
-// 2. 자유 드래그앤드롭 문제 생성
+// 1. 자유 드래그앤드롭 문제 생성
 app.post('/api/free-drop', async (req, res) => {
   try {
     const { title, backgroundUrl, items, baseWidth, aspectRatio, teacherId, isPublic } = req.body;
