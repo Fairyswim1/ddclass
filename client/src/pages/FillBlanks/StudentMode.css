@@ -154,6 +154,11 @@
     transform: scale(1.2);
 }
 
+.draggable-filled:active {
+    opacity: 0.6;
+    cursor: grabbing !important;
+}
+
 .blank-slot.filled:hover .btn-remove-word {
     opacity: 1 !important;
     display: flex !important;

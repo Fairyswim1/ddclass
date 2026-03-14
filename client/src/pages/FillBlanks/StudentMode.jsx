@@ -18,6 +18,7 @@ const StudentMode = () => {
     const [problem, setProblem] = useState(null);
     const [userAnswers, setUserAnswers] = useState({}); // { blankId: word }
     const [draggedWord, setDraggedWord] = useState(null);
+    const [sourceBlankId, setSourceBlankId] = useState(null); // 추가: 드래그 시작된 빈칸 ID
     const [shuffledWords, setShuffledWords] = useState([]);
 
     // 5. 메시지 수신 (Toast Notification)
@@ -102,22 +103,47 @@ const StudentMode = () => {
     };
 
     // 2. Drag & Drop 핸들러 (ProofGame.js 로직 응용)
-    const handleDragStart = (e, word) => {
+    const handleDragStart = (e, word, sourceId = null) => {
         setDraggedWord(word);
-        e.dataTransfer.effectAllowed = 'copy';
+        setSourceBlankId(sourceId); // 어디서부터 드래그를 시작했는지 (보관함이면 null)
+        e.dataTransfer.effectAllowed = 'copyMove';
     };
 
     const handleDragOver = (e) => {
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
+        e.dataTransfer.dropEffect = 'copyMove';
     };
 
-    const handleDrop = (e, blankId) => {
+    const handleDropOnBlank = (e, targetBlankId) => {
         e.preventDefault();
         if (draggedWord) {
-            const newAnswers = { ...userAnswers, [blankId]: draggedWord };
+            const newAnswers = { ...userAnswers };
+
+            // 1. 이미 타겟 빈칸에 단어가 있는 경우 스왑 처리
+            const existingWordInTarget = newAnswers[targetBlankId];
+
+            if (existingWordInTarget) {
+                if (sourceBlankId && sourceBlankId !== targetBlankId) {
+                    // 다른 빈칸에서 가져온 경우: 기존 단어를 원래 빈칸으로 이동 (스왑)
+                    newAnswers[sourceBlankId] = existingWordInTarget;
+                } else {
+                    // 보관함에서 가져온 경우: 기존 단어는 자연스럽게 덮어써져서 보관함으로 돌아감
+                    if (sourceBlankId) delete newAnswers[sourceBlankId];
+                }
+            } else {
+                // 타겟 빈칸이 비어있는 경우
+                if (sourceBlankId && sourceBlankId !== targetBlankId) {
+                    // 다른 빈칸에서 가져온 경우: 원래 빈칸 비우기
+                    delete newAnswers[sourceBlankId];
+                }
+            }
+
+            // 2. 타겟 빈칸에 드래그한 단어 넣기
+            newAnswers[targetBlankId] = draggedWord;
+
             setUserAnswers(newAnswers);
             setDraggedWord(null);
+            setSourceBlankId(null);
 
             // 정답 제출 (실시간)
             socket?.emit('submitAnswer', {
@@ -125,6 +151,16 @@ const StudentMode = () => {
                 studentName: nickname,
                 answer: newAnswers
             });
+        }
+    };
+
+    const handleDropOnTray = (e) => {
+        e.preventDefault();
+        // 빈칸에서 드래그해온 단어라면 보관함에 놓을 때 취소(제거) 처리
+        if (draggedWord && sourceBlankId) {
+            handleRemoveAnswer(sourceBlankId);
+            setDraggedWord(null);
+            setSourceBlankId(null);
         }
     };
 
@@ -168,15 +204,21 @@ const StudentMode = () => {
                         return (
                             <span
                                 key={index}
-                                className={`blank-slot ${userAnswer ? 'filled' : ''}`}
+                                className={`blank-slot ${userAnswer ? 'filled draggable-filled' : ''}`}
                                 onDragOver={handleDragOver}
-                                onDrop={(e) => handleDrop(e, blank.id)}
+                                onDrop={(e) => handleDropOnBlank(e, blank.id)}
                                 onClick={() => userAnswer && handleRemoveAnswer(blank.id)}
+                                draggable={!!userAnswer}
+                                onDragStart={(e) => userAnswer && handleDragStart(e, userAnswer, blank.id)}
+                                style={{ cursor: userAnswer ? 'grab' : 'default' }}
                             >
                                 {userAnswer ? (
                                     <>
                                         <LatexRenderer text={userAnswer} />
-                                        <button className="btn-remove-word" aria-label="단어 되돌리기">
+                                        <button className="btn-remove-word" aria-label="단어 되돌리기" onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveAnswer(blank.id);
+                                        }}>
                                             <X size={12} />
                                         </button>
                                     </>
@@ -223,12 +265,16 @@ const StudentMode = () => {
         }
 
         return (
-            <div className="word-bank">
+            <div
+                className="word-bank"
+                onDragOver={handleDragOver}
+                onDrop={handleDropOnTray}
+            >
                 <h3>
                     단어 카드
                     {problem.allowDuplicates
                         ? ' (팁: 같은 단어를 여러 번 쓸 수 있습니다)'
-                        : ' (드래그하여 빈칸을 채우세요)'}
+                        : ' (드래그하여 빈칸을 채우거나 보관함으로 돌려보내세요)'}
                 </h3>
                 <div className="cards-grid">
                     {visibleWords.map((item) => (

@@ -6,6 +6,7 @@ import '../../pages/FillBlanks/StudentMode.css';
 const FillBlanksPreview = ({ problem }) => {
     const [userAnswers, setUserAnswers] = useState({});
     const [draggedWord, setDraggedWord] = useState(null);
+    const [sourceBlankId, setSourceBlankId] = useState(null);
     const [shuffledWords, setShuffledWords] = useState([]);
 
     useEffect(() => {
@@ -15,21 +16,49 @@ const FillBlanksPreview = ({ problem }) => {
         }
     }, [problem]);
 
-    const handleDragStart = (e, word) => {
+    const handleDragStart = (e, word, sourceId = null) => {
         setDraggedWord(word);
-        e.dataTransfer.effectAllowed = 'copy';
+        setSourceBlankId(sourceId);
+        e.dataTransfer.effectAllowed = 'copyMove';
     };
 
     const handleDragOver = (e) => {
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
+        e.dataTransfer.dropEffect = 'copyMove';
     };
 
-    const handleDrop = (e, blankId) => {
+    const handleDropOnBlank = (e, targetBlankId) => {
         e.preventDefault();
         if (draggedWord) {
-            setUserAnswers({ ...userAnswers, [blankId]: draggedWord });
+            const newAnswers = { ...userAnswers };
+            const existingWordInTarget = newAnswers[targetBlankId];
+
+            if (existingWordInTarget) {
+                if (sourceBlankId && sourceBlankId !== targetBlankId) {
+                    newAnswers[sourceBlankId] = existingWordInTarget;
+                } else {
+                    if (sourceBlankId) delete newAnswers[sourceBlankId];
+                }
+            } else {
+                if (sourceBlankId && sourceBlankId !== targetBlankId) {
+                    delete newAnswers[sourceBlankId];
+                }
+            }
+
+            newAnswers[targetBlankId] = draggedWord;
+
+            setUserAnswers(newAnswers);
             setDraggedWord(null);
+            setSourceBlankId(null);
+        }
+    };
+
+    const handleDropOnTray = (e) => {
+        e.preventDefault();
+        if (draggedWord && sourceBlankId) {
+            handleRemoveAnswer(sourceBlankId);
+            setDraggedWord(null);
+            setSourceBlankId(null);
         }
     };
 
@@ -61,15 +90,21 @@ const FillBlanksPreview = ({ problem }) => {
                         return (
                             <span
                                 key={index}
-                                className={`blank-slot ${userAnswer ? 'filled' : ''}`}
+                                className={`blank-slot ${userAnswer ? 'filled draggable-filled' : ''}`}
                                 onDragOver={handleDragOver}
-                                onDrop={(e) => handleDrop(e, blank.id)}
+                                onDrop={(e) => handleDropOnBlank(e, blank.id)}
                                 onClick={() => userAnswer && handleRemoveAnswer(blank.id)}
+                                draggable={!!userAnswer}
+                                onDragStart={(e) => userAnswer && handleDragStart(e, userAnswer, blank.id)}
+                                style={{ cursor: userAnswer ? 'grab' : 'default' }}
                             >
                                 {userAnswer ? (
                                     <>
                                         <LatexRenderer text={userAnswer} />
-                                        <button className="btn-remove-word">
+                                        <button className="btn-remove-word" onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveAnswer(blank.id);
+                                        }}>
                                             <X size={12} />
                                         </button>
                                     </>
@@ -103,8 +138,12 @@ const FillBlanksPreview = ({ problem }) => {
         }
 
         return (
-            <div className="word-bank">
-                <h3>단어 카드 {problem.allowDuplicates ? '(무한)' : '(드래그)'}</h3>
+            <div
+                className="word-bank"
+                onDragOver={handleDragOver}
+                onDrop={handleDropOnTray}
+            >
+                <h3>단어 카드 {problem.allowDuplicates ? '(무한)' : '(드래그 또는 보관함 이동)'}</h3>
                 <div className="cards-grid">
                     {visibleWords.map((item) => (
                         <div
