@@ -31,18 +31,9 @@ const FillBlanksPreview = ({ problem }) => {
         e.preventDefault();
         if (draggedWord) {
             const newAnswers = { ...userAnswers };
-            const existingWordInTarget = newAnswers[targetBlankId];
 
-            if (existingWordInTarget) {
-                if (sourceBlankId && sourceBlankId !== targetBlankId) {
-                    newAnswers[sourceBlankId] = existingWordInTarget;
-                } else {
-                    if (sourceBlankId) delete newAnswers[sourceBlankId];
-                }
-            } else {
-                if (sourceBlankId && sourceBlankId !== targetBlankId) {
-                    delete newAnswers[sourceBlankId];
-                }
+            if (sourceBlankId && sourceBlankId !== targetBlankId) {
+                delete newAnswers[sourceBlankId];
             }
 
             newAnswers[targetBlankId] = draggedWord;

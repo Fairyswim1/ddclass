@@ -119,26 +119,13 @@ const StudentMode = () => {
         if (draggedWord) {
             const newAnswers = { ...userAnswers };
 
-            // 1. 이미 타겟 빈칸에 단어가 있는 경우 스왑 처리
-            const existingWordInTarget = newAnswers[targetBlankId];
-
-            if (existingWordInTarget) {
-                if (sourceBlankId && sourceBlankId !== targetBlankId) {
-                    // 다른 빈칸에서 가져온 경우: 기존 단어를 원래 빈칸으로 이동 (스왑)
-                    newAnswers[sourceBlankId] = existingWordInTarget;
-                } else {
-                    // 보관함에서 가져온 경우: 기존 단어는 자연스럽게 덮어써져서 보관함으로 돌아감
-                    if (sourceBlankId) delete newAnswers[sourceBlankId];
-                }
-            } else {
-                // 타겟 빈칸이 비어있는 경우
-                if (sourceBlankId && sourceBlankId !== targetBlankId) {
-                    // 다른 빈칸에서 가져온 경우: 원래 빈칸 비우기
-                    delete newAnswers[sourceBlankId];
-                }
+            // 1. 다른 빈칸에서 가져온 경우: 원래 빈칸 비우기 (스왑 대신 보관함 반환)
+            if (sourceBlankId && sourceBlankId !== targetBlankId) {
+                delete newAnswers[sourceBlankId];
             }
 
-            // 2. 타겟 빈칸에 드래그한 단어 넣기
+            // 2. 타겟 빈칸에 드래그한 단어 넣기 
+            // (기존 단어가 있다면 덮어써져서 보관함으로 자동 반환됨)
             newAnswers[targetBlankId] = draggedWord;
 
             setUserAnswers(newAnswers);
