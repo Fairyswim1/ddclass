@@ -169,6 +169,56 @@
     transform: scale(1.1) rotate(90deg);
 }
 
+/* Navigation Layer */
+.game-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 2rem;
+    background-color: var(--color-bg-light);
+    border-bottom: 2px solid #F0E6D2;
+    flex-shrink: 0;
+    z-index: 100;
+}
+
+.btn-back {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    border: 2px solid #F0EEE9;
+    color: #8D7B75;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s;
+}
+
+.btn-back:hover {
+    background: #FFF0F0;
+    color: #FF6B6B;
+    border-color: #FF6B6B;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: #F0F9FF;
+    color: var(--color-brand-blue);
+    padding: 0.5rem 1.2rem;
+    border-radius: var(--radius-round);
+    font-weight: 800;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 8px rgba(79, 182, 255, 0.1);
+}
+
+.user-info span {
+    font-weight: 800;
+}
+
 /* Feedback Toast */
 .teacher-feedback-toast {
     position: fixed;
@@ -208,6 +258,7 @@
     line-height: 1.5;
 }
 
+/* Animations */
 @keyframes toastSlideIn {
     from {
         transform: translate(-50%, -100px);
