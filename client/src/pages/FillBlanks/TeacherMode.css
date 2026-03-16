@@ -26,9 +26,9 @@
 .teacher-main-layout {
     flex: 1;
     display: grid;
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 1fr 340px;
     gap: 2rem;
-    max-width: 1200px;
+    max-width: 1850px;
     width: 100%;
     margin: 0 auto;
     padding: 1rem 2rem 2rem 2rem;
@@ -88,7 +88,7 @@
 }
 
 .teacher-top-banner-wrapper {
-    max-width: 1200px;
+    max-width: 1850px;
     width: 100%;
     margin: 1rem auto 0;
     padding: 0 2rem;
