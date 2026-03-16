@@ -4,9 +4,8 @@ import { Upload, Type, Save, ArrowLeft, Image as ImageIcon, Plus, Trash2, Layout
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 import { useAuth } from '../../contexts/AuthContext';
-import { db, storage } from '../../firebase';
-import { collection, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db } from '../../firebase';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import './FreeTeacherMode.css';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
@@ -98,13 +97,23 @@ const FreeTeacherMode = () => {
                     const dataUrl = canvas.toDataURL('image/png');
                     const blob = await (await fetch(dataUrl)).blob();
 
-                    const fileName = `problems/bg_${Date.now()}.png`;
-                    const storageRef = ref(storage, fileName);
-                    await uploadBytes(storageRef, blob);
-                    const downloadUrl = await getDownloadURL(storageRef);
+                    // 서버 프록시 업로드 사용
+                    const formData = new FormData();
+                    formData.append('file', blob, `bg_${Date.now()}.png`);
+                    formData.append('folder', 'problems');
 
-                    setBackgroundUrl(downloadUrl);
-                    setAspectRatio(viewport.width / viewport.height);
+                    const response = await fetch(resolveApiUrl('/api/upload'), {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        setBackgroundUrl(result.url);
+                        setAspectRatio(viewport.width / viewport.height);
+                    } else {
+                        throw new Error(result.message || '업로드 실패');
+                    }
                 } catch (err) {
                     alert('PDF 변환 오류: ' + err.message);
                 }
@@ -112,15 +121,26 @@ const FreeTeacherMode = () => {
             reader.readAsArrayBuffer(file);
         } else {
             try {
-                const fileName = `problems/bg_${Date.now()}_${file.name}`;
-                const storageRef = ref(storage, fileName);
-                await uploadBytes(storageRef, file);
-                const downloadUrl = await getDownloadURL(storageRef);
+                // 서버 프록시 업로드 사용
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('folder', 'problems');
 
-                setBackgroundUrl(downloadUrl);
-                const img = new Image();
-                img.onload = () => setAspectRatio(img.naturalWidth / img.naturalHeight);
-                img.src = downloadUrl;
+                const response = await fetch(resolveApiUrl('/api/upload'), {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    const downloadUrl = result.url;
+                    setBackgroundUrl(downloadUrl);
+                    const img = new Image();
+                    img.onload = () => setAspectRatio(img.naturalWidth / img.naturalHeight);
+                    img.src = downloadUrl;
+                } else {
+                    throw new Error(result.message || '업로드 실패');
+                }
             } catch (error) {
                 console.error('배경 이미지 업로드 오류:', error);
                 alert('이미지 업로드에 실패했습니다.');
@@ -162,18 +182,29 @@ const FreeTeacherMode = () => {
         const file = e.target.files[0];
         if (!file) return;
         try {
-            const fileName = `problems/item_${Date.now()}_${file.name}`;
-            const storageRef = ref(storage, fileName);
-            await uploadBytes(storageRef, file);
-            const downloadUrl = await getDownloadURL(storageRef);
+            // 서버 프록시 업로드 사용
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folder', 'problems');
 
-            const newItem = {
-                id: Date.now().toString(),
-                type: 'image',
-                imageUrl: downloadUrl,
-                width: 15
-            };
-            setItems([...items, newItem]);
+            const response = await fetch(resolveApiUrl('/api/upload'), {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                const downloadUrl = result.url;
+                const newItem = {
+                    id: Date.now().toString(),
+                    type: 'image',
+                    imageUrl: downloadUrl,
+                    width: 15
+                };
+                setItems([...items, newItem]);
+            } else {
+                throw new Error(result.message || '업로드 실패');
+            }
         } catch (error) {
             console.error('아이템 이미지 업로드 오류:', error);
             alert('이미지 업로드에 실패했습니다.');

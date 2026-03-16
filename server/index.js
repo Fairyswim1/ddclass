@@ -2,6 +2,8 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -12,10 +14,21 @@ const admin = require('firebase-admin');
 // 일단 프로젝트 ID만으로 초기화를 시도합니다 (환경 변수 권장).
 if (!admin.apps.length) {
   admin.initializeApp({
-    projectId: 'ddclass-c4dff'
+    projectId: 'ddclass-c4dff',
+    storageBucket: 'ddclass-c4dff.firebasestorage.app'
   });
 }
 const db = admin.firestore();
+const storage = admin.storage();
+const bucket = storage.bucket();
+
+// Multer 설정 (메모리 저장소 사용)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB 제한
+  },
+});
 
 // CORS 설정
 // CORS 설정
@@ -176,6 +189,38 @@ app.get('/api/free-drop/:id', async (req, res) => {
     res.json({ success: true, problem: doc.data() });
   } catch (error) {
     res.status(500).json({ success: false, message: '서버 오류' });
+  }
+});
+
+// -----------------------------------------------------
+// Feature 4: 이미지 업로드 API (Firebase Storage Proxy)
+// -----------------------------------------------------
+app.post('/api/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: '파일이 없습니다.' });
+    }
+
+    const folder = req.body.folder || 'misc';
+    const fileName = `${folder}/${Date.now()}_${req.file.originalname}`;
+    const file = bucket.file(fileName);
+
+    // Firebase Storage에 업로드
+    await file.save(req.file.buffer, {
+      metadata: {
+        contentType: req.file.mimetype,
+      },
+      public: true, // 공개 읽기 권한 부여 (CORS 우회 및 간편한 접근을 위함)
+    });
+
+    // 공개 URL 생성 (Firebase Storage의 표준 공개 URL 형식)
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+
+    console.log(`[UPLOAD] 파일 업로드 완료: ${publicUrl}`);
+    res.json({ success: true, url: publicUrl });
+  } catch (error) {
+    console.error('파일 업로드 실패:', error);
+    res.status(500).json({ success: false, message: '업로드 중 서버 오류 발생' });
   }
 });
 
