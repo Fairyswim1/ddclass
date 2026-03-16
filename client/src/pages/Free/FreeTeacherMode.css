@@ -97,7 +97,9 @@
 .guide-card-horizontal {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    justify-content: center;
+    /* Center steps now that title is gone */
+    gap: 2rem;
     max-width: 1600px;
     margin: 0 auto;
 }
@@ -181,7 +183,8 @@
 
 .sidebar-content {
     flex: 1;
-    padding: 0.8rem 1.2rem;
+    padding: 0.4rem 1.2rem 1.2rem;
+    /* Reduced top padding to move title up */
     overflow-y: visible;
 }
 
