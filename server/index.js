@@ -1,3 +1,4 @@
+// Last Redeploy Trigger: 2026-03-16 10:18 (Environment setup ready)
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
