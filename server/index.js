@@ -10,11 +10,30 @@ const server = http.createServer(app);
 
 // Firebase Admin SDK 설정
 const admin = require('firebase-admin');
-// 로컬 환경 또는 특정 배포 환경에 따라 서비스 계정 키 설정이 필요할 수 있습니다.
-// 일단 프로젝트 ID만으로 초기화를 시도합니다 (환경 변수 권장).
+
+// 서비스 계정 키 (환경 변수 사용 권장)
+const serviceAccount = {
+  "type": "service_account",
+  "project_id": process.env.FIREBASE_PROJECT_ID || "ddclass-c4dff",
+  "private_key_id": process.env.FIREBASE_PRIVATE_KEY_ID,
+  "private_key": process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+  "client_email": process.env.FIREBASE_CLIENT_EMAIL,
+  "client_id": process.env.FIREBASE_CLIENT_ID,
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": process.env.FIREBASE_CLIENT_CERT_URL,
+  "universe_domain": "googleapis.com"
+};
+
 if (!admin.apps.length) {
+  // 환경 변수가 모두 설정되어 있을 때만 cert 인증 사용, 아니면 프로젝트 ID만 사용
+  const config = (serviceAccount.private_key && serviceAccount.client_email)
+    ? { credential: admin.credential.cert(serviceAccount) }
+    : { projectId: 'ddclass-c4dff' };
+
   admin.initializeApp({
-    projectId: 'ddclass-c4dff',
+    ...config,
     storageBucket: 'ddclass-c4dff.firebasestorage.app'
   });
 }
