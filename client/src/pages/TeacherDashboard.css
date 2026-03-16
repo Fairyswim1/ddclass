@@ -1,7 +1,9 @@
 .teacher-dashboard {
-    max-width: 1200px;
+    max-width: 1800px;
+    /* Increased from 1200px */
     margin: 0 auto;
-    padding: 2rem 5%;
+    padding: 2rem 2.5%;
+    /* Reduced side padding slightly */
     min-height: 100vh;
 }
 

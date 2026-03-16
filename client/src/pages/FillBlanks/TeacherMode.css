@@ -1,3 +1,15 @@
+.fill-blanks-container {
+    max-width: 1850px;
+    /* Increased from 1200px */
+    margin: 0 auto;
+    padding: 1.5rem;
+    background-color: var(--color-bg-light);
+    min-height: 100vh;
+    display: flex;
+    /* Added missing display property */
+    flex-direction: column;
+}
+
 .teacher-mode-container {
     min-height: 100vh;
     background-color: var(--color-bg-light);
@@ -62,6 +74,13 @@
 .teacher-welcome-area {
     /* Deprecated or kept for reference? */
     display: none;
+}
+
+.teacher-top.fill-blanks-main {
+    max-width: 1850px;
+    /* Increased from 1200px */
+    margin: 0 auto;
+    width: 100%;
 }
 
 .teacher-top-banner-wrapper {

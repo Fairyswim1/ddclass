@@ -8,7 +8,8 @@
 .om-game-content {
     flex: 1;
     width: 100%;
-    max-width: 1600px;
+    max-width: 1850px;
+    /* Increased from 1600px */
     margin: 0 auto;
     padding: 1.5rem 2rem;
     display: flex;

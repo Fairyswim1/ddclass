@@ -1,6 +1,10 @@
-.teacher-mode-container {
-    min-height: 100vh;
+.order-teacher-container {
+    max-width: 1850px;
+    /* Increased from 1200px */
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
     background-color: var(--color-bg-light);
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
@@ -69,6 +73,13 @@
     width: 100%;
     margin: 1rem auto 0;
     padding: 0 2rem;
+}
+
+.teacher-top-bann.order-main-content {
+    max-width: 1850px;
+    /* Increased from 1200px */
+    margin: 0 auto;
+    width: 100%;
 }
 
 .teacher-top-banner {

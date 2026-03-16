@@ -1,7 +1,8 @@
 .free-monitor-container {
-    padding: 2rem;
-    max-width: 1400px;
+    max-width: 1850px;
+    /* Increased from 1400px */
     margin: 0 auto;
+    padding: 2rem;
     min-height: 100vh;
 }
 

@@ -1,6 +1,9 @@
 .fb-student-container {
+    max-width: 1850px;
+    /* Increased from 1600px */
+    margin: 0 auto;
+    padding: 1.5rem;
     min-height: 100vh;
-    background-color: var(--color-bg-light);
     display: flex;
     flex-direction: column;
 }

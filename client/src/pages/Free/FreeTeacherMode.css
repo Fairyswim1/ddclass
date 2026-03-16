@@ -100,7 +100,8 @@
     justify-content: center;
     /* Center steps now that title is gone */
     gap: 2rem;
-    max-width: 1600px;
+    max-width: 2200px;
+    /* Increased to match canvas */
     margin: 0 auto;
 }
 
