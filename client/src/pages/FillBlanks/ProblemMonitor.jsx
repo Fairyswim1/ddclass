@@ -337,27 +337,40 @@ const ProblemMonitor = ({ problemData }) => {
                                     </div>
                                 ) : (
                                     // Fill Blanks View
-                                    (problemData?.originalText || '').split(/\s+/).map((word, index) => {
-                                        // Find if this index matches a blank
-                                        const blank = activeBlanks.find(b => b.index === index);
-
-                                        if (blank) {
-                                            const studentAns = selectedStudent?.answer?.[blank.id];
-                                            const isCorrect = studentAns === blank.word;
-                                            const isFilled = !!studentAns;
-
-                                            return (
-                                                <span
-                                                    key={index}
-                                                    className={`mirrored-blank ${isFilled ? (isCorrect ? 'correct' : 'incorrect') : 'empty'}`}
-                                                >
-                                                    <LatexRenderer text={studentAns || '(빈칸)'} />
-                                                    {isFilled && !isCorrect && <span className="correct-answer-hint">(<LatexRenderer text={blank.word} />)</span>}
-                                                </span>
-                                            );
+                                    (() => {
+                                        // 저장된 words 배열이 있으면 사용 (조사 분리 적용된 새 문제), 없으면 regex fallback (구 문제 호환)
+                                        let tokens;
+                                        if (problemData.words && Array.isArray(problemData.words)) {
+                                            tokens = problemData.words;
+                                        } else {
+                                            const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\n|\S+)/g;
+                                            tokens = (problemData?.originalText || '').match(regex) || [];
                                         }
-                                        return <span key={index}><LatexRenderer text={word} /> </span>;
-                                    })
+
+                                        return tokens.map((word, index) => {
+                                            if (word === '\n') return <br key={index} />;
+
+                                            // Find if this index matches a blank
+                                            const blank = activeBlanks.find(b => b.index === index);
+
+                                            if (blank) {
+                                                const studentAns = selectedStudent?.answer?.[blank.id];
+                                                const isCorrect = studentAns === blank.word;
+                                                const isFilled = !!studentAns;
+
+                                                return (
+                                                    <span
+                                                        key={index}
+                                                        className={`mirrored-blank ${isFilled ? (isCorrect ? 'correct' : 'incorrect') : 'empty'}`}
+                                                    >
+                                                        <LatexRenderer text={studentAns || '(빈칸)'} />
+                                                        {isFilled && !isCorrect && <span className="correct-answer-hint">(<LatexRenderer text={blank.word} />)</span>}
+                                                    </span>
+                                                );
+                                            }
+                                            return <span key={index} className="normal-word"><LatexRenderer text={word} /> </span>;
+                                        });
+                                    })()
                                 )}
                             </div>
 
