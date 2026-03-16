@@ -120,23 +120,24 @@
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    padding: 0.4rem 0.8rem;
+    padding: 0.6rem 1rem;
     background: white;
     border: 1px solid #F0E6D2;
     border-radius: 12px;
     flex: 1;
+    min-width: 0;
 }
 
 .step-num-h {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     background: #E6B400;
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 800;
     flex-shrink: 0;
 }
@@ -145,7 +146,9 @@
     font-size: 0.85rem;
     color: #5D4037;
     margin: 0;
-    font-weight: 600;
+    font-weight: 700;
+    line-height: 1.3;
+    word-break: keep-all;
 }
 
 .tip-box-h {
@@ -574,6 +577,8 @@
     gap: 0.5rem;
     cursor: pointer;
     transition: all 0.2s;
+    font-size: 0.85rem;
+    white-space: nowrap;
 }
 
 .btn-sidebar-primary-large:hover {
