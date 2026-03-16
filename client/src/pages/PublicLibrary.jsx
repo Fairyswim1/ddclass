@@ -74,13 +74,6 @@ const PublicLibrary = () => {
 
     useEffect(() => {
         fetchPublicProblems();
-
-        // Handle full-screen layout surgically for library sidebar
-        const root = document.getElementById('root');
-        if (root) {
-            root.classList.add('full-width-layout');
-            return () => root.classList.remove('full-width-layout');
-        }
     }, []);
 
     const fetchPublicProblems = async () => {

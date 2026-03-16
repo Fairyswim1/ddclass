@@ -1,11 +1,3 @@
-/* Surgical override for global #root constraints */
-#root.full-width-layout {
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    text-align: left !important;
-}
-
 .public-library {
     width: 100%;
     min-height: 100vh;
