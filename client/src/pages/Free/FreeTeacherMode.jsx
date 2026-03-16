@@ -204,47 +204,48 @@ const FreeTeacherMode = () => {
     };
 
     const handleAddImage = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
         try {
-            // 서버 프록시 업로드 사용
-            console.log('[DEBUG] Starting item image upload via proxy...');
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('folder', 'problems');
+            console.log(`[DEBUG] Starting ${files.length} item image upload(s) via proxy...`);
 
-            const uploadUrl = resolveApiUrl('/api/upload');
-            console.log('[DEBUG] Upload URL:', uploadUrl);
+            // Loop through all selected files
+            const uploadPromises = files.map(async (file) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('folder', 'problems');
 
-            const response = await fetch(uploadUrl, {
-                method: 'POST',
-                body: formData
-            });
+                const uploadUrl = resolveApiUrl('/api/upload');
+                const response = await fetch(uploadUrl, {
+                    method: 'POST',
+                    body: formData
+                });
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('[DEBUG] Item upload response not OK:', response.status, errorText);
-                throw new Error(`서버 응답 오류 (상태: ${response.status})`);
-            }
+                if (!response.ok) {
+                    throw new Error(`업로드 실패: ${file.name} (상태: ${response.status})`);
+                }
 
-            const result = await response.json();
-            console.log('[DEBUG] Item upload result:', result);
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.message || `${file.name} 업로드 실패`);
+                }
 
-            if (result.success) {
-                const downloadUrl = result.url;
-                const newItem = {
-                    id: Date.now().toString(),
+                return {
+                    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
                     type: 'image',
-                    imageUrl: downloadUrl,
+                    imageUrl: result.url,
                     width: 15
                 };
-                setItems([...items, newItem]);
-            } else {
-                throw new Error(result.message || '업로드 실패');
-            }
+            });
+
+            const newItems = await Promise.all(uploadPromises);
+            setItems(prev => [...prev, ...newItems]);
+            console.log(`[DEBUG] Successfully uploaded ${newItems.length} items.`);
+
         } catch (error) {
-            console.error('[DEBUG] Detailed item upload error:', error);
-            alert('아이템 이미지 추가 중 오류 발생: ' + error.message + '\n콘솔(F12)을 확인해주세요.');
+            console.error('[DEBUG] Detailed multiple upload error:', error);
+            alert('이미지 추가 중 오류 발생: ' + error.message + '\n콘솔(F12)을 확인해주세요.');
         }
         e.target.value = ''; // Reset input so same file can be selected again
     };
@@ -443,9 +444,9 @@ const FreeTeacherMode = () => {
                                         <div className="card-type-section image-type">
                                             <div className="section-label"><ImageIcon size={16} /> 이미지 카드</div>
                                             <button className="btn-sidebar-primary-large" onClick={() => itemImageInputRef.current.click()}>
-                                                <Upload size={18} /> 이미지 업로드
+                                                <Upload size={18} /> 이미지 업로드 (다중 선택 가능)
                                             </button>
-                                            <input type="file" ref={itemImageInputRef} hidden onChange={handleAddImage} accept="image/*" />
+                                            <input type="file" ref={itemImageInputRef} hidden onChange={handleAddImage} accept="image/*" multiple />
                                         </div>
                                     </div>
 
@@ -457,7 +458,7 @@ const FreeTeacherMode = () => {
                                                 onChange={(e) => setAllowReuse(e.target.checked)}
                                             />
                                             <Copy size={14} />
-                                            <span className="toggle-text">&nbsp; 카드 복사 허용 (여러 번 사용)</span>
+                                            <span className="toggle-text">카드 복사 허용 (여러 번 사용)</span>
                                         </label>
                                     </div>
                                 </div>

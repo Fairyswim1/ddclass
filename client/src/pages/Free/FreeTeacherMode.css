@@ -622,19 +622,20 @@
 .reuse-label {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    /* Ensure gap between icon and text */
+    gap: 0.4rem;
     font-size: 0.85rem;
     color: #0369A1;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .reuse-label input[type="checkbox"] {
     accent-color: #0ea5e9;
+    margin: 0;
 }
 
 .reuse-label .toggle-text {
-    font-weight: 600;
+    font-weight: 700;
 }
 
 /* guide-sidebar 및 하위 스타일 제거 (JSX에서 삭제됨) */
