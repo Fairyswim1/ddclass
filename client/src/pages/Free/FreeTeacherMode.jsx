@@ -98,15 +98,27 @@ const FreeTeacherMode = () => {
                     const blob = await (await fetch(dataUrl)).blob();
 
                     // 서버 프록시 업로드 사용
+                    console.log('[DEBUG] Starting background upload via proxy...');
                     const formData = new FormData();
                     formData.append('file', blob, `bg_${Date.now()}.png`);
                     formData.append('folder', 'problems');
 
-                    const response = await fetch(resolveApiUrl('/api/upload'), {
+                    const uploadUrl = resolveApiUrl('/api/upload');
+                    console.log('[DEBUG] Upload URL:', uploadUrl);
+
+                    const response = await fetch(uploadUrl, {
                         method: 'POST',
                         body: formData
                     });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('[DEBUG] Upload response not OK:', response.status, errorText);
+                        throw new Error(`서버 응답 오류 (상태: ${response.status})`);
+                    }
+
                     const result = await response.json();
+                    console.log('[DEBUG] Upload result:', result);
 
                     if (result.success) {
                         setBackgroundUrl(result.url);
@@ -115,22 +127,35 @@ const FreeTeacherMode = () => {
                         throw new Error(result.message || '업로드 실패');
                     }
                 } catch (err) {
-                    alert('PDF 변환 오류: ' + err.message);
+                    console.error('[DEBUG] Detailed upload error:', err);
+                    alert('배경 이미지 설정 중 오류 발생: ' + err.message + '\n콘솔(F12)을 확인해주세요.');
                 }
             };
             reader.readAsArrayBuffer(file);
         } else {
             try {
                 // 서버 프록시 업로드 사용
+                console.log('[DEBUG] Starting image upload via proxy...');
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('folder', 'problems');
 
-                const response = await fetch(resolveApiUrl('/api/upload'), {
+                const uploadUrl = resolveApiUrl('/api/upload');
+                console.log('[DEBUG] Upload URL:', uploadUrl);
+
+                const response = await fetch(uploadUrl, {
                     method: 'POST',
                     body: formData
                 });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('[DEBUG] Upload response not OK:', response.status, errorText);
+                    throw new Error(`서버 응답 오류 (상태: ${response.status})`);
+                }
+
                 const result = await response.json();
+                console.log('[DEBUG] Upload result:', result);
 
                 if (result.success) {
                     const downloadUrl = result.url;
@@ -142,8 +167,8 @@ const FreeTeacherMode = () => {
                     throw new Error(result.message || '업로드 실패');
                 }
             } catch (error) {
-                console.error('배경 이미지 업로드 오류:', error);
-                alert('이미지 업로드에 실패했습니다.');
+                console.error('[DEBUG] Detailed upload error:', error);
+                alert('배경 이미지 업로드 오류: ' + error.message + '\n콘솔(F12)을 확인해주세요.');
             }
         }
     };
@@ -183,15 +208,27 @@ const FreeTeacherMode = () => {
         if (!file) return;
         try {
             // 서버 프록시 업로드 사용
+            console.log('[DEBUG] Starting item image upload via proxy...');
             const formData = new FormData();
             formData.append('file', file);
             formData.append('folder', 'problems');
 
-            const response = await fetch(resolveApiUrl('/api/upload'), {
+            const uploadUrl = resolveApiUrl('/api/upload');
+            console.log('[DEBUG] Upload URL:', uploadUrl);
+
+            const response = await fetch(uploadUrl, {
                 method: 'POST',
                 body: formData
             });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('[DEBUG] Item upload response not OK:', response.status, errorText);
+                throw new Error(`서버 응답 오류 (상태: ${response.status})`);
+            }
+
             const result = await response.json();
+            console.log('[DEBUG] Item upload result:', result);
 
             if (result.success) {
                 const downloadUrl = result.url;
@@ -206,8 +243,8 @@ const FreeTeacherMode = () => {
                 throw new Error(result.message || '업로드 실패');
             }
         } catch (error) {
-            console.error('아이템 이미지 업로드 오류:', error);
-            alert('이미지 업로드에 실패했습니다.');
+            console.error('[DEBUG] Detailed item upload error:', error);
+            alert('아이템 이미지 추가 중 오류 발생: ' + error.message + '\n콘솔(F12)을 확인해주세요.');
         }
         e.target.value = ''; // Reset input so same file can be selected again
     };

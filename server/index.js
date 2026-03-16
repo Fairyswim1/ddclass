@@ -197,30 +197,39 @@ app.get('/api/free-drop/:id', async (req, res) => {
 // -----------------------------------------------------
 app.post('/api/upload', upload.single('file'), async (req, res) => {
   try {
+    console.log('[UPLOAD] Request received');
     if (!req.file) {
+      console.error('[UPLOAD] No file provided');
       return res.status(400).json({ success: false, message: '파일이 없습니다.' });
     }
 
     const folder = req.body.folder || 'misc';
     const fileName = `${folder}/${Date.now()}_${req.file.originalname}`;
+    console.log(`[UPLOAD] Destination: ${fileName}, MIME: ${req.file.mimetype}`);
+
     const file = bucket.file(fileName);
 
     // Firebase Storage에 업로드
+    console.log('[UPLOAD] Uploading to Firebase Storage...');
     await file.save(req.file.buffer, {
       metadata: {
         contentType: req.file.mimetype,
       },
-      public: true, // 공개 읽기 권한 부여 (CORS 우회 및 간편한 접근을 위함)
+      public: true,
     });
 
-    // 공개 URL 생성 (Firebase Storage의 표준 공개 URL 형식)
+    // 공개 URL 생성
     const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
 
-    console.log(`[UPLOAD] 파일 업로드 완료: ${publicUrl}`);
+    console.log(`[UPLOAD] Success: ${publicUrl}`);
     res.json({ success: true, url: publicUrl });
   } catch (error) {
-    console.error('파일 업로드 실패:', error);
-    res.status(500).json({ success: false, message: '업로드 중 서버 오류 발생' });
+    console.error('[UPLOAD] Fatal error during upload:', error);
+    res.status(500).json({
+      success: false,
+      message: '업로드 중 서버 오류 발생',
+      debug: error.message
+    });
   }
 });
 
