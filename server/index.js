@@ -51,13 +51,21 @@ const upload = multer({
 });
 
 // CORS 설정
-// CORS 설정
 const corsOptions = {
-  origin: [
-    "http://localhost:5173",
-    "https://ddclass.vercel.app",
-    process.env.CLIENT_URL
-  ].filter(Boolean),
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "https://ddclass.vercel.app",
+      process.env.CLIENT_URL
+    ].filter(Boolean);
+
+    // Vercel Preview URLs와 Localhost, 정규 허용된 origin 체크
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ["GET", "POST"],
   credentials: true
 };
