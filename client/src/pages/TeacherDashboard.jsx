@@ -21,6 +21,7 @@ import {
     RefreshCw
 } from 'lucide-react';
 import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
+import LatexRenderer from '../components/LatexRenderer';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, orderBy, deleteDoc, doc, setDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
@@ -481,7 +482,7 @@ const TeacherDashboard = () => {
                             </div>
 
                             <div className="card-body-centered">
-                                <h3 className="problem-title">{problem.title}</h3>
+                                <h3 className="problem-title"><LatexRenderer text={problem.title} /></h3>
                                 <div className="card-metadata-row">
                                     {problem.subject && <span className="meta-badge subject">{SUBJECTS_MAP[problem.subject] || problem.subject}</span>}
                                     {problem.schoolLevel && <span className="meta-badge level">

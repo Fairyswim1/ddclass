@@ -4,6 +4,7 @@ import { ArrowLeft, Clock, Users, Layout, Loader2 } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import ProblemMonitor from './FillBlanks/ProblemMonitor';
+import LatexRenderer from '../components/LatexRenderer';
 import './MonitorPage.css';
 
 const MonitorPage = () => {
@@ -66,7 +67,10 @@ const MonitorPage = () => {
                     </button>
                 </div>
                 <div className="nav-center">
-                    <h1 className="problem-title-display">{problemData.title} <span className="type-label">({problemData.type === 'fill-blanks' ? '빈칸 채우기' : problemData.type === 'order-matching' ? '순서 맞추기' : '자유 보드'})</span></h1>
+                    <h1 className="problem-title-display">
+                        <LatexRenderer text={problemData.title} />{' '}
+                        <span className="type-label">({problemData.type === 'fill-blanks' ? '빈칸 채우기' : problemData.type === 'order-matching' ? '순서 맞추기' : '자유 보드'})</span>
+                    </h1>
                 </div>
                 <div className="nav-right">
                     <div className="pin-pill">

@@ -16,6 +16,7 @@ import {
     ChevronUp
 } from 'lucide-react';
 import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
+import LatexRenderer from '../components/LatexRenderer';
 import { db } from '../firebase';
 import {
     collection,
@@ -322,7 +323,7 @@ const PublicLibrary = () => {
                                                         {SUBJECTS_MAP[problem.subject]}
                                                     </span>
                                                 </div>
-                                                <h3 className="problem-title">{problem.title}</h3>
+                                                <h3 className="problem-title"><LatexRenderer text={problem.title} /></h3>
 
                                                 <div className="card-stats">
                                                     <span className="p-author"><User size={14} /> {problem.teacherDisplayName || '선생님'}</span>

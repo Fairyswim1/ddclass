@@ -4,6 +4,7 @@ import { io } from 'socket.io-client';
 import { ArrowLeft, Users, Layout, Send } from 'lucide-react';
 import './FreeMonitor.css';
 import { resolveApiUrl } from '../../utils/url';
+import LatexRenderer from '../../components/LatexRenderer';
 
 const FreeMonitor = () => {
     const { id } = useParams();
@@ -106,7 +107,7 @@ const FreeMonitor = () => {
                         <ArrowLeft size={20} /> 종료
                     </button>
                 </div>
-                <h2>모니터링: {problem?.title}</h2>
+                <h2>모니터링: <LatexRenderer text={problem?.title} /></h2>
                 <div className="nav-right">
                     <button onClick={() => navigate('/teacher/dashboard')} className="btn-secondary-mini">
                         내 보관함 가기

@@ -26,9 +26,9 @@ import {
     where,
     orderBy,
     limit,
-    getDocs
 } from 'firebase/firestore';
 import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
+import LatexRenderer from '../components/LatexRenderer';
 import './LandingPage.css';
 
 const LandingPage = () => {
@@ -245,7 +245,7 @@ const LandingPage = () => {
                                         </div>
                                     </div>
                                     <div className="popular-info">
-                                        <h4 className="p-title">{problem.title}</h4>
+                                        <h4 className="p-title"><LatexRenderer text={problem.title} /></h4>
                                         <div className="p-stats">
                                             <span className="p-author"><Users size={14} /> {problem.teacherDisplayName || '선생님'}</span>
                                             <span className="p-likes"><Heart size={14} fill="#FF5252" color="#FF5252" /> {problem.likeCount || 0}</span>
