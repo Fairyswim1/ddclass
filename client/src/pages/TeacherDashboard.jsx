@@ -499,11 +499,9 @@ const TeacherDashboard = () => {
                                     onClick={() => navigate(`/teacher/monitor/${problem.id}`)}
                                 >
                                     실시간 모니터링
-                                    {roomStatus[problem.id] && roomStatus[problem.id].count > 0 && (
-                                        <span className="live-count-badge-inline">
-                                            ({roomStatus[problem.id].count})
-                                        </span>
-                                    )}
+                                    <span className={`live-count-badge-inline ${(roomStatus[problem.id]?.count > 0) ? 'active' : 'empty'}`}>
+                                        ({roomStatus[problem.id]?.count || 0})
+                                    </span>
                                 </button>
                                 <div className="pin-badge-compact" onClick={() => copyPin(problem.pinNumber)} title="클릭하여 PIN 복사">
                                     <span className="pin-label">PIN:</span>

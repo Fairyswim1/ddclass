@@ -205,6 +205,11 @@
     min-height: 5.5rem;
     flex-shrink: 0;
     padding-top: 1.5rem;
+    padding-right: 2.5rem;
+    /* Space for return button */
+    padding-left: 1rem;
+    box-sizing: border-box;
+    max-width: 100%;
     /* More top padding for flex-start */
 }
 
@@ -282,10 +287,13 @@
     font-weight: 700;
     font-size: 1.1rem;
     line-height: 1.5;
-    word-break: keep-all;
-    word-wrap: break-word;
+    word-break: break-word;
+    /* Changed from keep-all to prevent clipping */
+    overflow-wrap: break-word;
     white-space: normal;
     overflow: visible;
+    min-width: 0;
+    /* Important for flex children to allow shrinking/wrapping */
 }
 
 .card-text .katex-display {

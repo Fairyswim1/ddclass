@@ -479,7 +479,6 @@
 
 .live-count-badge-inline {
     background: white;
-    color: var(--color-brand-orange);
     padding: 1px 8px;
     border-radius: 20px;
     font-size: 0.8rem;
@@ -488,6 +487,18 @@
     display: inline-flex;
     align-items: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.live-count-badge-inline.active {
+    color: var(--color-brand-orange);
+    transform: scale(1.1);
+    border: 1px solid var(--color-brand-orange);
+}
+
+.live-count-badge-inline.empty {
+    color: #A89B96;
+    opacity: 0.7;
 }
 
 .live-indicator-badge {
