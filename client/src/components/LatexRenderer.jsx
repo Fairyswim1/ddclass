@@ -12,9 +12,10 @@ const LatexRenderer = ({ text }) => {
     // LaTeX 구분자들을 포함하는 정규표현식
     // 1. \[(?:[\s\S]*?)\] : 디스플레이 수식
     // 2. \((?:[\s\S]*?)\) : 인라인 수식
-    // 3. \$(?:[\s\S]*?)\$ : 인라인 수식 ($)
-    // 4. \\begin\{([\s\S]*?)\}([\s\S]*?)\\end\{\1\} : LaTeX 환경 블록
-    const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\})/g;
+    // 3. \$\$(?:[\s\S]*?)\$\$ : 디스플레이 수식 ($$)
+    // 4. \$(?:[\s\S]*?)\$ : 인라인 수식 ($)
+    // 5. \\begin\{([\s\S]*?)\}([\s\S]*?)\\end\{\1\} : LaTeX 환경 블록
+    const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$\$.*?\$\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\})/g;
 
     const parts = text.split(regex);
 
@@ -23,22 +24,37 @@ const LatexRenderer = ({ text }) => {
             {parts.map((part, index) => {
                 if (!part) return null;
 
+                // Double Dollar (Block math)
+                if (part.startsWith('$$') && part.endsWith('$$')) {
+                    const content = part.slice(2, -2);
+                    return <BlockMath key={index} math={content} />;
+                }
+
+                // Backslash brackets (Block math)
                 if (part.startsWith('\\[')) {
                     const content = part.slice(2, -2);
                     return <BlockMath key={index} math={content} />;
                 }
+
+                // Backslash parenthesis (Inline math)
                 if (part.startsWith('\\(')) {
                     const content = part.slice(2, -2);
                     return <InlineMath key={index} math={content} />;
                 }
+
+                // Single Dollar (Inline math)
                 if (part.startsWith('$')) {
                     const content = part.slice(1, -1);
                     return <InlineMath key={index} math={content} />;
                 }
+
+                // Backslash escaped dollar (Inline math)
                 if (part.startsWith('\\$')) {
                     const content = part.slice(2, -2);
                     return <InlineMath key={index} math={content} />;
                 }
+
+                // Environment blocks
                 if (part.startsWith('\\begin')) {
                     return <BlockMath key={index} math={part} />;
                 }

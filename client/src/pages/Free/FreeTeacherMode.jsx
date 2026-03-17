@@ -9,6 +9,7 @@ import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import './FreeTeacherMode.css';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
+import LatexRenderer from '../../components/LatexRenderer';
 import { resolveApiUrl } from '../../utils/url';
 
 // Set worker for PDF.js
@@ -400,6 +401,16 @@ const FreeTeacherMode = () => {
                                             className="styled-input-mini"
                                             onChange={(e) => setTitle(e.target.value)}
                                         />
+                                        {(title.includes('$') || title.includes('\\[')) && (
+                                            <div className="latex-preview-container" style={{ marginTop: '1rem', padding: '1rem', background: '#f0f9ff', borderRadius: '12px', border: '1px solid #0ea5e9' }}>
+                                                <span style={{ fontSize: '0.8rem', color: '#0ea5e9', fontWeight: '800', display: 'block', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                    ✨ 실시간 수식 미리보기
+                                                </span>
+                                                <div style={{ fontSize: '1rem', color: '#1e293b', fontWeight: '600' }}>
+                                                    <LatexRenderer text={title} />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <SubjectGradeSelector
