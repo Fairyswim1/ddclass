@@ -26,6 +26,7 @@ import {
     where,
     orderBy,
     limit,
+    getDocs,
 } from 'firebase/firestore';
 import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
 import LatexRenderer from '../components/LatexRenderer';
@@ -52,7 +53,21 @@ const LandingPage = () => {
                 orderBy('likeCount', 'desc'),
                 limit(4)
             );
-            const querySnapshot = await getDocs(q);
+
+            let querySnapshot;
+            try {
+                querySnapshot = await getDocs(q);
+            } catch (indexError) {
+                console.warn("Composite index missing or likeCount missing. Falling back to simple query.");
+                const fallbackQ = query(
+                    collection(db, 'problems'),
+                    where('isPublic', '==', true),
+                    limit(4)
+                );
+                querySnapshot = await getDocs(fallbackQ);
+            }
+
+
             const items = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
