@@ -198,8 +198,11 @@
     gap: 1rem;
     position: relative;
     width: 100%;
-    /* 너비 100% 활용 */
-    margin-bottom: 0.4rem;
+    min-height: 4.5rem;
+    /* Ensure a minimum height for smaller content */
+    margin-bottom: 0.6rem;
+    overflow: visible;
+    /* Prevent any clipping */
 }
 
 .order-card:hover {
@@ -275,6 +278,10 @@
     color: var(--color-text-primary);
     font-weight: 700;
     font-size: 1.1rem;
+    line-height: 1.5;
+    word-break: keep-all;
+    word-wrap: break-word;
+    white-space: normal;
 }
 
 .btn-return {
