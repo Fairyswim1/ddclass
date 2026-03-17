@@ -194,15 +194,18 @@
     cursor: grab;
     transition: all 0.25s cubic-bezier(0.2, 0, 0.2, 1);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    /* Better for tall cards */
     gap: 1rem;
     position: relative;
     width: 100%;
-    min-height: 4.5rem;
-    /* Ensure a minimum height for smaller content */
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.8rem;
     overflow: visible;
-    /* Prevent any clipping */
+    height: auto !important;
+    min-height: 5.5rem;
+    flex-shrink: 0;
+    padding-top: 1.5rem;
+    /* More top padding for flex-start */
 }
 
 .order-card:hover {
@@ -282,7 +285,20 @@
     word-break: keep-all;
     word-wrap: break-word;
     white-space: normal;
+    overflow: visible;
 }
+
+.card-text .katex-display {
+    margin: 0.8rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.2rem 0;
+}
+
+.card-text .katex {
+    white-space: normal;
+}
+
 
 .btn-return {
     position: absolute;

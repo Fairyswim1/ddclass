@@ -477,25 +477,22 @@
     gap: 0.5rem;
 }
 
-.live-indicator-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
+.live-count-badge-inline {
     background: white;
-    color: #E65100;
-    padding: 2px 6px;
-    border-radius: 12px;
-    font-size: 0.75rem;
+    color: var(--color-brand-orange);
+    padding: 1px 8px;
+    border-radius: 20px;
+    font-size: 0.8rem;
     font-weight: 800;
+    margin-left: 0.4rem;
+    display: inline-flex;
+    align-items: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.live-dot {
-    width: 6px;
-    height: 6px;
-    background-color: #E65100;
-    border-radius: 50%;
-    animation: pulse-dot 1.5s infinite;
+.live-indicator-badge {
+    /* 기존 스타일 유지하되 호출되지 않으므로 무시됨 */
+    display: none;
 }
 
 @keyframes pulse-dot {

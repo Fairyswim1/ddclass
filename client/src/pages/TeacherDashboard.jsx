@@ -500,10 +500,9 @@ const TeacherDashboard = () => {
                                 >
                                     실시간 모니터링
                                     {roomStatus[problem.id] && roomStatus[problem.id].count > 0 && (
-                                        <div className="live-indicator-badge">
-                                            <div className="live-dot"></div>
-                                            {roomStatus[problem.id].count}명 접속 중
-                                        </div>
+                                        <span className="live-count-badge-inline">
+                                            ({roomStatus[problem.id].count})
+                                        </span>
                                     )}
                                 </button>
                                 <div className="pin-badge-compact" onClick={() => copyPin(problem.pinNumber)} title="클릭하여 PIN 복사">
