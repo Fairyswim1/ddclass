@@ -24,6 +24,7 @@ import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
 import { db } from '../firebase';
 import { collection, query, where, getDocs, orderBy, deleteDoc, doc, setDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
+import { resolveApiUrl } from '../utils/url';
 import './TeacherDashboard.css';
 
 const SUBJECTS_MAP = {
@@ -67,6 +68,9 @@ const TeacherDashboard = () => {
     const [filterGrade, setFilterGrade] = useState('all');
     const [showCreateOptions, setShowCreateOptions] = useState(false);
 
+    // Live Room Status
+    const [roomStatus, setRoomStatus] = useState({}); // { problemId: { count: number } }
+
     useEffect(() => {
         if (authLoading) return;
 
@@ -77,6 +81,39 @@ const TeacherDashboard = () => {
         fetchMyProblems();
         setNewNickname(nickname);
     }, [currentUser, authLoading, nickname]);
+
+    // Polling for live room status
+    useEffect(() => {
+        if (problems.length === 0) return;
+
+        const fetchStatuses = async () => {
+            try {
+                const problemIds = problems.map(p => p.id);
+                const response = await fetch(resolveApiUrl('/api/rooms/status'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ problemIds })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.statuses) {
+                        setRoomStatus(data.statuses);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching room statuses:", error);
+            }
+        };
+
+        // Initial fetch
+        fetchStatuses();
+
+        // Setup interval mapping
+        const intervalId = setInterval(fetchStatuses, 5000); // 5 seconds
+
+        return () => clearInterval(intervalId);
+    }, [problems]);
 
     const fetchMyProblems = async () => {
         if (!currentUser) return;
@@ -461,6 +498,12 @@ const TeacherDashboard = () => {
                                     onClick={() => navigate(`/teacher/monitor/${problem.id}`)}
                                 >
                                     실시간 모니터링
+                                    {roomStatus[problem.id] && roomStatus[problem.id].count > 0 && (
+                                        <div className="live-indicator-badge">
+                                            <div className="live-dot"></div>
+                                            {roomStatus[problem.id].count}명 접속 중
+                                        </div>
+                                    )}
                                 </button>
                                 <div className="pin-badge-compact" onClick={() => copyPin(problem.pinNumber)} title="클릭하여 PIN 복사">
                                     <span className="pin-label">PIN:</span>

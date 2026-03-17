@@ -292,6 +292,37 @@ app.get('/api/find-problem/:pin', async (req, res) => {
 // -----------------------------------------------------
 const roomStates = {}; // { roomID: { students: { socketId: { name, answer } } } }
 
+// -----------------------------------------------------
+// 공통: 여러 방의 실시간 상태 (접속자 수) 조회
+// -----------------------------------------------------
+app.post('/api/rooms/status', (req, res) => {
+  try {
+    const { problemIds } = req.body;
+    if (!Array.isArray(problemIds)) {
+      return res.status(400).json({ success: false, message: 'problemIds must be an array' });
+    }
+
+    const statuses = {};
+    problemIds.forEach(id => {
+      if (roomStates[id] && roomStates[id].students) {
+        // Teacher는 접속자 수에서 제외됨
+        const studentSockets = Object.keys(roomStates[id].students);
+        statuses[id] = {
+          count: studentSockets.length
+        };
+      } else {
+        statuses[id] = { count: 0 };
+      }
+    });
+
+    res.json({ success: true, statuses });
+  } catch (error) {
+    console.error('방 상태 조회 실패:', error);
+    res.status(500).json({ success: false, message: '서버 오류' });
+  }
+});
+
+
 // 소켓 연결 처리
 io.on('connection', (socket) => {
   console.log('사용자 연결됨:', socket.id);
