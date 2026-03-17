@@ -89,26 +89,31 @@ const FreeStudentMode = () => {
                 setSocket(newSocket);
 
                 // 연결 시 또는 재연결 시 자동으로 방 입장 수행
-                newSocket.on('connect', () => {
+                const joinRoom = () => {
                     console.log('Socket Connected. Joining/Re-joining room:', problemId);
                     newSocket.emit('joinProblem', {
                         problemId: problemId,
                         studentName: targetNickname
                     });
-                });
 
-                // 즉시 현재 상태 동기화 (교사 모니터링 대응)
-                const answerData = (probData.items || []).map(item => ({
-                    id: item.id,
-                    x: 0,
-                    y: 0,
-                    isPlaced: item.isPlaced || false
-                }));
-                newSocket.emit('submitAnswer', {
-                    problemId: problemId,
-                    studentName: targetNickname,
-                    answer: answerData
-                });
+                    // 즉시 현재 상태 동기화 (교사 모니터링 대응)
+                    const answerData = (probData.items || []).map(item => ({
+                        id: item.id,
+                        x: 0,
+                        y: 0,
+                        isPlaced: item.isPlaced || false
+                    }));
+                    newSocket.emit('submitAnswer', {
+                        problemId: problemId,
+                        studentName: targetNickname,
+                        answer: answerData
+                    });
+                };
+
+                if (newSocket.connected) {
+                    joinRoom();
+                }
+                newSocket.on('connect', joinRoom);
 
                 setStep('game');
             } else {

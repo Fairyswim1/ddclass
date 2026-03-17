@@ -78,13 +78,18 @@ const StudentMode = () => {
                 setSocket(newSocket);
 
                 // 연결 시 또는 재연결 시 자동으로 방 입장 수행
-                newSocket.on('connect', () => {
+                const joinRoom = () => {
                     console.log('Socket Connected. Joining/Re-joining room:', problemId);
                     newSocket.emit('joinProblem', {
                         problemId: problemId,
                         studentName: targetNick
                     });
-                });
+                };
+
+                if (newSocket.connected) {
+                    joinRoom();
+                }
+                newSocket.on('connect', joinRoom);
 
                 setPin(targetPin);
                 setNickname(targetNick);

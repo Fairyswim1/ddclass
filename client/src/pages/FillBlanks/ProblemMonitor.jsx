@@ -26,13 +26,18 @@ const ProblemMonitor = ({ problemData }) => {
         setSocket(newSocket);
 
         // 연결 시 또는 재연결 시 자동으로 방 입장 수행
-        newSocket.on('connect', () => {
+        const joinRoom = () => {
             console.log('Teacher Monitor Socket Connected. Re-joining room:', problemData?.id);
             newSocket.emit('joinProblem', {
                 problemId: problemData?.id,
                 studentName: 'TEACHER_MONITOR'
             });
-        });
+        };
+
+        if (newSocket.connected) {
+            joinRoom();
+        }
+        newSocket.on('connect', joinRoom);
 
         newSocket.on('currentStudents', (currentStudents) => {
             setStudents((currentStudents || []).map(s => ({
