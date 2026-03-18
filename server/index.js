@@ -1,4 +1,4 @@
-// Last Redeploy Trigger: 2026-03-18 10:12 (DEBUG: Request Logging)
+// Last Redeploy Trigger: 2026-03-18 10:22 (VERSION: 1.0.3 - ROOT TEST)
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -79,6 +79,15 @@ const io = new Server(server, {
 // API 엔드포인트
 app.use(express.json());
 
+// [NEW] Root route for deployment verification
+app.get('/', (req, res) => {
+  res.json({
+    message: 'DDClass Server is running',
+    version: '1.0.3',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Request logging middleware for debugging
 app.use((req, res, next) => {
   console.log(`[DEBUG] ${req.method} ${req.url} - ${new Date().toISOString()}`);
@@ -90,11 +99,16 @@ app.use((req, res, next) => {
 // -----------------------------------------------------
 app.get('/api/health', (req, res) => res.json({ success: true, version: '1.0.2', timestamp: new Date() }));
 
-app.post('/api/problem-status', (req, res) => {
+// POST & GET (for testing) versions of the status endpoint
+app.post('/api/problem-status', getStatusHandler);
+app.get('/api/problem-status', getStatusHandler);
+
+function getStatusHandler(req, res) {
   try {
-    const { problemIds } = req.body;
-    if (!Array.isArray(problemIds)) {
-      return res.status(400).json({ success: false, message: 'problemIds must be an array' });
+    const problemIds = req.method === 'POST' ? req.body.problemIds : req.query.problemIds?.split(',');
+
+    if (!problemIds || !Array.isArray(problemIds)) {
+      return res.status(400).json({ success: false, message: 'problemIds (Array) is required' });
     }
 
     const statuses = {};
@@ -107,12 +121,12 @@ app.post('/api/problem-status', (req, res) => {
       }
     });
 
-    res.json({ success: true, statuses });
+    res.json({ success: true, statuses, debug_info: { problemIds_received: problemIds } });
   } catch (error) {
     console.error('방 상태 조회 실패:', error);
     res.status(500).json({ success: false, message: '서버 오류' });
   }
-});
+}
 
 // -----------------------------------------------------
 // Feature 1: 빈칸 채우기 API
