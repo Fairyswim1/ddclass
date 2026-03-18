@@ -211,7 +211,15 @@ const ProblemMonitor = ({ problemData }) => {
                             {problemData?.type === 'free-drop' ? (
                                 <div className="mini-board-preview">
                                     <div className="mini-canvas" style={{ aspectRatio: problemData?.aspectRatio || '16/9' }}>
-                                        <img src={resolveApiUrl(problemData?.backgroundUrl)} alt="bg" className="mini-bg-img" />
+                                        <img
+                                            src={resolveApiUrl(problemData?.backgroundUrl)}
+                                            alt="bg"
+                                            className="mini-bg-img"
+                                            style={{
+                                                transform: `scale(${problemData?.bgScale || 1})`,
+                                                transformOrigin: 'center'
+                                            }}
+                                        />
                                         <div className="mini-items-layer">
                                             {Array.isArray(student.answer) && student.answer.filter(i => i?.isPlaced).map((item, idx) => {
                                                 const originalId = item.id.split('_copy_')[0];
@@ -290,7 +298,16 @@ const ProblemMonitor = ({ problemData }) => {
                                     // Free Board View
                                     <div className="free-board-mirror-container">
                                         <div className="mirror-canvas-wrapper" ref={mirrorRef}>
-                                            <img src={resolveApiUrl(problemData?.backgroundUrl)} alt="bg" className="mirror-bg" />
+                                            <img
+                                                src={resolveApiUrl(problemData?.backgroundUrl)}
+                                                alt="bg"
+                                                className="mirror-bg"
+                                                style={{
+                                                    transform: `scale(${problemData?.bgScale || 1})`,
+                                                    transformOrigin: 'center',
+                                                    transition: 'transform 0.3s ease'
+                                                }}
+                                            />
                                             <div className="mirror-items-layer">
                                                 {Array.isArray(selectedStudent?.answer) && selectedStudent.answer.filter(i => i?.isPlaced).map(item => {
                                                     const originalId = item.id.split('_copy_')[0];

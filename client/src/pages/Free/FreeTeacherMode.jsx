@@ -35,6 +35,7 @@ const FreeTeacherMode = () => {
     const [grade, setGrade] = useState('');
     const { id } = useParams();
     const [prevPin, setPrevPin] = useState('');
+    const [bgScale, setBgScale] = useState(1); // 배경 이미지 확대/축소 배율
 
     // 로그인 체크
     useEffect(() => {
@@ -66,6 +67,7 @@ const FreeTeacherMode = () => {
                 setSchoolLevel(data.schoolLevel || '');
                 setGrade(data.grade || '');
                 setPrevPin(data.pinNumber);
+                setBgScale(data.bgScale || 1);
             }
         } catch (error) {
             console.error("Error fetching problem for edit:", error);
@@ -161,6 +163,7 @@ const FreeTeacherMode = () => {
                 if (result.success) {
                     const downloadUrl = result.url;
                     setBackgroundUrl(downloadUrl);
+                    setBgScale(1);
                     const img = new Image();
                     img.onload = () => setAspectRatio(img.naturalWidth / img.naturalHeight);
                     img.src = downloadUrl;
@@ -314,6 +317,7 @@ const FreeTeacherMode = () => {
                 subject: subject || null,
                 schoolLevel,
                 grade: grade || null,
+                bgScale: bgScale || 1,
                 createdAt: serverTimestamp()
             };
 
@@ -574,7 +578,12 @@ const FreeTeacherMode = () => {
                                         </div>
                                     ) : (
                                         <div className="canvas-wrapper">
-                                            <img src={resolveApiUrl(backgroundUrl)} alt="background" className="canvas-bg-img" />
+                                            <img
+                                                src={resolveApiUrl(backgroundUrl)}
+                                                alt="background"
+                                                className="canvas-bg-img"
+                                                style={{ transform: `scale(${bgScale})` }}
+                                            />
                                             {/* 이미지 카드 실제 크기 미리보기 */}
                                             <div className="canvas-preview-layer">
                                                 {items.filter(i => i.type === 'image').map((item, idx) => (
@@ -593,7 +602,21 @@ const FreeTeacherMode = () => {
                                                 ))}
                                             </div>
                                             <div className="canvas-overlay-tools">
-                                                <button className="btn-change-bg-prominent" onClick={() => setBackgroundUrl('')}>
+                                                <div className="zoom-control-panel">
+                                                    <span className="zoom-label">배경 확대/축소</span>
+                                                    <input
+                                                        type="range"
+                                                        min="0.5"
+                                                        max="3.0"
+                                                        step="0.1"
+                                                        value={bgScale}
+                                                        onChange={(e) => setBgScale(parseFloat(e.target.value))}
+                                                        className="zoom-slider"
+                                                    />
+                                                    <span className="zoom-value">{Math.round(bgScale * 100)}%</span>
+                                                    <button className="btn-zoom-reset" onClick={() => setBgScale(1)}>리셋</button>
+                                                </div>
+                                                <button className="btn-change-bg-prominent" onClick={() => { setBackgroundUrl(''); setBgScale(1); }}>
                                                     <ImageIcon size={18} /> 배경 다른 사진으로 변경하기
                                                 </button>
                                             </div>
@@ -645,7 +668,7 @@ const FreeTeacherMode = () => {
                     </div>
                 )}
             </main>
-        </div>
+        </div >
     );
 };
 

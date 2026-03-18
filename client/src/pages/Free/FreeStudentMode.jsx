@@ -313,7 +313,15 @@ const FreeStudentMode = () => {
                         <img
                             src={resolveApiUrl(problem.backgroundUrl)}
                             alt="background"
-                            style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', pointerEvents: 'none' }}
+                            style={{
+                                display: 'block',
+                                maxWidth: '100%',
+                                maxHeight: '100%',
+                                pointerEvents: 'none',
+                                transform: `scale(${problem.bgScale || 1})`,
+                                transformOrigin: 'center',
+                                transition: 'transform 0.3s ease'
+                            }}
                         />
                         <div
                             className="student-master-canvas"

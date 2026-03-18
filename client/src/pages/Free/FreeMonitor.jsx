@@ -145,7 +145,14 @@ const FreeMonitor = () => {
                             <img
                                 src={problem?.backgroundUrl}
                                 alt="thumb"
-                                style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', pointerEvents: 'none' }}
+                                style={{
+                                    display: 'block',
+                                    maxWidth: '100%',
+                                    maxHeight: '100%',
+                                    pointerEvents: 'none',
+                                    transform: `scale(${problem?.bgScale || 1})`,
+                                    transformOrigin: 'center'
+                                }}
                             />
                             <div
                                 className="thumb-canvas"
@@ -229,7 +236,15 @@ const FreeMonitor = () => {
                                 <img
                                     src={resolveApiUrl(problem?.backgroundUrl)}
                                     alt="detail"
-                                    style={{ display: 'block', maxWidth: '100%', maxHeight: '100%', pointerEvents: 'none' }}
+                                    style={{
+                                        display: 'block',
+                                        maxWidth: '100%',
+                                        maxHeight: '100%',
+                                        pointerEvents: 'none',
+                                        transform: `scale(${problem?.bgScale || 1})`,
+                                        transformOrigin: 'center',
+                                        transition: 'transform 0.3s ease'
+                                    }}
                                 />
                                 <div
                                     className="detail-canvas"
