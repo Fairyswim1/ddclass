@@ -1,4 +1,4 @@
-// Last Redeploy Trigger: 2026-03-18 09:35 (Fixing Status Endpoint)
+// Last Redeploy Trigger: 2026-03-18 10:05 (Route Renaming & UI Fix)
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -78,6 +78,35 @@ const io = new Server(server, {
 
 // API 엔드포인트
 app.use(express.json());
+
+// -----------------------------------------------------
+// [DIAGNOSTIC] 서버 상태 및 실시간 모니터링 상태 조회
+// -----------------------------------------------------
+app.get('/api/health', (req, res) => res.json({ success: true, version: '1.0.2', timestamp: new Date() }));
+
+app.post('/api/problem-status', (req, res) => {
+  try {
+    const { problemIds } = req.body;
+    if (!Array.isArray(problemIds)) {
+      return res.status(400).json({ success: false, message: 'problemIds must be an array' });
+    }
+
+    const statuses = {};
+    problemIds.forEach(id => {
+      if (roomStates[id] && roomStates[id].students) {
+        const studentSockets = Object.keys(roomStates[id].students);
+        statuses[id] = { count: studentSockets.length };
+      } else {
+        statuses[id] = { count: 0 };
+      }
+    });
+
+    res.json({ success: true, statuses });
+  } catch (error) {
+    console.error('방 상태 조회 실패:', error);
+    res.status(500).json({ success: false, message: '서버 오류' });
+  }
+});
 
 // -----------------------------------------------------
 // Feature 1: 빈칸 채우기 API
@@ -295,35 +324,6 @@ const roomStates = {}; // { roomID: { students: { socketId: { name, answer } } }
 // -----------------------------------------------------
 // 공통: 여러 방의 실시간 상태 (접속자 수) 조회
 // -----------------------------------------------------
-// -----------------------------------------------------
-// [DIAGNOSTIC] 서버 상태 및 실시간 모니터링 상태 조회
-// -----------------------------------------------------
-app.get('/api/health', (req, res) => res.json({ success: true, version: '1.0.1', timestamp: new Date() }));
-
-app.post('/api/rooms/status', (req, res) => {
-  try {
-    const { problemIds } = req.body;
-    if (!Array.isArray(problemIds)) {
-      return res.status(400).json({ success: false, message: 'problemIds must be an array' });
-    }
-
-    const statuses = {};
-    problemIds.forEach(id => {
-      if (roomStates[id] && roomStates[id].students) {
-        const studentSockets = Object.keys(roomStates[id].students);
-        statuses[id] = { count: studentSockets.length };
-      } else {
-        statuses[id] = { count: 0 };
-      }
-    });
-
-    res.json({ success: true, statuses });
-  } catch (error) {
-    console.error('방 상태 조회 실패:', error);
-    res.status(500).json({ success: false, message: '서버 오류' });
-  }
-});
-
 // 기존 위치의 코드는 삭제하고 위로 이동됨
 
 

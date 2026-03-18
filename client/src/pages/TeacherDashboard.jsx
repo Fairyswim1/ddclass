@@ -90,7 +90,7 @@ const TeacherDashboard = () => {
         const fetchStatuses = async () => {
             try {
                 const problemIds = problems.map(p => p.id);
-                const response = await fetch(resolveApiUrl('/api/rooms/status'), {
+                const response = await fetch(resolveApiUrl('/api/problem-status'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ problemIds })
