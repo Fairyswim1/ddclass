@@ -1,4 +1,4 @@
-// Last Redeploy Trigger: 2026-03-18 10:05 (Route Renaming & UI Fix)
+// Last Redeploy Trigger: 2026-03-18 10:12 (DEBUG: Request Logging)
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -78,6 +78,12 @@ const io = new Server(server, {
 
 // API 엔드포인트
 app.use(express.json());
+
+// Request logging middleware for debugging
+app.use((req, res, next) => {
+  console.log(`[DEBUG] ${req.method} ${req.url} - ${new Date().toISOString()}`);
+  next();
+});
 
 // -----------------------------------------------------
 // [DIAGNOSTIC] 서버 상태 및 실시간 모니터링 상태 조회
@@ -412,6 +418,12 @@ io.on('connection', (socket) => {
       }
     });
   });
+});
+
+// Catch-all for 404s to help debug
+app.use((req, res) => {
+  console.log(`[DEBUG] 404 Not Found: ${req.method} ${req.url}`);
+  res.status(404).json({ success: false, message: `Route ${req.method} ${req.url} not found on server` });
 });
 
 const PORT = process.env.PORT || 3000;
