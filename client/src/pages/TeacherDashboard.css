@@ -415,17 +415,21 @@
 }
 
 .btn-action.start {
-    flex: 2;
+    flex: 2.2;
+    /* Slightly more space */
     background: var(--color-brand-orange);
     color: white;
     border: none;
-    padding: 0.7rem;
+    padding: 0.7rem 0.6rem;
+    /* Reduced horizontal padding */
     border-radius: 10px;
     font-weight: 700;
     cursor: pointer;
     box-shadow: 0 3px 0 #E65100;
     transition: all 0.2s;
     font-size: 0.95rem;
+    white-space: nowrap;
+    word-break: keep-all;
 }
 
 .btn-action.start:hover {
@@ -439,14 +443,15 @@
 }
 
 .pin-badge-compact {
-    flex: 1.2;
+    flex: 1;
+    /* Reduced slightly to give space to button */
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.2rem;
     background: #F8F9FA;
     border: 2px solid #EEEBE5;
-    padding: 0.6rem;
+    padding: 0.6rem 0.4rem;
     border-radius: 10px;
     font-size: 0.8rem;
     cursor: pointer;
