@@ -295,6 +295,11 @@ const roomStates = {}; // { roomID: { students: { socketId: { name, answer } } }
 // -----------------------------------------------------
 // 공통: 여러 방의 실시간 상태 (접속자 수) 조회
 // -----------------------------------------------------
+// -----------------------------------------------------
+// [DIAGNOSTIC] 서버 상태 및 실시간 모니터링 상태 조회
+// -----------------------------------------------------
+app.get('/api/health', (req, res) => res.json({ success: true, version: '1.0.1', timestamp: new Date() }));
+
 app.post('/api/rooms/status', (req, res) => {
   try {
     const { problemIds } = req.body;
@@ -305,11 +310,8 @@ app.post('/api/rooms/status', (req, res) => {
     const statuses = {};
     problemIds.forEach(id => {
       if (roomStates[id] && roomStates[id].students) {
-        // Teacher는 접속자 수에서 제외됨
         const studentSockets = Object.keys(roomStates[id].students);
-        statuses[id] = {
-          count: studentSockets.length
-        };
+        statuses[id] = { count: studentSockets.length };
       } else {
         statuses[id] = { count: 0 };
       }
@@ -321,6 +323,8 @@ app.post('/api/rooms/status', (req, res) => {
     res.status(500).json({ success: false, message: '서버 오류' });
   }
 });
+
+// 기존 위치의 코드는 삭제하고 위로 이동됨
 
 
 // 소켓 연결 처리
