@@ -415,7 +415,7 @@
 }
 
 .btn-action.start {
-    flex: 1.5;
+    flex: 1.4;
     background: var(--color-brand-orange);
     color: white;
     border: none;
@@ -430,7 +430,7 @@
     cursor: pointer;
     box-shadow: 0 3px 0 #E65100;
     transition: all 0.2s;
-    font-size: 0.95rem;
+    font-size: 0.88rem;
     white-space: nowrap;
     word-break: keep-all;
     box-sizing: border-box;
@@ -476,8 +476,9 @@
 
 .pin-value {
     color: var(--color-brand-brown);
-    font-weight: 800;
+    font-weight: 850;
     font-variant-numeric: tabular-nums;
+    font-size: 0.95rem;
 }
 
 /* Live Status Indicator */
