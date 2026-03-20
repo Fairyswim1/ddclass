@@ -498,7 +498,7 @@ const TeacherDashboard = () => {
                                     className="btn-action start"
                                     onClick={() => navigate(`/teacher/monitor/${problem.id}`)}
                                 >
-                                    실시간 모니터링
+                                    모니터링
                                     <span className={`live-count-badge-inline ${(roomStatus[problem.id]?.count > 0) ? 'active' : 'empty'}`}>
                                         ({roomStatus[problem.id]?.count || 0})
                                     </span>

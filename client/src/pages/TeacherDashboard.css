@@ -415,7 +415,7 @@
 }
 
 .btn-action.start {
-    flex: 2.2;
+    flex: 1.5;
     background: var(--color-brand-orange);
     color: white;
     border: none;
@@ -449,20 +449,18 @@
 .pin-badge-compact {
     flex: 1;
     height: 42px;
-    /* Matching height */
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.3rem;
-    background: #F8F9FA;
-    border: 2px solid #EEEBE5;
+    gap: 0.4rem;
+    background: #FFFFFF;
+    border: 1.5px solid #EEEBE5;
     border-radius: 12px;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s;
     box-sizing: border-box;
-    margin-bottom: 3px;
-    /* Compensate for button's box-shadow to align visually */
+    /* Removed margin-bottom to fix vertical alignment */
 }
 
 .pin-badge-compact:hover {
@@ -470,13 +468,16 @@
 }
 
 .pin-label {
-    color: #8D7B75;
+    color: #A89B96;
     font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: -0.02em;
 }
 
 .pin-value {
     color: var(--color-brand-brown);
     font-weight: 800;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Live Status Indicator */
