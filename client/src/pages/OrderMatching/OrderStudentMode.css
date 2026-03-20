@@ -289,15 +289,12 @@
     color: var(--color-text-primary);
     font-weight: 700;
     font-size: 1rem;
-    /* Slightly reduced from 1.1rem for better fit */
     line-height: 1.5;
-    word-break: break-all;
-    /* Force break even in long math formulas */
-    /* For older browsers */
-    overflow-wrap: anywhere;
-    /* Best for handling long strings/formulas without spaces */
-    white-space: normal !important;
-    /* Prevent horizontal overflow within the card */
+    word-break: keep-all;
+    /* Prevent breaking Korean words mid-syllable */
+    overflow-wrap: break-word;
+    /* Allow long formulas or strings to break if strictly necessary */
+    white-space: normal;
     min-width: 0;
     /* Important for flex children to allow shrinking/wrapping */
 }
@@ -305,15 +302,14 @@
 .card-text .katex-display {
     margin: 0.8rem 0;
     overflow-x: auto;
+    /* Allow horizontal scroll for long equations */
     overflow-y: hidden;
     padding: 0.2rem 0;
 }
 
-.card-text .katex,
-.card-text .katex-html,
-.card-text .base {
-    white-space: normal !important;
-    /* Force KaTeX to wrap instead of clipping */
+.card-text .katex {
+    white-space: nowrap;
+    /* Restore KaTeX default to keep symbols together */
 }
 
 
