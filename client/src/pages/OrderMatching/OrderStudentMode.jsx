@@ -330,7 +330,9 @@ const OrderStudentMode = () => {
                                                                 ...provided.draggableProps.style,
                                                             }}
                                                         >
-                                                            <LatexRenderer text={item.text} />
+                                                            <div className="card-text">
+                                                                <LatexRenderer text={item.text} />
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </Draggable>

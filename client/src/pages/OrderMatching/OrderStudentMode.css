@@ -288,10 +288,12 @@
     font-size: 1.1rem;
     line-height: 1.5;
     word-break: break-word;
-    /* Changed from keep-all to prevent clipping */
-    overflow-wrap: break-word;
+    /* For older browsers */
+    overflow-wrap: anywhere;
+    /* Best for handling long strings/formulas without spaces */
     white-space: normal;
-    overflow: visible;
+    overflow: hidden;
+    /* Prevent horizontal overflow within the card */
     min-width: 0;
     /* Important for flex children to allow shrinking/wrapping */
 }
