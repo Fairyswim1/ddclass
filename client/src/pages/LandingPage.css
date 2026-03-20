@@ -396,12 +396,18 @@
 
 .mode-info h4 {
     font-size: 1.2rem;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 .mode-info p {
     font-size: 0.95rem;
     color: #7A6A64;
+    line-height: 1.5;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 .mode-arrow {

@@ -84,7 +84,7 @@ const LandingPage = () => {
         {
             id: 'fill-blanks',
             title: '주요 용어 & 빈칸 채우기',
-            description: '전 과목 핵심 용어 학습, 국어·영어 어휘력 향상 등 다양한 수업의 핵심 활동으로 활용해보세요.',
+            description: '전 과목 핵심 용어 학습, 국어·영어 어휘력 향상 등\n다양한 수업의 핵심 활동으로 활용해보세요.',
             icon: <Star size={24} fill="currentColor" />,
             color: 'var(--color-brand-yellow)',
             path: '/fill-blanks'
@@ -92,7 +92,7 @@ const LandingPage = () => {
         {
             id: 'order-matching',
             title: '논리적인 순서 맞추기',
-            description: '영어 문장 완성, 역사의 시간 흐름, 수학적 증명 순서 등 순서가 중요한 모든 학습에 적합합니다.',
+            description: '영어 문장 완성, 역사의 시간 흐름, 수학적 증명 순서 등\n순서가 중요한 모든 학습에 적합합니다.',
             icon: <Sparkles size={24} fill="currentColor" />,
             color: 'var(--color-brand-green)',
             path: '/order-matching'
@@ -100,7 +100,7 @@ const LandingPage = () => {
         {
             id: 'free-dnd',
             title: '창의적인 자유 보드',
-            description: '원하는 배경과 그림 위에 텍스트나 이미지를 마음껏 배치하며 상상력을 자극하는 활동을 설계해보세요.',
+            description: '원하는 배경과 그림 위에 텍스트나 이미지를 마음껏 배치하며\n상상력을 자극하는 활동을 설계해보세요.',
             icon: <Layout size={24} fill="currentColor" />,
             color: 'var(--color-brand-blue)',
             path: '/free-dnd'
