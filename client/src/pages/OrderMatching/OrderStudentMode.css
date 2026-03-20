@@ -147,6 +147,8 @@
 .scroll-area {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
+    /* Prevent horizontal scrollbars from appearing */
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
@@ -200,7 +202,8 @@
     position: relative;
     width: 100%;
     margin-bottom: 0.8rem;
-    overflow: visible;
+    overflow: hidden;
+    /* Contain LaTeX or long text within the card */
     height: auto !important;
     min-height: 5.5rem;
     flex-shrink: 0;
@@ -354,6 +357,8 @@
 
 .bank-item {
     border-color: #F0EEE9;
+    padding-right: 1rem !important;
+    /* No return button in bank, so we don't need extra space */
 }
 
 .bank-item:hover {
