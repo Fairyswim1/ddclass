@@ -202,8 +202,8 @@
     position: relative;
     width: 100%;
     margin-bottom: 0.8rem;
-    overflow: hidden;
-    /* Contain LaTeX or long text within the card */
+    overflow: visible;
+    /* Allow text to be seen if it still overflows, but we intend to wrap it */
     height: auto !important;
     min-height: 5.5rem;
     flex-shrink: 0;
@@ -288,14 +288,15 @@
     flex: 1;
     color: var(--color-text-primary);
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1rem;
+    /* Slightly reduced from 1.1rem for better fit */
     line-height: 1.5;
-    word-break: break-word;
+    word-break: break-all;
+    /* Force break even in long math formulas */
     /* For older browsers */
     overflow-wrap: anywhere;
     /* Best for handling long strings/formulas without spaces */
-    white-space: normal;
-    overflow: hidden;
+    white-space: normal !important;
     /* Prevent horizontal overflow within the card */
     min-width: 0;
     /* Important for flex children to allow shrinking/wrapping */
@@ -308,8 +309,11 @@
     padding: 0.2rem 0;
 }
 
-.card-text .katex {
-    white-space: normal;
+.card-text .katex,
+.card-text .katex-html,
+.card-text .base {
+    white-space: normal !important;
+    /* Force KaTeX to wrap instead of clipping */
 }
 
 
