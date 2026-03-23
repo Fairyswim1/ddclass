@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Check, Save, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -14,9 +14,8 @@ const TeacherMode = () => {
     const [step, setStep] = useState('input'); // input, create, monitor
     const [title, setTitle] = useState('');
     const [inputText, setInputText] = useState('');
-    const [words, setWords] = useState([]);
-    const [blanks, setBlanks] = useState(new Set()); // Set of indices
-    const [allowDuplicates, setAllowDuplicates] = useState(false); // 단어 중복 사용 허용 여부
+    const [blanks, setBlanks] = useState([]); // Array of { id, startOffset, endOffset, word }
+    const [allowDuplicates, setAllowDuplicates] = useState(false);
     const [isPublic, setIsPublic] = useState(false);
     const { currentUser, nickname } = useAuth();
     const [createdProblem, setCreatedProblem] = useState(null);
@@ -26,6 +25,7 @@ const TeacherMode = () => {
     const [grade, setGrade] = useState('');
     const { id } = useParams();
     const [prevPin, setPrevPin] = useState('');
+    const textRef = useRef(null);
 
     // 로그인 체크
     useEffect(() => {
@@ -56,12 +56,14 @@ const TeacherMode = () => {
                 setGrade(data.grade || '');
                 setPrevPin(data.pinNumber);
 
-                const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\n|\S+)/g;
-                const matches = data.originalText.match(regex) || [];
-                setWords(matches);
-
-                const restoredBlanks = new Set(data.blanks.map(b => b.index));
-                setBlanks(restoredBlanks);
+                // Handle both old (index-based) and new (offset-based) formats
+                if (data.blanks.length > 0 && data.blanks[0].startOffset !== undefined) {
+                    setBlanks(data.blanks);
+                } else {
+                    // Backwards compatibility logic removed for simplicity in creation mode, 
+                    // users edit by creating new blanks if it's the old format.
+                    setBlanks([]);
+                }
 
                 setStep('create');
             }
@@ -69,43 +71,6 @@ const TeacherMode = () => {
             console.error("Error fetching problem for edit:", error);
             alert("문제 정보를 불러오는 중 오류가 발생했습니다.");
         }
-    };
-
-    // 한국어 조사 분리 헬퍼
-    const KOREAN_PARTICLES = [
-        '에서는', '에서도', '으로는', '으로도', '부터는', '까지는', '에서', '부터', '까지', '보다',
-        '밖에', '조차', '마저', '처럼', '만큼', '대로',
-        '으로', '에게', '한테', '께서',
-        '은', '는', '이', '가', '을', '를', '의', '에', '도', '로', '와', '과', '만', '요'
-    ];
-
-    const splitKoreanParticles = (tokens) => {
-        const result = [];
-        for (const token of tokens) {
-            if (token === '\n' || token.startsWith('$') || token.startsWith('\\')) {
-                result.push(token);
-                continue;
-            }
-            // 한글이 포함된 토큰만 조사 분리 시도
-            if (/[가-힣]/.test(token)) {
-                let found = false;
-                for (const particle of KOREAN_PARTICLES) {
-                    if (token.endsWith(particle) && token.length > particle.length) {
-                        const stem = token.slice(0, -particle.length);
-                        // stem에 한글이 최소 1자 이상 있어야 분리
-                        if (/[가-힣]/.test(stem)) {
-                            result.push(stem, particle);
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if (!found) result.push(token);
-            } else {
-                result.push(token);
-            }
-        }
-        return result;
     };
 
     const handleAnalyzeText = () => {
@@ -117,29 +82,93 @@ const TeacherMode = () => {
             alert('학교급을 선택해주세요. (필수)');
             return;
         }
-
-        const regex = /(\\\[[\s\S]*?\\\]|\\\(.*?\\\)|\\$.*?\\$|\$.*?\$|\\begin\{[\s\S]*?\}[\s\S]*?\\end\{[\s\S]*?\}|\n|\S+)/g;
-        const matches = inputText.match(regex) || [];
-
-        // 한국어 조사 분리 적용
-        const splitWords = splitKoreanParticles(matches);
-
-        setWords(splitWords);
         setStep('create');
     };
 
-    const toggleBlank = (index) => {
-        const newBlanks = new Set(blanks);
-        if (newBlanks.has(index)) {
-            newBlanks.delete(index);
-        } else {
-            newBlanks.add(index);
+    const handleMouseUp = () => {
+        const selection = window.getSelection();
+        if (!selection || selection.isCollapsed) return;
+
+        const range = selection.getRangeAt(0);
+        if (!textRef.current || !textRef.current.contains(range.commonAncestorContainer)) return;
+
+        const preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(textRef.current);
+        preCaretRange.setEnd(range.startContainer, range.startOffset);
+
+        const startOffset = preCaretRange.toString().length;
+        const selectedText = selection.toString();
+        const endOffset = startOffset + selectedText.length;
+
+        if (!selectedText.trim()) return;
+
+        // Check for overlaps
+        const hasOverlap = blanks.some(b =>
+            (startOffset >= b.startOffset && startOffset < b.endOffset) ||
+            (endOffset > b.startOffset && endOffset <= b.endOffset) ||
+            (startOffset <= b.startOffset && endOffset >= b.endOffset)
+        );
+
+        if (hasOverlap) {
+            selection.removeAllRanges();
+            return;
         }
-        setBlanks(newBlanks);
+
+        const newBlank = {
+            id: `blank-${Date.now()}`,
+            startOffset,
+            endOffset,
+            word: selectedText
+        };
+
+        setBlanks([...blanks, newBlank].sort((a, b) => a.startOffset - b.startOffset));
+        selection.removeAllRanges();
+    };
+
+    const removeBlank = (id) => {
+        setBlanks(blanks.filter(b => b.id !== id));
+    };
+
+    const renderInteractiveText = () => {
+        if (!inputText) return null;
+        if (blanks.length === 0) return inputText;
+
+        const elements = [];
+        let currentIndex = 0;
+
+        blanks.forEach(blank => {
+            if (blank.startOffset > currentIndex) {
+                elements.push(
+                    <span key={`text-${currentIndex}`}>
+                        {inputText.slice(currentIndex, blank.startOffset)}
+                    </span>
+                );
+            }
+            elements.push(
+                <span
+                    key={`blank-${blank.id}`}
+                    onClick={() => removeBlank(blank.id)}
+                    className="word-chip-refined is-blank"
+                    style={{ cursor: 'pointer', margin: '0 2px' }}
+                >
+                    <LatexRenderer text={blank.word} />
+                    <span className="blank-indicator">빈칸</span>
+                </span>
+            );
+            currentIndex = blank.endOffset;
+        });
+
+        if (currentIndex < inputText.length) {
+            elements.push(
+                <span key={`text-end`}>{inputText.slice(currentIndex)}</span>
+            );
+        }
+
+        return elements;
     };
 
     const handleSaveProblem = async () => {
-        if (blanks.size === 0) {
+        if (blanks.length === 0) {
             alert('최소 하나 이상의 빈칸을 지정해주세요.');
             return;
         }
@@ -160,11 +189,7 @@ const TeacherMode = () => {
             return;
         }
 
-        const blankList = Array.from(blanks).map(index => ({
-            index,
-            word: words[index],
-            id: `blank-${index}`
-        }));
+        const blankList = blanks;
 
         try {
             setIsSaving(true);
@@ -177,7 +202,6 @@ const TeacherMode = () => {
                 pinNumber,
                 title,
                 originalText: inputText,
-                words, // 토큰 배열 저장 (미리보기/학생 모드 호환용)
                 blanks: blankList,
                 allowDuplicates,
                 teacherId: currentUser.uid,
@@ -300,30 +324,31 @@ const TeacherMode = () => {
                         <div className="teacher-card fade-in">
                             <div className="card-header">
                                 <h3>빈칸을 선택해주세요</h3>
-                                <p>👆 <strong>단어를 클릭</strong>하여 빈칸으로 만드세요. 다시 클릭하면 취소됩니다.</p>
+                                <p>👉 본문에서 <strong>빈칸으로 만들 부분을 마우스로 드래그</strong>하여 선택하세요.</p>
                                 <div style={{ marginTop: '0.8rem', padding: '0.8rem 1rem', background: '#F0F9FF', borderRadius: '8px', display: 'inline-block', border: '1px solid #D0EFFF' }}>
                                     <span style={{ color: '#2D6A8D', fontSize: '0.9rem', fontWeight: '600' }}>
-                                        💡 은/는/이/가 등 조사는 띄어쓰지 않아도 쏙쏙 분리되니 핵심 단어만 묶어서 선택해보세요!
+                                        💡 이제 조사 띄어쓰기 없이도 원하는 부분만 콕 집어서 빈칸을 만들 수 있습니다!
                                     </span>
                                 </div>
                             </div>
 
-                            <div className="word-editor-refined">
-                                {words.map((word, index) => {
-                                    if (word === '\n') {
-                                        return <div key={index} className="word-break" />;
-                                    }
-                                    return (
-                                        <span
-                                            key={index}
-                                            className={`word-chip-refined ${blanks.has(index) ? 'is-blank' : ''}`}
-                                            onClick={() => toggleBlank(index)}
-                                        >
-                                            <LatexRenderer text={word} />
-                                            {blanks.has(index) && <span className="blank-indicator">빈칸</span>}
-                                        </span>
-                                    );
-                                })}
+                            <div
+                                className="word-editor-refined"
+                                style={{
+                                    whiteSpace: 'pre-wrap',
+                                    lineHeight: '2.5',
+                                    fontSize: '1.25rem',
+                                    padding: '2rem',
+                                    userSelect: 'text',
+                                    border: '1px solid #e2e8f0',
+                                    borderRadius: '12px',
+                                    background: '#fcfcfc',
+                                    minHeight: '200px'
+                                }}
+                                ref={textRef}
+                                onMouseUp={handleMouseUp}
+                            >
+                                {renderInteractiveText()}
                             </div>
 
                             <div className="options-panel-refined">
@@ -357,7 +382,7 @@ const TeacherMode = () => {
                                 </button>
                                 <button className="btn-primary-large" onClick={handleSaveProblem} disabled={isSaving}>
                                     {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                                    {isSaving ? '저장 중...' : `문제 생성 완료 (${blanks.size}개)`}
+                                    {isSaving ? '저장 중...' : `문제 생성 완료 (${blanks.length}개)`}
                                 </button>
                             </div>
                         </div>
