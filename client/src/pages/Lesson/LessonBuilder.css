@@ -1,0 +1,287 @@
+/* LessonBuilder.css */
+.lesson-builder-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #f8fafc;
+    overflow: hidden;
+}
+
+.builder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.header-left,
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.lesson-title-input {
+    font-size: 1.25rem;
+    font-weight: bold;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    width: 300px;
+    background: transparent;
+    transition: all 0.2s;
+}
+
+.lesson-title-input:focus {
+    outline: none;
+    border-bottom-color: var(--color-brand-purple);
+    background: #f1f5f9;
+}
+
+.builder-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Sidebar (Left) */
+.slides-sidebar {
+    width: 280px;
+    background: white;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.slides-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 100px;
+}
+
+.slide-thumbnail {
+    position: relative;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    transition: all 0.2s;
+}
+
+.slide-thumbnail:hover {
+    border-color: #cbd5e1;
+}
+
+.slide-thumbnail.active {
+    border-color: var(--color-brand-purple);
+    background-color: #f5f3ff;
+}
+
+.slide-thumbnail.dragging {
+    opacity: 0.8;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.thumb-index {
+    font-weight: 700;
+    color: #94a3b8;
+    min-width: 20px;
+    margin-top: 2px;
+}
+
+.active .thumb-index {
+    color: var(--color-brand-purple);
+}
+
+.thumb-content {
+    flex: 1;
+    overflow: hidden;
+}
+
+.thumb-type {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+}
+
+.thumb-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-delete-slide {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    display: none;
+}
+
+.slide-thumbnail:hover .btn-delete-slide {
+    display: block;
+}
+
+.btn-delete-slide:hover {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+/* Add Slide Button & Menu */
+.add-slide-wrapper {
+    position: relative;
+    margin-top: 1rem;
+}
+
+.btn-add-slide {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    background: transparent;
+    color: #64748b;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-add-slide:hover {
+    border-color: var(--color-brand-purple);
+    color: var(--color-brand-purple);
+    background: #f8fafc;
+}
+
+.type-selector-menu {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.type-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    background: transparent;
+    text-align: left;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #334155;
+    transition: background 0.2s;
+}
+
+.type-option:hover {
+    background: #f1f5f9;
+    color: var(--color-brand-purple);
+}
+
+/* Main Editor Area */
+.slide-editor-main {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-wrapper {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.editor-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.badge-type {
+    background: #f1f5f9;
+    color: #64748b;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.slide-title-input {
+    flex: 1;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.25rem 0;
+    width: 100%;
+}
+
+.slide-title-input:focus {
+    outline: none;
+    border-bottom-color: var(--color-brand-purple);
+}
+
+.editor-content {
+    padding: 2rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.empty-editor-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 1.125rem;
+    text-align: center;
+    gap: 1rem;
+}

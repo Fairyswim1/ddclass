@@ -13,7 +13,7 @@ import TeacherLogin from './pages/TeacherLogin';
 import TeacherDashboard from './pages/TeacherDashboard';
 import PublicLibrary from './pages/PublicLibrary';
 import MonitorPage from './pages/MonitorPage';
-import CreateLesson from './pages/Lesson/CreateLesson';
+import LessonBuilder from './pages/Lesson/LessonBuilder';
 import LessonMonitor from './pages/Lesson/LessonMonitor';
 import LessonStudentMode from './pages/Lesson/LessonStudentMode';
 import './App.css';
@@ -31,7 +31,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
 
           {/* 수업 생성 */}
-          <Route path="/create-lesson" element={<CreateLesson />} />
+          <Route path="/create-lesson" element={<LessonBuilder />} />
 
           {/* 기능 1: 빈칸 채우기 */}
           <Route path="/fill-blanks/:id?" element={<TeacherMode />} />

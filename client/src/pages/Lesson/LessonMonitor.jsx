@@ -5,6 +5,11 @@ import { io } from 'socket.io-client';
 import { db } from '../../firebase';
 import { doc, getDoc, getDocs, collection, query, documentId, where } from 'firebase/firestore';
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
+import FreeMonitor from '../Free/FreeMonitor';
+import MultipleChoiceMonitor from './MultipleChoiceMonitor';
+import ShortAnswerMonitor from './ShortAnswerMonitor';
+import WhiteboardMonitor from './WhiteboardMonitor';
+import PollMonitor from './PollMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
 import './LessonMonitor.css';
 
@@ -206,12 +211,47 @@ const LessonMonitor = () => {
                     현재: <span style={{ color: 'var(--color-brand-brown)' }}><LatexRenderer text={currentProblem?.title || ''} /></span>
                 </h2>
                 <div className="monitor-component-container">
-                    {/* Reuse ProblemMonitor, injecting our custom socket and students state */}
-                    {currentProblem && (
+                    {/* Render the appropriate monitor component based on problem type */}
+                    {currentProblem && currentProblem.type === 'fill-blanks' && (
                         <ProblemMonitor
-                            key={currentProblem.id} // Force remount if problem changes fully (optional, but ensures clean state)
                             problemData={currentProblem}
                             parentSocket={socket}
+                            parentStudents={students}
+                        />
+                    )}
+                    {currentProblem && currentProblem.type === 'free-drop' && (
+                        <FreeMonitor
+                            problemData={currentProblem}
+                            parentSocket={socket}
+                            parentStudents={students}
+                        />
+                    )}
+                    {currentProblem && currentProblem.type === 'order-matching' && (
+                        <div className="monitor-card text-center p-8 text-slate-500">
+                            순서 맞추기 문제는 현재 개별 모니터링 뷰를 지원하지 않습니다.
+                        </div>
+                    )}
+                    {currentProblem && currentProblem.type === 'multiple-choice' && (
+                        <MultipleChoiceMonitor
+                            problemData={currentProblem}
+                            parentStudents={students}
+                        />
+                    )}
+                    {currentProblem && currentProblem.type === 'short-answer' && (
+                        <ShortAnswerMonitor
+                            problemData={currentProblem}
+                            parentStudents={students}
+                        />
+                    )}
+                    {currentProblem && currentProblem.type === 'whiteboard' && (
+                        <WhiteboardMonitor
+                            problemData={currentProblem}
+                            parentStudents={students}
+                        />
+                    )}
+                    {currentProblem && currentProblem.type === 'poll' && (
+                        <PollMonitor
+                            problemData={currentProblem}
                             parentStudents={students}
                         />
                     )}

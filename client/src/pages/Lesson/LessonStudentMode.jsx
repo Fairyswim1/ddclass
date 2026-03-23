@@ -9,6 +9,10 @@ import { Loader2 } from 'lucide-react';
 import StudentMode from '../FillBlanks/StudentMode';
 import OrderStudentMode from '../OrderMatching/OrderStudentMode';
 import FreeStudentMode from '../Free/FreeStudentMode';
+import MultipleChoiceStudent from './MultipleChoiceStudent';
+import ShortAnswerStudent from './ShortAnswerStudent';
+import WhiteboardStudent from './WhiteboardStudent';
+import PollStudent from './PollStudent';
 
 const LessonStudentMode = () => {
     const location = useLocation();
@@ -106,6 +110,14 @@ const LessonStudentMode = () => {
             return <OrderStudentMode {...commonProps} />;
         case 'free-drop':
             return <FreeStudentMode {...commonProps} />;
+        case 'multiple-choice':
+            return <MultipleChoiceStudent {...commonProps} />;
+        case 'short-answer':
+            return <ShortAnswerStudent {...commonProps} />;
+        case 'whiteboard':
+            return <WhiteboardStudent {...commonProps} />;
+        case 'poll':
+            return <PollStudent {...commonProps} />;
         default:
             return <div>지원하지 않는 문제 유형입니다.</div>;
     }

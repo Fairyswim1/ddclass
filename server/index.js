@@ -358,6 +358,64 @@ app.get('/api/find-problem/:pin', async (req, res) => {
 // -----------------------------------------------------
 // Feature 5: 수업(Lesson) API [NEW]
 // -----------------------------------------------------
+// 1. 다중 문제 동시 생성 (PPT 빌더 용)
+app.post('/api/lessons/bulk', async (req, res) => {
+  try {
+    const { title, slides, teacherId } = req.body;
+    const lessonId = Math.random().toString(36).substr(2, 9);
+    const pinNumber = Math.floor(100000 + Math.random() * 900000).toString();
+
+    if (!slides || !Array.isArray(slides)) {
+      return res.status(400).json({ success: false, message: '슬라이드 데이터가 없습니다.' });
+    }
+
+    const problemIds = [];
+    const batch = db.batch();
+
+    slides.forEach((slideData, index) => {
+      const problemId = `${lessonId}_slide_${index}`;
+      problemIds.push(problemId);
+
+      const newProblem = {
+        ...slideData, // contains type, title, question, etc.
+        id: problemId,
+        pinNumber: null, // Slide belongs to a lesson, no direct PIN access
+        teacherId: teacherId || null,
+        isPublic: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      };
+
+      const docRef = db.collection('problems').doc(problemId);
+      batch.set(docRef, newProblem);
+    });
+
+    const newLesson = {
+      id: lessonId,
+      type: 'lesson',
+      pinNumber,
+      title,
+      problemIds,
+      currentProblemIndex: 0,
+      teacherId: teacherId || null,
+      status: 'active',
+      slideCount: slides.length,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    const lessonRef = db.collection('lessons').doc(lessonId);
+    batch.set(lessonRef, newLesson);
+
+    await batch.commit();
+    console.log(`[SAVED BULK] 수업: ${title} | ID: ${lessonId} | PIN: ${pinNumber} | 슬라이드 수: ${slides.length}`);
+
+    res.json({ success: true, lessonId, pinNumber });
+  } catch (error) {
+    console.error('수업 대량 생성 실패:', error);
+    res.status(500).json({ success: false, message: '서버 오류' });
+  }
+});
+
+// 2. 단일 문제 연결용 (기존)
 app.post('/api/lessons', async (req, res) => {
   try {
     const { title, problemIds, teacherId } = req.body;

@@ -1,0 +1,437 @@
+/* LessonShared.css */
+
+/* Typography & Colors */
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.text-2xl {
+    font-size: 1.5rem;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+}
+
+.text-lg {
+    font-size: 1.125rem;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+/* Layout */
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.items-start {
+    align-items: flex-start;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-3 {
+    gap: 0.75rem;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.gap-6 {
+    gap: 1.5rem;
+}
+
+.grid {
+    display: grid;
+}
+
+.grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Spacing */
+.p-2 {
+    padding: 0.5rem;
+}
+
+.p-3 {
+    padding: 0.75rem;
+}
+
+.p-4 {
+    padding: 1rem;
+}
+
+.p-6 {
+    padding: 1.5rem;
+}
+
+.px-2 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.py-1 {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.m-auto {
+    margin: auto;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.mt-8 {
+    margin-top: 2rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-6 {
+    margin-bottom: 1.5rem;
+}
+
+.mb-8 {
+    margin-bottom: 2rem;
+}
+
+/* Borders & Rounded */
+.border {
+    border: 1px solid #e2e8f0;
+}
+
+.border-2 {
+    border: 2px solid #e2e8f0;
+}
+
+.border-b {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.border-t {
+    border-top: 1px solid #e2e8f0;
+}
+
+.rounded {
+    border-radius: 0.25rem;
+}
+
+.rounded-lg {
+    border-radius: 0.5rem;
+}
+
+.rounded-xl {
+    border-radius: 0.75rem;
+}
+
+.rounded-full {
+    border-radius: 9999px;
+}
+
+/* specific components */
+.student-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    width: 100%;
+}
+
+.question-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1e293b;
+    margin-bottom: 2rem;
+    text-align: center;
+    word-break: keep-all;
+}
+
+.option-btn {
+    background: white;
+    border: 2px solid #e2e8f0;
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #475569;
+    text-align: left;
+    transition: all 0.2s;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.option-btn:hover {
+    border-color: #a5b4fc;
+    background: #f8fafc;
+}
+
+.option-btn.selected {
+    border-color: #6366f1;
+    background: #eef2ff;
+    color: #4338ca;
+    transform: scale(1.02);
+}
+
+.option-index {
+    font-weight: bold;
+    color: #94a3b8;
+    margin-right: 0.5rem;
+    width: 2rem;
+    display: inline-block;
+}
+
+.waiting-msg {
+    margin-top: 2rem;
+    text-align: center;
+    color: #6366f1;
+    font-weight: 500;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: .5;
+    }
+}
+
+/* Short Answer */
+.sa-textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1.125rem;
+    resize: none;
+    transition: all 0.2s;
+}
+
+.sa-textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.btn-submit-answer {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    background: #6366f1;
+    color: white;
+    border-radius: 12px;
+    font-size: 1.125rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-submit-answer:hover {
+    background: #4f46e5;
+}
+
+.btn-submit-answer:disabled {
+    background: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* Whiteboard */
+.wb-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.wb-tool-btn {
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #475569;
+}
+
+.wb-tool-btn:hover {
+    background: #f1f5f9;
+}
+
+.wb-tool-btn.active {
+    background: #eef2ff;
+    color: #4338ca;
+}
+
+.wb-canvas-container {
+    flex: 1;
+    position: relative;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    overflow: hidden;
+    touch-action: none;
+}
+
+/* Monitors */
+.monitor-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.monitor-header {
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #1e293b;
+}
+
+.stat-bar-container {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.stat-bar-header {
+    padding: 1rem;
+    background: #f8fafc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-bar-track {
+    height: 8px;
+    background: #f1f5f9;
+    width: 100%;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    transition: width 0.5s ease-out;
+}
+
+.sa-student-card {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sa-student-card.has-answer {
+    border-color: #c7d2fe;
+}
+
+.sa-student-card.correct {
+    border-color: #86efac;
+    background: #f0fdf4;
+}
+
+.wb-grid-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+}
+
+.wb-grid-header {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: bold;
+    color: #334155;
+}
+
+.wb-grid-canvas {
+    aspect-ratio: 4/3;
+    position: relative;
+    background: #f8fafc;
+}
