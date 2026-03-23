@@ -188,6 +188,16 @@ const ProblemMonitor = ({ problemData }) => {
                             : 0}%
                     </span>
                 </div>
+                {problemData?.type !== 'free-drop' && (
+                    <div className="stat-card">
+                        <span className="label">평균 정답률</span>
+                        <span className="value">
+                            {students.length > 0
+                                ? Math.round(students.reduce((acc, s) => acc + getAccuracy(s.answer).percentage, 0) / students.length)
+                                : 0}%
+                        </span>
+                    </div>
+                )}
             </div>
 
             <div className="students-grid">
@@ -199,7 +209,12 @@ const ProblemMonitor = ({ problemData }) => {
                     >
                         <div className="student-header">
                             <span className="student-name">{student.name}</span>
-                            <span className="student-progress">{calculateProgress(student.answer)}%</span>
+                            <div className="student-stats-mini">
+                                <span className="student-progress">{calculateProgress(student.answer)}%</span>
+                                {problemData?.type !== 'free-drop' && (
+                                    <span className="student-accuracy">({getAccuracy(student.answer).percentage}%)</span>
+                                )}
+                            </div>
                         </div>
                         <div className="progress-bar-bg">
                             <div

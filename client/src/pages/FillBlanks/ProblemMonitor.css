@@ -68,10 +68,22 @@
     color: #334155;
 }
 
+.student-stats-mini {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .student-progress {
     font-size: 0.85rem;
     font-weight: 700;
     color: #3b82f6;
+}
+
+.student-accuracy {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #16a34a;
 }
 
 .progress-bar-bg {
