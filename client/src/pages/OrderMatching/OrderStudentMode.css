@@ -66,8 +66,9 @@
     font-size: 2.8rem !important;
     font-weight: 900 !important;
     color: var(--color-brand-brown);
-    margin-bottom: 0.8rem;
-    line-height: 1.2;
+    margin-bottom: 1.2rem;
+    line-height: 1.5 !important;
+    padding: 0.5rem 0;
 }
 
 .instruction {
