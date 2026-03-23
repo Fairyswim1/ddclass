@@ -73,14 +73,16 @@
 }
 
 .fb-student-container .problem-title {
-    margin-bottom: 3.5rem;
+    margin-bottom: 2rem;
     color: var(--color-brand-brown);
-    font-size: 3rem !important;
-    font-weight: 900 !important;
+    font-size: clamp(1.3rem, 3vw, 2rem) !important;
+    font-weight: 800 !important;
     text-align: center;
     line-height: 1.5 !important;
     padding: 0.5rem 0;
     letter-spacing: -0.02em;
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 .text-display {

@@ -223,7 +223,7 @@ const LessonBuilder = () => {
                             <div className="editor-content">
                                 {/* Editor Component Goes Here */}
                                 <div className="editor-dynamic-area">
-                                    {activeSlide.type === 'fill-blanks' && <FillBlanksEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
+                                    {activeSlide.type === 'fill-blanks' && <FillBlanksEditor slide={activeSlide} updateSlide={handleUpdateSlide} />}
                                     {activeSlide.type === 'order-matching' && <OrderMatchingEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
                                     {activeSlide.type === 'free-drop' && <FreeDropEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
                                     {activeSlide.type === 'multiple-choice' && <MultipleChoiceEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}

@@ -180,7 +180,73 @@ const StudentMode = ({ lessonProblemData = null, lessonRoomId = null, lessonNick
     const renderTextWithBlanks = () => {
         if (!problem) return null;
 
-        // 저장된 words 배열이 있으면 사용 (조사 분리 적용된 새 문제), 없으면 regex fallback (구 문제 호환)
+        // Detect format: new offset-based blanks have startOffset/endOffset
+        const isOffsetBased = problem.blanks.length > 0 && problem.blanks[0].startOffset !== undefined;
+
+        if (isOffsetBased) {
+            // --- NEW FORMAT: offset-based blanks from LessonBuilder ---
+            const text = problem.originalText;
+            const sortedBlanks = [...problem.blanks].sort((a, b) => a.startOffset - b.startOffset);
+            const elements = [];
+            let currentIndex = 0;
+
+            sortedBlanks.forEach((blank, idx) => {
+                // Text segment before this blank
+                if (blank.startOffset > currentIndex) {
+                    const segment = text.slice(currentIndex, blank.startOffset);
+                    // Split by newlines to render <br/>
+                    const lines = segment.split('\n');
+                    lines.forEach((line, lineIdx) => {
+                        if (lineIdx > 0) elements.push(<br key={`br-pre-${idx}-${lineIdx}`} />);
+                        if (line) elements.push(<span key={`seg-${currentIndex}-${lineIdx}`} className="normal-word"><LatexRenderer text={line} /></span>);
+                    });
+                }
+
+                // Blank slot
+                const userAnswer = userAnswers[blank.id];
+                elements.push(
+                    <span
+                        key={`blank-${blank.id}`}
+                        className={`blank-slot ${userAnswer ? 'filled draggable-filled' : ''}`}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDropOnBlank(e, blank.id)}
+                        onClick={() => userAnswer && handleRemoveAnswer(blank.id)}
+                        draggable={!!userAnswer}
+                        onDragStart={(e) => userAnswer && handleDragStart(e, userAnswer, blank.id)}
+                        style={{ cursor: userAnswer ? 'grab' : 'default' }}
+                    >
+                        {userAnswer ? (
+                            <>
+                                <LatexRenderer text={userAnswer} />
+                                <button className="btn-remove-word" aria-label="\ub2e8\uc5b4 \ub418\ub3cc\ub9ac\uae30" onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveAnswer(blank.id);
+                                }}>
+                                    <X size={12} />
+                                </button>
+                            </>
+                        ) : (
+                            <span className="placeholder">&nbsp;</span>
+                        )}
+                    </span>
+                );
+                currentIndex = blank.endOffset;
+            });
+
+            // Remaining text after last blank
+            if (currentIndex < text.length) {
+                const segment = text.slice(currentIndex);
+                const lines = segment.split('\n');
+                lines.forEach((line, lineIdx) => {
+                    if (lineIdx > 0) elements.push(<br key={`br-post-${lineIdx}`} />);
+                    if (line) elements.push(<span key={`seg-end-${lineIdx}`} className="normal-word"><LatexRenderer text={line} /></span>);
+                });
+            }
+
+            return <div className="text-content">{elements}</div>;
+        }
+
+        // --- OLD FORMAT: index-based blanks from TeacherMode ---
         let words;
         if (problem.words && Array.isArray(problem.words)) {
             words = problem.words;
@@ -191,7 +257,7 @@ const StudentMode = ({ lessonProblemData = null, lessonRoomId = null, lessonNick
         const blankMap = new Map(problem.blanks.map(b => [b.index, b]));
 
         return (
-            <div className="text-content">
+            <div className="text-content" style={{ whiteSpace: 'pre-wrap' }}>
                 {words.map((word, index) => {
                     if (word === '\n') {
                         return <br key={index} />;
@@ -214,7 +280,7 @@ const StudentMode = ({ lessonProblemData = null, lessonRoomId = null, lessonNick
                                 {userAnswer ? (
                                     <>
                                         <LatexRenderer text={userAnswer} />
-                                        <button className="btn-remove-word" aria-label="단어 되돌리기" onClick={(e) => {
+                                        <button className="btn-remove-word" aria-label="\ub2e8\uc5b4 \ub418\ub3cc\ub9ac\uae30" onClick={(e) => {
                                             e.stopPropagation();
                                             handleRemoveAnswer(blank.id);
                                         }}>
