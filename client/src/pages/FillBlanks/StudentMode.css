@@ -73,10 +73,12 @@
 }
 
 .problem-title {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
     color: var(--color-brand-brown);
-    font-size: 1.8rem;
+    font-size: 2.4rem;
+    font-weight: 800;
     text-align: center;
+    line-height: 1.3;
 }
 
 .text-display {
@@ -179,9 +181,10 @@
 }
 
 .word-bank h3 {
-    font-size: 1rem;
+    font-size: 1.25rem;
+    font-weight: 800;
     color: var(--color-brand-brown);
-    margin-bottom: 1.2rem;
+    margin-bottom: 1.5rem;
     text-align: center;
 }
 
@@ -269,8 +272,9 @@
 }
 
 .result-card h3 {
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
+    margin-bottom: 1.2rem;
+    font-size: 1.8rem;
+    font-weight: 800;
     color: var(--color-brand-green);
 }
 
