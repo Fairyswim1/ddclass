@@ -7,14 +7,16 @@ import { db } from '../../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { resolveApiUrl } from '../../utils/url';
 
-const FreeStudentMode = () => {
+const FreeStudentMode = ({ lessonProblemData = null, lessonRoomId = null, lessonNickname = null, lessonSocket = null }) => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [socket, setSocket] = useState(null);
-    const [step, setStep] = useState(location.state?.autoJoin ? 'joining' : 'login');
-    const [pin, setPin] = useState(location.state?.pin || '');
-    const [nickname, setNickname] = useState('');
-    const [problem, setProblem] = useState(null);
+    const isLessonMode = !!lessonProblemData;
+
+    const [socket, setSocket] = useState(lessonSocket);
+    const [step, setStep] = useState(isLessonMode || location.state?.autoJoin ? 'joining' : 'login');
+    const [pin, setPin] = useState(isLessonMode ? (lessonProblemData.pinNumber || '') : (location.state?.pin || ''));
+    const [nickname, setNickname] = useState(isLessonMode ? lessonNickname : (location.state?.nickname || ''));
+    const [problem, setProblem] = useState(lessonProblemData);
     const [items, setItems] = useState([]);
     const itemsRef = useRef([]); // Ref to track latest items for sync
     const [currentWidth, setCurrentWidth] = useState(1000);
@@ -32,11 +34,14 @@ const FreeStudentMode = () => {
 
     useEffect(() => {
         if (!socket) return;
-        socket.on('messageReceived', (data) => {
+
+        const handleMessage = (data) => {
             setFeedback(data.message);
             setTimeout(() => setFeedback(null), 5000);
-        });
-        return () => socket.disconnect();
+        };
+
+        socket.on('messageReceived', handleMessage);
+        return () => socket.off('messageReceived', handleMessage);
     }, [socket]);
 
     useEffect(() => {
@@ -50,14 +55,32 @@ const FreeStudentMode = () => {
         return () => observer.disconnect();
     }, [step]);
 
+    // Lesson Mode / Auto Join
     useEffect(() => {
-        // Auto-join if state exists (from StudentLogin)
-        if (location.state?.pin && location.state?.nickname && location.state?.autoJoin) {
+        if (isLessonMode && lessonProblemData) {
+            setProblem(lessonProblemData);
+
+            const initialItems = (lessonProblemData.items || []).map(item => ({
+                ...item,
+                isPlaced: item.isPlaced || false
+            }));
+
+            setItems(initialItems);
+            setStep('game');
+
+            // Optionally emit initial state so Teacher Monitor syncs
+            const answerData = initialItems.map(({ id, x, y, isPlaced }) => ({ id, x, y, isPlaced }));
+            lessonSocket?.emit('submitLessonAnswer', {
+                lessonId: lessonRoomId,
+                studentName: lessonNickname,
+                answer: answerData
+            });
+        } else if (location.state?.pin && location.state?.nickname && location.state?.autoJoin) {
             setPin(location.state.pin);
             setNickname(location.state.nickname);
             performJoin(location.state.pin, location.state.nickname);
         }
-    }, [location.state]);
+    }, [isLessonMode, lessonProblemData, location.state]);
 
     const performJoin = async (targetPin, targetNickname) => {
         try {
@@ -213,8 +236,8 @@ const FreeStudentMode = () => {
 
     const syncAnswerWithServer = (currentItems = itemsRef.current) => {
         const answerData = currentItems.map(({ id, x, y, isPlaced }) => ({ id, x, y, isPlaced }));
-        socket?.emit('submitAnswer', {
-            problemId: problem.id,
+        socket?.emit(isLessonMode ? 'submitLessonAnswer' : 'submitAnswer', {
+            [isLessonMode ? 'lessonId' : 'problemId']: isLessonMode ? lessonRoomId : problem.id,
             studentName: nickname,
             answer: answerData
         });

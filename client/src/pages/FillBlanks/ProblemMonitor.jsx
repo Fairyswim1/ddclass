@@ -5,14 +5,17 @@ import './ProblemMonitor.css';
 import LatexRenderer from '../../components/LatexRenderer';
 import { resolveApiUrl } from '../../utils/url';
 
-const ProblemMonitor = ({ problemData }) => {
-    const [socket, setSocket] = useState(null);
-    const [students, setStudents] = useState([]); // [{id, name, answer: {}}]
-    const [selectedStudentName, setSelectedStudentName] = useState(null); // For detail view
-    const [message, setMessage] = useState(''); // Message to send
+const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = null }) => {
+    const [localSocket, setLocalSocket] = useState(null);
+    const [localStudents, setLocalStudents] = useState([]);
+    const [selectedStudentName, setSelectedStudentName] = useState(null);
+    const [message, setMessage] = useState('');
     const [isFullScreen, setIsFullScreen] = useState(false);
     const mirrorRef = useRef(null);
     const [mirrorWidth, setMirrorWidth] = useState(1000);
+
+    const socket = parentSocket || localSocket;
+    const students = parentStudents !== null ? parentStudents : localStudents;
 
     const selectedStudent = students.find(s => s.name === selectedStudentName);
     const currentProblemWidth = problemData?.baseWidth || 1000;
@@ -22,10 +25,11 @@ const ProblemMonitor = ({ problemData }) => {
     const activeBlanks = problemData?.blanks || problemData?.steps || [];
 
     useEffect(() => {
-        const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
-        setSocket(newSocket);
+        if (parentSocket) return; // If controlled by parent (e.g. LessonMonitor), skip local socket connection
 
-        // 연결 시 또는 재연결 시 자동으로 방 입장 수행
+        const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
+        setLocalSocket(newSocket);
+
         const joinRoom = () => {
             console.log('Teacher Monitor Socket Connected. Re-joining room:', problemData?.id);
             newSocket.emit('joinProblem', {
@@ -40,7 +44,7 @@ const ProblemMonitor = ({ problemData }) => {
         newSocket.on('connect', joinRoom);
 
         newSocket.on('currentStudents', (currentStudents) => {
-            setStudents((currentStudents || []).map(s => ({
+            setLocalStudents((currentStudents || []).map(s => ({
                 ...s,
                 answer: s.answer || (problemData?.type === 'fill-blanks' ? {} : [])
             })));
@@ -49,20 +53,20 @@ const ProblemMonitor = ({ problemData }) => {
         newSocket.on('studentJoined', (student) => {
             if (student.name === 'TEACHER_MONITOR' || !student.name) return;
 
-            setStudents(prev => {
+            setLocalStudents(prev => {
                 if (prev.find(s => s.id === student.id || s.name === student.name)) return prev;
                 return [...prev, { ...student, answer: student.answer || (problemData?.type === 'fill-blanks' ? {} : []) }];
             });
         });
 
         newSocket.on('studentLeft', (data) => {
-            setStudents(prev => prev.filter(s => s.id !== data.id));
+            setLocalStudents(prev => prev.filter(s => s.id !== data.id));
         });
 
         newSocket.on('answerUpdated', (studentData) => {
             if (studentData.name === 'TEACHER_MONITOR') return;
 
-            setStudents(prev => {
+            setLocalStudents(prev => {
                 const exists = prev.find(s => s.name === studentData.name);
                 if (exists) {
                     return prev.map(s => s.name === studentData.name
@@ -75,7 +79,7 @@ const ProblemMonitor = ({ problemData }) => {
         });
 
         return () => newSocket.disconnect();
-    }, [problemData.id]);
+    }, [problemData?.id, parentSocket, problemData?.type]);
 
     const calculateProgress = (studentAnswer) => {
         if (!problemData) return 0;
@@ -147,7 +151,7 @@ const ProblemMonitor = ({ problemData }) => {
 
     const handleSendMessage = (e) => {
         e.preventDefault();
-        if (!message.trim() || !selectedStudent) return;
+        if (!message.trim() || !selectedStudent || !socket) return;
 
         socket.emit('sendMessage', {
             studentSocketId: selectedStudent.id,

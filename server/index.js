@@ -311,26 +311,88 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 });
 
 // -----------------------------------------------------
-// 공통: PIN 번호로 문제 찾기
+// 공통: PIN 번호로 문제/수업 찾기
 // -----------------------------------------------------
 app.get('/api/find-problem/:pin', async (req, res) => {
   try {
     const pin = req.params.pin;
-    const snapshot = await db.collection('problems')
+
+    // 1. 단일 문제 검색 (역호환성)
+    let snapshot = await db.collection('problems')
       .where('pinNumber', '==', pin)
       .limit(1)
       .get();
 
-    if (snapshot.empty) {
-      return res.status(404).json({ success: false, message: '해당 PIN의 문제를 찾을 수 없습니다.' });
+    if (!snapshot.empty) {
+      const problem = snapshot.docs[0].data();
+      return res.json({
+        success: true,
+        id: problem.id,
+        type: problem.type
+      });
     }
 
-    const problem = snapshot.docs[0].data();
-    res.json({
-      success: true,
-      id: problem.id,
-      type: problem.type
-    });
+    // 2. 수업(Lesson) 검색
+    snapshot = await db.collection('lessons')
+      .where('pinNumber', '==', pin)
+      .limit(1)
+      .get();
+
+    if (!snapshot.empty) {
+      const lesson = snapshot.docs[0].data();
+      return res.json({
+        success: true,
+        id: lesson.id,
+        type: 'lesson',
+        problemIds: lesson.problemIds,
+        currentProblemIndex: lesson.currentProblemIndex
+      });
+    }
+
+    return res.status(404).json({ success: false, message: '해당 PIN을 찾을 수 없습니다.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: '서버 오류' });
+  }
+});
+
+// -----------------------------------------------------
+// Feature 5: 수업(Lesson) API [NEW]
+// -----------------------------------------------------
+app.post('/api/lessons', async (req, res) => {
+  try {
+    const { title, problemIds, teacherId } = req.body;
+    const lessonId = Math.random().toString(36).substr(2, 9);
+    const pinNumber = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const newLesson = {
+      id: lessonId,
+      type: 'lesson',
+      pinNumber,
+      title,
+      problemIds,
+      currentProblemIndex: 0,
+      teacherId: teacherId || null,
+      status: 'active',
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+
+    await db.collection('lessons').doc(lessonId).set(newLesson);
+    console.log(`[SAVED] 수업: ${title} | ID: ${lessonId} | PIN: ${pinNumber}`);
+
+    res.json({ success: true, lessonId, pinNumber });
+  } catch (error) {
+    console.error('수업 생성 실패:', error);
+    res.status(500).json({ success: false, message: '서버 오류' });
+  }
+});
+
+app.get('/api/lessons/:id', async (req, res) => {
+  try {
+    const doc = await db.collection('lessons').doc(req.params.id).get();
+    if (!doc.exists) {
+      return res.status(404).json({ success: false, message: '수업을 찾을 수 없습니다.' });
+    }
+    res.json({ success: true, lesson: doc.data() });
   } catch (error) {
     res.status(500).json({ success: false, message: '서버 오류' });
   }
@@ -399,6 +461,65 @@ io.on('connection', (socket) => {
       name: studentName,
       answer,
       updatedAt: roomStates[problemId].students[socket.id].updatedAt
+    });
+  });
+
+  // ==========================================
+  // Lesson(수업) 전용 소켓 이벤트
+  // ==========================================
+  socket.on('joinLesson', ({ lessonId, studentName }) => {
+    if (!lessonId || !studentName) return;
+
+    socket.join(lessonId);
+    console.log(`${studentName} (${socket.id})가 수업 ${lessonId}에 입장`);
+
+    if (!roomStates[lessonId]) {
+      roomStates[lessonId] = { students: {} };
+    }
+
+    const isTeacher = studentName === 'TEACHER_MONITOR';
+
+    if (!isTeacher) {
+      roomStates[lessonId].students[socket.id] = {
+        id: socket.id,
+        name: studentName,
+        answer: [],
+        joinedAt: new Date()
+      };
+    }
+
+    socket.emit('currentStudents', Object.values(roomStates[lessonId].students));
+
+    if (!isTeacher) {
+      socket.to(lessonId).emit('studentJoined', roomStates[lessonId].students[socket.id]);
+    }
+  });
+
+  socket.on('changeLessonStep', ({ lessonId, stepIndex }) => {
+    console.log(`수업 ${lessonId} 인덱스 변경 -> ${stepIndex}`);
+    // 방 안의 모든 사람에게 새로운 인덱스 방송
+    io.to(lessonId).emit('lessonStateChanged', { stepIndex });
+
+    // 문제가 넘어갈 때 학생들의 제출 답안 초기화 (모니터링을 위해)
+    if (roomStates[lessonId] && roomStates[lessonId].students) {
+      Object.keys(roomStates[lessonId].students).forEach(socketId => {
+        roomStates[lessonId].students[socketId].answer = [];
+      });
+      io.to(lessonId).emit('currentStudents', Object.values(roomStates[lessonId].students));
+    }
+  });
+
+  socket.on('submitLessonAnswer', ({ lessonId, studentName, answer }) => {
+    if (!roomStates[lessonId] || !roomStates[lessonId].students[socket.id]) return;
+
+    roomStates[lessonId].students[socket.id].answer = answer;
+    roomStates[lessonId].students[socket.id].updatedAt = new Date();
+
+    socket.to(lessonId).emit('answerUpdated', {
+      id: socket.id,
+      name: studentName,
+      answer,
+      updatedAt: roomStates[lessonId].students[socket.id].updatedAt
     });
   });
 

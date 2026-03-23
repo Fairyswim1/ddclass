@@ -8,14 +8,16 @@ import LatexRenderer from '../../components/LatexRenderer';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
-const OrderStudentMode = () => {
+const OrderStudentMode = ({ lessonProblemData = null, lessonRoomId = null, lessonNickname = null, lessonSocket = null }) => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [socket, setSocket] = useState(null);
-    const [step, setStep] = useState(location.state?.autoJoin ? 'joining' : 'login'); // login, joining, game
-    const [pin, setPin] = useState(location.state?.pin || '');
-    const [nickname, setNickname] = useState('');
-    const [problem, setProblem] = useState(null);
+    const isLessonMode = !!lessonProblemData;
+
+    const [socket, setSocket] = useState(lessonSocket);
+    const [step, setStep] = useState(isLessonMode || location.state?.autoJoin ? 'joining' : 'login');
+    const [pin, setPin] = useState(isLessonMode ? (lessonProblemData.pinNumber || '') : (location.state?.pin || ''));
+    const [nickname, setNickname] = useState(isLessonMode ? lessonNickname : (location.state?.nickname || ''));
+    const [problem, setProblem] = useState(lessonProblemData);
 
     // Game State
     const [shuffledSteps, setShuffledSteps] = useState([]); // Remaining cards
@@ -29,22 +31,36 @@ const OrderStudentMode = () => {
     useEffect(() => {
         if (!socket) return;
 
-        socket.on('messageReceived', (data) => {
+        const handleMessage = (data) => {
             setLastMessage(data);
             setTimeout(() => setLastMessage(null), 5000);
-        });
+        };
 
-        return () => socket.off('messageReceived');
+        socket.on('messageReceived', handleMessage);
+        return () => socket.off('messageReceived', handleMessage);
     }, [socket]);
 
-    // Auto Join if redirected
+    // Lesson Mode / Auto Join
     useEffect(() => {
-        if (location.state?.autoJoin && location.state?.pin && location.state?.nickname) {
+        if (isLessonMode && lessonProblemData) {
+            setProblem(lessonProblemData);
+
+            const normalizedSteps = (lessonProblemData.steps || []).map((step, idx) => {
+                if (typeof step === 'string') return { id: `step-${idx}`, text: step };
+                return step;
+            });
+
+            setProblem({ id: lessonProblemData.id, ...lessonProblemData, steps: normalizedSteps });
+            setShuffledSteps(shuffleArray(normalizedSteps));
+            setUserOrder([]);
+            setIsCompleted(false);
+            setStep('game');
+        } else if (location.state?.autoJoin && location.state?.pin && location.state?.nickname) {
             setPin(location.state.pin);
             setNickname(location.state.nickname);
             joinGame(location.state.pin, location.state.nickname);
         }
-    }, []);
+    }, [isLessonMode, lessonProblemData, location.state]);
 
     const handleJoin = () => joinGame(pin, nickname);
 
@@ -169,8 +185,8 @@ const OrderStudentMode = () => {
     };
 
     const updateAnswerToServer = (newOrder) => {
-        socket?.emit('submitAnswer', {
-            problemId: problem.id,
+        socket?.emit(isLessonMode ? 'submitLessonAnswer' : 'submitAnswer', {
+            [isLessonMode ? 'lessonId' : 'problemId']: isLessonMode ? lessonRoomId : problem.id,
             studentName: nickname,
             answer: newOrder
         });

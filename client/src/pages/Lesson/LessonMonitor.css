@@ -1,0 +1,203 @@
+.lesson-monitor-page {
+    min-height: 100vh;
+    background: #FAFAFA;
+    display: flex;
+    flex-direction: column;
+}
+
+.lesson-monitor-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2.5%;
+    background: white;
+    border-bottom: 2px solid #F0EEE9;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-back-dash {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    border: 2px solid #F0EEE9;
+    background: white;
+    font-weight: 700;
+    color: var(--color-brand-brown);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-back-dash:hover {
+    border-color: var(--color-brand-orange);
+    color: var(--color-brand-orange);
+}
+
+.lesson-title-display {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--color-brand-brown);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.type-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    background: #E0F2FE;
+    color: #0284C7;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.pin-pill {
+    display: flex;
+    align-items: center;
+    background: #F0EEE9;
+    border-radius: 20px;
+    padding: 0.3rem 1rem 0.3rem 0.4rem;
+    gap: 0.8rem;
+}
+
+.pin-pill .label {
+    background: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--color-brand-brown);
+}
+
+.pin-pill .value {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--color-brand-orange);
+    letter-spacing: 2px;
+}
+
+.lesson-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 2.5%;
+    background: white;
+    border-bottom: 2px solid #F0EEE9;
+    gap: 1.5rem;
+}
+
+.btn-step-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    border: none;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-step-control.prev {
+    background: #F3F4F6;
+    color: #4B5563;
+}
+
+.btn-step-control.prev:hover:not(:disabled) {
+    background: #E5E7EB;
+}
+
+.btn-step-control.next {
+    background: var(--color-brand-orange);
+    color: white;
+    box-shadow: 0 4px 0 #E65100;
+}
+
+.btn-step-control.next:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #E65100;
+}
+
+.btn-step-control.next:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: none;
+}
+
+.btn-step-control:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.step-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 150px;
+}
+
+.step-text {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--color-brand-brown);
+}
+
+.step-progress {
+    width: 100%;
+    height: 6px;
+    background: #F0EEE9;
+    border-radius: 3px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.step-progress-fill {
+    height: 100%;
+    background: var(--color-brand-blue);
+    transition: width 0.3s ease;
+}
+
+.lesson-content-area {
+    flex: 1;
+    padding: 1.5rem 2.5%;
+    display: flex;
+    flex-direction: column;
+}
+
+.monitor-component-container {
+    flex: 1;
+    background: white;
+    border-radius: 20px;
+    border: 2px solid #F0EEE9;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.lesson-page-loading,
+.lesson-page-error {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: var(--color-brand-brown);
+}
+
+.lesson-page-error {
+    color: #DC2626;
+}

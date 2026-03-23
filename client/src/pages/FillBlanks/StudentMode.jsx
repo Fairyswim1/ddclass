@@ -8,14 +8,16 @@ import LatexRenderer from '../../components/LatexRenderer';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 
-const StudentMode = () => {
+const StudentMode = ({ lessonProblemData = null, lessonRoomId = null, lessonNickname = null, lessonSocket = null }) => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [socket, setSocket] = useState(null);
-    const [step, setStep] = useState(location.state?.autoJoin ? 'joining' : 'login'); // login, joining, game
-    const [pin, setPin] = useState(location.state?.pin || '');
-    const [nickname, setNickname] = useState('');
-    const [problem, setProblem] = useState(null);
+    const isLessonMode = !!lessonProblemData;
+
+    const [socket, setSocket] = useState(lessonSocket);
+    const [step, setStep] = useState(isLessonMode || location.state?.autoJoin ? 'joining' : 'login');
+    const [pin, setPin] = useState(isLessonMode ? (lessonProblemData.pinNumber || '') : (location.state?.pin || ''));
+    const [nickname, setNickname] = useState(isLessonMode ? lessonNickname : (location.state?.nickname || ''));
+    const [problem, setProblem] = useState(lessonProblemData);
     const [userAnswers, setUserAnswers] = useState({}); // { blankId: word }
     const [draggedWord, setDraggedWord] = useState(null);
     const [sourceBlankId, setSourceBlankId] = useState(null); // 추가: 드래그 시작된 빈칸 ID
@@ -27,23 +29,28 @@ const StudentMode = () => {
     useEffect(() => {
         if (!socket) return;
 
-        socket.on('messageReceived', (data) => {
+        const handleMessage = (data) => {
             setLastMessage(data);
-            // 5초 후 자동 숨김
             setTimeout(() => setLastMessage(null), 5000);
-        });
+        };
 
-        return () => socket.off('messageReceived');
+        socket.on('messageReceived', handleMessage);
+        return () => socket.off('messageReceived', handleMessage);
     }, [socket]);
 
-    // Auto Join if redirected
+    // Lesson Mode / Auto Join
     useEffect(() => {
-        if (location.state?.autoJoin && location.state?.pin && location.state?.nickname) {
+        if (isLessonMode && lessonProblemData) {
+            setProblem(lessonProblemData);
+            const words = lessonProblemData.blanks.map(b => b.word);
+            setShuffledWords(shuffleArray(words));
+            setStep('game');
+        } else if (location.state?.autoJoin && location.state?.pin && location.state?.nickname) {
             setPin(location.state.pin);
             setNickname(location.state.nickname);
             joinGame(location.state.pin, location.state.nickname);
         }
-    }, []);
+    }, [isLessonMode, lessonProblemData, location.state]);
 
     const handleJoin = () => joinGame(pin, nickname);
 
@@ -138,8 +145,8 @@ const StudentMode = () => {
             setSourceBlankId(null);
 
             // 정답 제출 (실시간)
-            socket?.emit('submitAnswer', {
-                problemId: problem.id,
+            socket?.emit(isLessonMode ? 'submitLessonAnswer' : 'submitAnswer', {
+                [isLessonMode ? 'lessonId' : 'problemId']: isLessonMode ? lessonRoomId : problem.id,
                 studentName: nickname,
                 answer: newAnswers
             });
@@ -162,8 +169,8 @@ const StudentMode = () => {
         setUserAnswers(newAnswers);
 
         // 정답 수정 (실시간)
-        socket?.emit('submitAnswer', {
-            problemId: problem.id,
+        socket?.emit(isLessonMode ? 'submitLessonAnswer' : 'submitAnswer', {
+            [isLessonMode ? 'lessonId' : 'problemId']: isLessonMode ? lessonRoomId : problem.id,
             studentName: nickname,
             answer: newAnswers
         });

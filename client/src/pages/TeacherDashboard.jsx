@@ -123,16 +123,27 @@ const TeacherDashboard = () => {
             setLoading(true);
             setError(null);
 
-            const q = query(
+            const problemsQ = query(
                 collection(db, 'problems'),
                 where('teacherId', '==', currentUser.uid)
             );
-            const querySnapshot = await getDocs(q);
-
-            const items = querySnapshot.docs.map(doc => ({
+            const problemsSnapshot = await getDocs(problemsQ);
+            const problemItems = problemsSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
+
+            const lessonsQ = query(
+                collection(db, 'lessons'),
+                where('teacherId', '==', currentUser.uid)
+            );
+            const lessonsSnapshot = await getDocs(lessonsQ);
+            const lessonItems = lessonsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            const items = [...problemItems, ...lessonItems];
 
             // 로컬 정렬 (최신순)
             items.sort((a, b) => {
@@ -227,6 +238,7 @@ const TeacherDashboard = () => {
             case 'fill-blanks': return <Layers size={18} />;
             case 'order-matching': return <Layout size={18} />;
             case 'free-drop': return <MousePointer2 size={18} />;
+            case 'lesson': return <Globe size={18} />;
             default: return <Clock size={18} />;
         }
     };
@@ -236,6 +248,7 @@ const TeacherDashboard = () => {
             case 'fill-blanks': return '빈칸 채우기';
             case 'order-matching': return '순서 맞추기';
             case 'free-drop': return '자유 보드';
+            case 'lesson': return '수업 꾸러미';
             default: return '기타';
         }
     };
@@ -290,6 +303,10 @@ const TeacherDashboard = () => {
                                 </button>
                                 <button onClick={() => navigate('/free-dnd')}>
                                     <MousePointer2 size={18} /> 자유 보드
+                                </button>
+                                <div style={{ borderTop: '1px solid #eee', margin: '4px 0' }}></div>
+                                <button onClick={() => navigate('/create-lesson')} style={{ color: 'var(--color-brand-blue)' }}>
+                                    <Globe size={18} /> 새 수업 묶음 만들기
                                 </button>
                             </div>
                         )}
@@ -464,10 +481,14 @@ const TeacherDashboard = () => {
                                     <button
                                         className="btn-icon-subtle"
                                         onClick={() => {
+                                            if (problem.type === 'lesson') {
+                                                alert('수업 묶음 수정은 아직 지원되지 않습니다.');
+                                                return;
+                                            }
                                             const routeType = problem.type === 'free-drop' ? 'free-dnd' : problem.type;
                                             navigate(`/${routeType}/${problem.id}`);
                                         }}
-                                        title="문제 수정"
+                                        title="수정"
                                     >
                                         <Edit2 size={18} />
                                     </button>
@@ -496,7 +517,13 @@ const TeacherDashboard = () => {
                             <div className="card-footer-refined">
                                 <button
                                     className="btn-action start"
-                                    onClick={() => navigate(`/teacher/monitor/${problem.id}`)}
+                                    onClick={() => {
+                                        if (problem.type === 'lesson') {
+                                            navigate(`/teacher/lesson-monitor/${problem.id}`);
+                                        } else {
+                                            navigate(`/teacher/monitor/${problem.id}`);
+                                        }
+                                    }}
                                 >
                                     실시간 모니터링
                                     <span className={`live-count-badge-inline ${(roomStatus[problem.id]?.count > 0) ? 'active' : 'empty'}`}>

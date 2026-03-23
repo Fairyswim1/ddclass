@@ -13,6 +13,9 @@ import TeacherLogin from './pages/TeacherLogin';
 import TeacherDashboard from './pages/TeacherDashboard';
 import PublicLibrary from './pages/PublicLibrary';
 import MonitorPage from './pages/MonitorPage';
+import CreateLesson from './pages/Lesson/CreateLesson';
+import LessonMonitor from './pages/Lesson/LessonMonitor';
+import LessonStudentMode from './pages/Lesson/LessonStudentMode';
 import './App.css';
 
 function App() {
@@ -27,6 +30,9 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
 
+          {/* 수업 생성 */}
+          <Route path="/create-lesson" element={<CreateLesson />} />
+
           {/* 기능 1: 빈칸 채우기 */}
           <Route path="/fill-blanks/:id?" element={<TeacherMode />} />
           <Route path="/student/fill-blanks" element={<StudentMode />} />
@@ -40,6 +46,9 @@ function App() {
           <Route path="/free-dnd/monitor/:id" element={<FreeMonitor />} />
           <Route path="/student/free-dnd" element={<FreeStudentMode />} />
 
+          {/* 수업(Lesson) 통신용 */}
+          <Route path="/student/lesson" element={<LessonStudentMode />} />
+
           {/* 학생 공통 진입 (Dispatcher) */}
           <Route path="/student/join" element={<StudentLogin />} />
           <Route path="/s" element={<StudentLogin />} />
@@ -50,6 +59,7 @@ function App() {
           <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
           <Route path="/teacher/library" element={<PublicLibrary />} />
           <Route path="/teacher/monitor/:id" element={<MonitorPage />} />
+          <Route path="/teacher/lesson-monitor/:id" element={<LessonMonitor />} />
           <Route path="/monitor/:id" element={<MonitorPage />} />
         </Routes>
       </div>

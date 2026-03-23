@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, ArrowRight, Play } from 'lucide-react';
 import './StudentLogin.css';
 import { db } from '../firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { resolveApiUrl } from '../utils/url';
 
 const StudentLogin = () => {
     const navigate = useNavigate();
@@ -17,19 +17,17 @@ const StudentLogin = () => {
         }
 
         try {
-            // Firestore에서 PIN으로 직접 문제 검색
-            const q = query(
-                collection(db, 'problems'),
-                where('pinNumber', '==', pin)
-            );
-            const querySnapshot = await getDocs(q);
+            const response = await fetch(resolveApiUrl(`/api/find-problem/${pin}`));
+            const data = await response.json();
 
-            if (!querySnapshot.empty) {
-                const problemDoc = querySnapshot.docs[0];
-                const problemData = problemDoc.data();
-                const problemType = problemData.type;
+            if (data.success) {
+                const problemType = data.type;
 
-                if (problemType === 'order-matching') {
+                if (problemType === 'lesson') {
+                    navigate('/student/lesson', {
+                        state: { pin, nickname, autoJoin: true, lessonId: data.id }
+                    });
+                } else if (problemType === 'order-matching') {
                     navigate('/student/order-matching', {
                         state: { pin, nickname, autoJoin: true }
                     });
