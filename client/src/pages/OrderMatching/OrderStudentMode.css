@@ -62,10 +62,12 @@
     flex-shrink: 0;
 }
 
-.problem-title {
-    font-size: 2rem;
+.om-student-container .problem-title {
+    font-size: 2.8rem !important;
+    font-weight: 900 !important;
     color: var(--color-brand-brown);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.2;
 }
 
 .instruction {

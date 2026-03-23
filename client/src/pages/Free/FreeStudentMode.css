@@ -30,8 +30,8 @@
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    font-size: 0.9rem;
-    font-weight: 800;
+    font-size: 1.2rem !important;
+    font-weight: 900 !important;
     color: var(--color-brand-brown);
     margin-bottom: 1.5rem;
     padding-bottom: 0.8rem;
