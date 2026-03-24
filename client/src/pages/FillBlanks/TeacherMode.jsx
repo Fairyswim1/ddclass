@@ -152,7 +152,7 @@ const TeacherMode = () => {
                     style={{ cursor: 'pointer', margin: '0 2px' }}
                 >
                     <LatexRenderer text={blank.word} />
-                    <span className="blank-indicator">빈칸</span>
+                    <span className="blank-indicator"></span>
                 </span>
             );
             currentIndex = blank.endOffset;

@@ -311,12 +311,19 @@
 }
 
 .blank-indicator {
+    display: inline-flex;
+    align-items: center;
+}
+
+.blank-indicator::after {
+    content: '빈칸';
     font-size: 0.7rem;
     background: rgba(139, 69, 19, 0.1);
     color: var(--color-brand-brown);
     padding: 2px 6px;
     border-radius: 6px;
     margin-left: 6px;
+    font-weight: 600;
 }
 
 .action-bar-refined {

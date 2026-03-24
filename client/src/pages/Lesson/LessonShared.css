@@ -435,3 +435,44 @@
     position: relative;
     background: #f8fafc;
 }
+/* Fill-in-the-Blanks Editor Styles */
+.word-chip-refined {
+    display: inline-block;
+    padding: 4px 10px;
+    margin: 2px 5px;
+    background: white;
+    border: 2px solid #F0EEE9;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.1rem;
+}
+
+.word-chip-refined:hover {
+    border-color: #ffce44;
+    transform: translateY(-2px);
+}
+
+.word-chip-refined.is-blank {
+    background: #ffce44;
+    border-color: #E6B400;
+    color: #4e342e;
+    font-weight: 800;
+    box-shadow: 0 4px 0 #E6B400;
+}
+
+.blank-indicator {
+    display: inline-flex;
+    align-items: center;
+}
+
+.blank-indicator::after {
+    content: 'ºóÄ­';
+    font-size: 0.7rem;
+    background: rgba(139, 69, 19, 0.1);
+    color: #4e342e;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-left: 6px;
+    font-weight: 600;
+}

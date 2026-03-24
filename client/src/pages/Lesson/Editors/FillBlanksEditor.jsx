@@ -81,18 +81,23 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
                 <span
                     key={`blank-${blank.id}`}
                     onClick={() => removeBlank(blank.id)}
+                    className="word-chip-refined is-blank"
                     style={{
-                        backgroundColor: '#10b981',
-                        color: 'white',
-                        padding: '0.1rem 0.2rem',
-                        margin: '0 0.1rem',
-                        borderRadius: '4px',
                         cursor: 'pointer',
-                        fontWeight: 'bold'
+                        margin: '0 2px',
+                        backgroundColor: '#ffce44', // Matching TeacherMode yellow
+                        color: '#4e342e',
+                        border: '2px solid #E6B400',
+                        padding: '4px 10px',
+                        borderRadius: '10px',
+                        display: 'inline-block',
+                        fontWeight: '800',
+                        boxShadow: '0 4px 0 #E6B400'
                     }}
                     title="클릭하여 빈칸 해제"
                 >
-                    {blank.word}
+                    <LatexRenderer text={blank.word} />
+                    <span className="blank-indicator"></span>
                 </span>
             );
             currentIndex = blank.endOffset;
