@@ -82,6 +82,9 @@ const TeacherMode = () => {
             alert('학교급을 선택해주세요. (필수)');
             return;
         }
+
+        // Normalize newlines to avoid offset drifting (\r\n -> \n)
+        setInputText(prev => prev.replace(/\r\n/g, '\n'));
         setStep('create');
     };
 
@@ -92,13 +95,35 @@ const TeacherMode = () => {
         const range = selection.getRangeAt(0);
         if (!textRef.current || !textRef.current.contains(range.commonAncestorContainer)) return;
 
-        const preCaretRange = range.cloneRange();
-        preCaretRange.selectNodeContents(textRef.current);
-        preCaretRange.setEnd(range.startContainer, range.startOffset);
+        // Find the base offset from the parent span's data-offset
+        const getOffset = (container, offset) => {
+            let node = container;
+            while (node && node !== textRef.current) {
+                if (node.dataset && node.dataset.offset !== undefined) {
+                    return parseInt(node.dataset.offset, 10) + offset;
+                }
+                // If it's a text node inside a span, the offset is relative to the text node.
+                // But range.startOffset is already what we need if the container is the text node.
+                // We just need to sum up previous sibling lengths if there are multiple text nodes/elements.
+                if (node.parentNode && node.parentNode.dataset && node.parentNode.dataset.offset !== undefined) {
+                    let totalOffset = parseInt(node.parentNode.dataset.offset, 10);
+                    let sib = node.previousSibling;
+                    while (sib) {
+                        totalOffset += (sib.textContent || '').length;
+                        sib = sib.previousSibling;
+                    }
+                    return totalOffset + offset;
+                }
+                node = node.parentNode;
+            }
+            return offset;
+        };
 
-        const startOffset = preCaretRange.toString().length;
-        const selectedText = selection.toString();
-        const endOffset = startOffset + selectedText.length;
+        const startOffset = getOffset(range.startContainer, range.startOffset);
+        const endOffset = getOffset(range.endContainer, range.endOffset);
+
+        // Source of truth: slice from the original inputText using the calculated offsets
+        const selectedText = inputText.slice(startOffset, endOffset);
 
         if (!selectedText.trim()) return;
 
@@ -139,7 +164,7 @@ const TeacherMode = () => {
         blanks.forEach(blank => {
             if (blank.startOffset > currentIndex) {
                 elements.push(
-                    <span key={`text-${currentIndex}`}>
+                    <span key={`text-${currentIndex}`} data-offset={currentIndex}>
                         {inputText.slice(currentIndex, blank.startOffset)}
                     </span>
                 );
@@ -160,7 +185,7 @@ const TeacherMode = () => {
 
         if (currentIndex < inputText.length) {
             elements.push(
-                <span key={`text-end`}>{inputText.slice(currentIndex)}</span>
+                <span key={`text-end`} data-offset={currentIndex}>{inputText.slice(currentIndex)}</span>
             );
         }
 
