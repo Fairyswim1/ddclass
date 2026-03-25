@@ -313,6 +313,8 @@
 .blank-indicator {
     display: inline-flex;
     align-items: center;
+    user-select: none;
+    pointer-events: none;
 }
 
 .blank-indicator::after {
@@ -324,6 +326,7 @@
     border-radius: 6px;
     margin-left: 6px;
     font-weight: 600;
+    user-select: none;
 }
 
 .action-bar-refined {
