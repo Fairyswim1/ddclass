@@ -2,7 +2,7 @@ import React from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { GripVertical, Plus, Trash2 } from 'lucide-react';
 
-const OrderMatchingEditor = ({ slide, updateSlide }) => {
+const OrderMatchingEditor = ({ slide, onChange }) => {
     // Default steps if none exist
     const steps = slide.steps || [
         { id: '1', text: '' },
@@ -12,18 +12,18 @@ const OrderMatchingEditor = ({ slide, updateSlide }) => {
 
     const handleAddStep = () => {
         const newSteps = [...steps, { id: Date.now().toString(), text: '' }];
-        updateSlide(slide.id, { steps: newSteps });
+        onChange({ steps: newSteps });
     };
 
     const handleUpdateStep = (id, text) => {
         const newSteps = steps.map(s => s.id === id ? { ...s, text } : s);
-        updateSlide(slide.id, { steps: newSteps });
+        onChange({ steps: newSteps });
     };
 
     const handleRemoveStep = (id) => {
         if (steps.length <= 2) return; // Prevent removing below 2 options
         const newSteps = steps.filter(s => s.id !== id);
-        updateSlide(slide.id, { steps: newSteps });
+        onChange({ steps: newSteps });
     };
 
     const onDragEnd = (result) => {
@@ -31,7 +31,7 @@ const OrderMatchingEditor = ({ slide, updateSlide }) => {
         const items = Array.from(steps);
         const [reorderedItem] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, reorderedItem);
-        updateSlide(slide.id, { steps: items });
+        onChange({ steps: items });
     };
 
     return (
@@ -43,7 +43,7 @@ const OrderMatchingEditor = ({ slide, updateSlide }) => {
                     className="slide-input"
                     placeholder="문제를 입력하세요 (예: 다음 사건을 일어난 순서대로 나열하세요)"
                     value={slide.question || ''}
-                    onChange={(e) => updateSlide(slide.id, { question: e.target.value })}
+                    onChange={(e) => onChange({ question: e.target.value })}
                     style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', marginTop: '0.5rem' }}
                 />
             </div>
@@ -65,7 +65,7 @@ const OrderMatchingEditor = ({ slide, updateSlide }) => {
                                 id: `bulk-${idx}-${Date.now()}`,
                                 text: line.trim()
                             }));
-                            updateSlide(slide.id, { steps: newSteps });
+                            onChange({ steps: newSteps });
                         }
                     }}
                 />
