@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 .fill-blanks-container {
     max-width: 1850px;
     /* Increased from 1200px */
@@ -318,7 +320,7 @@
 }
 
 .blank-indicator::after {
-    content: '빈칸';
+    content: '';
     font-size: 0.7rem;
     background: rgba(139, 69, 19, 0.1);
     color: var(--color-brand-brown);

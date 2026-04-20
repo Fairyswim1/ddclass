@@ -84,7 +84,7 @@ const TeacherMode = () => {
         }
 
         // Normalize newlines to avoid offset drifting (\r\n -> \n)
-        setInputText(prev => prev.replace(/\r\n/g, '\n'));
+        setInputText(prev => prev.replace(/\r\n/g, '\n').replace(/\r/g, '\n'));
         setStep('create');
     };
 
@@ -123,9 +123,12 @@ const TeacherMode = () => {
         const endOffset = getOffset(range.endContainer, range.endOffset);
 
         // Source of truth: slice from the original inputText using the calculated offsets
-        const selectedText = inputText.slice(startOffset, endOffset);
+        let selectedText = inputText.slice(startOffset, endOffset);
 
-        if (!selectedText.trim()) return;
+        // Sanitize selection (remove leading/trailing whitespace/control characters)
+        selectedText = selectedText.trim();
+
+        if (!selectedText) return;
 
         // Check for overlaps
         const hasOverlap = blanks.some(b =>
@@ -177,7 +180,7 @@ const TeacherMode = () => {
                     style={{ cursor: 'pointer', margin: '0 2px' }}
                 >
                     <LatexRenderer text={blank.word} />
-                    <span className="blank-indicator" style={{ userSelect: 'none', pointerEvents: 'none' }}></span>
+                    <span className="blank-indicator" style={{ userSelect: 'none', pointerEvents: 'none' }}>빈칸</span>
                 </span>
             );
             currentIndex = blank.endOffset;
