@@ -48,6 +48,29 @@ const OrderMatchingEditor = ({ slide, updateSlide }) => {
                 />
             </div>
 
+            <div className="editor-group" style={{ marginBottom: '1.5rem' }}>
+                <label>단계 내용 일괄 입력</label>
+                <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
+                    아래에 내용을 붙여넣으세요. <strong>줄바꿈(\n)</strong>을 기준으로 단계가 자동으로 생성됩니다.
+                </p>
+                <textarea
+                    placeholder={"여기에 전체 내용을 한꺼번에 붙여넣으세요.\n줄바꿈을 하면 아래의 단계가 자동으로 나뉩니다."}
+                    className="slide-textarea"
+                    style={{ width: '100%', minHeight: '100px', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', marginTop: '0.5rem' }}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        const lines = value.split('\n').filter(line => line.trim() !== '');
+                        if (lines.length > 0) {
+                            const newSteps = lines.map((line, idx) => ({
+                                id: `bulk-${idx}-${Date.now()}`,
+                                text: line.trim()
+                            }));
+                            updateSlide(slide.id, { steps: newSteps });
+                        }
+                    }}
+                />
+            </div>
+
             <div className="editor-group">
                 <label>정답 순서 (위에서 아래로 올바른 순서대로 배치하세요)</label>
 
