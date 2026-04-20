@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import LatexRenderer from '../../../components/LatexRenderer';
 
 const FillBlanksEditor = ({ slide, updateSlide }) => {
     // We expect blanks to be an array of: { id, startOffset, endOffset, word }
@@ -19,16 +20,55 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
         // Ensure selection is within our text container
         if (!textRef.current || !textRef.current.contains(range.commonAncestorContainer)) return;
 
-        // Calculate absolute offsets
-        const preCaretRange = range.cloneRange();
-        preCaretRange.selectNodeContents(textRef.current);
-        preCaretRange.setEnd(range.startContainer, range.startOffset);
+        // 고도화된 오프셋 계산 로직 (TeacherMode와 동기화)
+        const getOffset = (container, offset) => {
+            let node = container;
+            let relativeOffset = offset;
+            
+            while (node && node.parentNode !== textRef.current && node !== textRef.current) {
+                let sib = node.previousSibling;
+                while (sib) {
+                    relativeOffset += (sib.textContent || '').length;
+                    sib = sib.previousSibling;
+                }
+                node = node.parentNode;
+            }
+            
+            if (node && node.dataset && node.dataset.offset !== undefined) {
+                return parseInt(node.dataset.offset, 10) + relativeOffset;
+            }
+            
+            if (node === textRef.current) {
+                let total = 0;
+                for (let i = 0; i < offset; i++) {
+                   const child = textRef.current.childNodes[i];
+                   if (child.dataset?.length) {
+                       total += parseInt(child.dataset.length, 10);
+                   } else if (child.dataset?.offset !== undefined && i + 1 < offset) {
+                       const nextNode = textRef.current.childNodes[i+1];
+                       if (nextNode.dataset?.offset !== undefined) {
+                           total = parseInt(nextNode.dataset.offset, 10);
+                           continue;
+                       }
+                       total += (child.textContent || '').length;
+                   } else {
+                       total += (child.textContent || '').length;
+                   }
+                }
+                return total;
+            }
 
-        const startOffset = preCaretRange.toString().length;
-        const selectedText = selection.toString();
-        const endOffset = startOffset + selectedText.length;
+            return relativeOffset;
+        };
 
-        if (!selectedText.trim()) return;
+        const startOffset = getOffset(range.startContainer, range.startOffset);
+        const endOffset = getOffset(range.endContainer, range.endOffset);
+
+        let selectedText = selection.toString();
+        // Sanitize selection
+        selectedText = selectedText.trim();
+
+        if (!selectedText) return;
 
         // Check for overlaps with existing blanks
         const hasOverlap = blanks.some(b =>
@@ -70,9 +110,10 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
         blanks.forEach(blank => {
             // Text before blank
             if (blank.startOffset > currentIndex) {
+                const textPart = originalText.slice(currentIndex, blank.startOffset);
                 elements.push(
-                    <span key={`text-${currentIndex}`}>
-                        {originalText.slice(currentIndex, blank.startOffset)}
+                    <span key={`text-${currentIndex}`} data-offset={currentIndex} data-length={textPart.length}>
+                        {textPart}
                     </span>
                 );
             }
@@ -80,6 +121,8 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
             elements.push(
                 <span
                     key={`blank-${blank.id}`}
+                    data-offset={blank.startOffset}
+                    data-length={blank.endOffset - blank.startOffset}
                     onClick={() => removeBlank(blank.id)}
                     className="word-chip-refined is-blank"
                     style={{
@@ -97,7 +140,6 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
                     title="클릭하여 빈칸 해제"
                 >
                     <LatexRenderer text={blank.word} />
-                    <span className="blank-indicator"></span>
                 </span>
             );
             currentIndex = blank.endOffset;
@@ -105,9 +147,10 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
 
         // Remaining text
         if (currentIndex < originalText.length) {
+            const textPart = originalText.slice(currentIndex);
             elements.push(
-                <span key={`text-${currentIndex}`}>
-                    {originalText.slice(currentIndex)}
+                <span key={`text-${currentIndex}`} data-offset={currentIndex} data-length={textPart.length}>
+                    {textPart}
                 </span>
             );
         }
