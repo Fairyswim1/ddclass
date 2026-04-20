@@ -204,9 +204,6 @@ const TeacherMode = () => {
                     style={{ cursor: 'pointer', margin: '0 2px' }}
                 >
                     <LatexRenderer text={blank.word} />
-                    <span className="blank-indicator" style={{ userSelect: 'none', pointerEvents: 'none' }}>
-                        <Type size={14} style={{ display: 'inline-block', opacity: 0.7 }} />
-                    </span>
                 </span>
             );
             currentIndex = blank.endOffset;
