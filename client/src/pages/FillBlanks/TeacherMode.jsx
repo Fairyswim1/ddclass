@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Check, Save, Loader2, Type } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../firebase';
 import { collection, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -96,27 +96,48 @@ const TeacherMode = () => {
         if (!textRef.current || !textRef.current.contains(range.commonAncestorContainer)) return;
 
         // Find the base offset from the parent span's data-offset
+        // 고도화된 오프셋 계산 로직
         const getOffset = (container, offset) => {
             let node = container;
-            while (node && node !== textRef.current) {
-                if (node.dataset && node.dataset.offset !== undefined) {
-                    return parseInt(node.dataset.offset, 10) + offset;
-                }
-                // If it's a text node inside a span, the offset is relative to the text node.
-                // But range.startOffset is already what we need if the container is the text node.
-                // We just need to sum up previous sibling lengths if there are multiple text nodes/elements.
-                if (node.parentNode && node.parentNode.dataset && node.parentNode.dataset.offset !== undefined) {
-                    let totalOffset = parseInt(node.parentNode.dataset.offset, 10);
-                    let sib = node.previousSibling;
-                    while (sib) {
-                        totalOffset += (sib.textContent || '').length;
-                        sib = sib.previousSibling;
-                    }
-                    return totalOffset + offset;
+            let relativeOffset = offset;
+            
+            // 1. root(textRef)로부터 직접적인 자식 노드를 찾을 때까지 거슬러 올라가며 내부 오프셋 계산
+            while (node && node.parentNode !== textRef.current && node !== textRef.current) {
+                let sib = node.previousSibling;
+                while (sib) {
+                    relativeOffset += (sib.textContent || '').length;
+                    sib = sib.previousSibling;
                 }
                 node = node.parentNode;
             }
-            return offset;
+            
+            // 2. root의 자식 노드(span 등)를 찾았다면 해당 노드의 기반 오프셋(data-offset)을 더함
+            if (node && node.dataset && node.dataset.offset !== undefined) {
+                return parseInt(node.dataset.offset, 10) + relativeOffset;
+            }
+            
+            // 3. 만약 container가 root 그 자체라면 (브라우저가 root의 자식 인덱스로 offset을 줄 수 있음)
+            if (node === textRef.current) {
+                let total = 0;
+                for (let i = 0; i < offset; i++) {
+                   const child = textRef.current.childNodes[i];
+                   if (child.dataset?.length) {
+                       total += parseInt(child.dataset.length, 10);
+                   } else if (child.dataset?.offset !== undefined && i + 1 < offset) {
+                       const nextNode = textRef.current.childNodes[i+1];
+                       if (nextNode.dataset?.offset !== undefined) {
+                           total = parseInt(nextNode.dataset.offset, 10);
+                           continue;
+                       }
+                       total += (child.textContent || '').length;
+                   } else {
+                       total += (child.textContent || '').length;
+                   }
+                }
+                return total;
+            }
+
+            return relativeOffset;
         };
 
         const startOffset = getOffset(range.startContainer, range.startOffset);
@@ -166,29 +187,35 @@ const TeacherMode = () => {
 
         blanks.forEach(blank => {
             if (blank.startOffset > currentIndex) {
+                const textPart = inputText.slice(currentIndex, blank.startOffset);
                 elements.push(
-                    <span key={`text-${currentIndex}`} data-offset={currentIndex}>
-                        {inputText.slice(currentIndex, blank.startOffset)}
+                    <span key={`text-${currentIndex}`} data-offset={currentIndex} data-length={textPart.length}>
+                        {textPart}
                     </span>
                 );
             }
             elements.push(
                 <span
                     key={`blank-${blank.id}`}
+                    data-offset={blank.startOffset}
+                    data-length={blank.endOffset - blank.startOffset}
                     onClick={() => removeBlank(blank.id)}
                     className="word-chip-refined is-blank"
                     style={{ cursor: 'pointer', margin: '0 2px' }}
                 >
                     <LatexRenderer text={blank.word} />
-                    <span className="blank-indicator" style={{ userSelect: 'none', pointerEvents: 'none' }}>빈칸</span>
+                    <span className="blank-indicator" style={{ userSelect: 'none', pointerEvents: 'none' }}>
+                        <Type size={14} style={{ display: 'inline-block', opacity: 0.7 }} />
+                    </span>
                 </span>
             );
             currentIndex = blank.endOffset;
         });
 
         if (currentIndex < inputText.length) {
+            const textPart = inputText.slice(currentIndex);
             elements.push(
-                <span key={`text-end`} data-offset={currentIndex}>{inputText.slice(currentIndex)}</span>
+                <span key={`text-end`} data-offset={currentIndex} data-length={textPart.length}>{textPart}</span>
             );
         }
 
