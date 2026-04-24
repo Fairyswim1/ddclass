@@ -67,8 +67,9 @@
     font-weight: 900 !important;
     color: var(--color-brand-brown);
     margin-bottom: 1.2rem;
-    line-height: 1.5 !important;
-    padding: 0.5rem 0;
+    line-height: normal !important;
+    padding: 1rem 0;
+    overflow: visible;
 }
 
 .instruction {
