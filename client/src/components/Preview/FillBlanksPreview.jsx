@@ -61,7 +61,61 @@ const FillBlanksPreview = ({ problem }) => {
 
     const renderTextWithBlanks = () => {
         if (!problem) return null;
-        // 저장된 words 배열이 있으면 사용 (조사 분리 적용된 새 문제), 없으면 regex fallback (구 문제 호환)
+
+        const renderBlankSlot = (blank) => {
+            const userAnswer = userAnswers[blank.id];
+            return (
+                <span
+                    key={`blank-${blank.id}`}
+                    className={`blank-slot ${userAnswer ? 'filled draggable-filled' : ''}`}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDropOnBlank(e, blank.id)}
+                    onClick={() => userAnswer && handleRemoveAnswer(blank.id)}
+                    draggable={!!userAnswer}
+                    onDragStart={(e) => userAnswer && handleDragStart(e, userAnswer, blank.id)}
+                    style={{ cursor: userAnswer ? 'grab' : 'default' }}
+                >
+                    {userAnswer ? (
+                        <>
+                            <LatexRenderer text={userAnswer} />
+                            <button className="btn-remove-word" onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveAnswer(blank.id);
+                            }}>
+                                <X size={12} />
+                            </button>
+                        </>
+                    ) : (
+                        <span className="placeholder">&nbsp;</span>
+                    )}
+                </span>
+            );
+        };
+
+        if (problem.blanks.length > 0 && problem.blanks[0].startOffset !== undefined) {
+             const elements = [];
+             let currentIndex = 0;
+             const originalText = problem?.originalText || '';
+
+             problem.blanks.sort((a, b) => a.startOffset - b.startOffset).forEach((blank, idx) => {
+                 if (blank.startOffset > currentIndex) {
+                     const textPart = originalText.slice(currentIndex, blank.startOffset);
+                     elements.push(<span key={`text-${idx}`} className="normal-word">{textPart}</span>);
+                 }
+
+                 elements.push(renderBlankSlot(blank));
+                 currentIndex = blank.endOffset;
+             });
+
+             if (currentIndex < originalText.length) {
+                 const textPart = originalText.slice(currentIndex);
+                 elements.push(<span key="text-end" className="normal-word">{textPart}</span>);
+             }
+
+             return <div className="text-content" style={{ whiteSpace: 'pre-wrap' }}>{elements}</div>;
+         }
+
+        // 구버전 호환용 (index 기반)
         let words;
         if (problem.words && Array.isArray(problem.words)) {
             words = problem.words;
@@ -75,35 +129,7 @@ const FillBlanksPreview = ({ problem }) => {
             <div className="text-content">
                 {words.map((word, index) => {
                     if (blankMap.has(index)) {
-                        const blank = blankMap.get(index);
-                        const userAnswer = userAnswers[blank.id];
-
-                        return (
-                            <span
-                                key={index}
-                                className={`blank-slot ${userAnswer ? 'filled draggable-filled' : ''}`}
-                                onDragOver={handleDragOver}
-                                onDrop={(e) => handleDropOnBlank(e, blank.id)}
-                                onClick={() => userAnswer && handleRemoveAnswer(blank.id)}
-                                draggable={!!userAnswer}
-                                onDragStart={(e) => userAnswer && handleDragStart(e, userAnswer, blank.id)}
-                                style={{ cursor: userAnswer ? 'grab' : 'default' }}
-                            >
-                                {userAnswer ? (
-                                    <>
-                                        <LatexRenderer text={userAnswer} />
-                                        <button className="btn-remove-word" onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleRemoveAnswer(blank.id);
-                                        }}>
-                                            <X size={12} />
-                                        </button>
-                                    </>
-                                ) : (
-                                    <span className="placeholder">&nbsp;</span>
-                                )}
-                            </span>
-                        );
+                        return renderBlankSlot(blankMap.get(index));
                     }
                     return <span key={index} className="normal-word"><LatexRenderer text={word} /> </span>;
                 })}
