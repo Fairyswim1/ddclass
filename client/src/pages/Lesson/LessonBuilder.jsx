@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../firebase';
 import { ArrowLeft, Plus, Check, Trash2, Save, Layout, List, CheckSquare, MessageSquare, Edit3, PieChart } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -35,11 +36,19 @@ const TYPE_LABELS = {
 };
 
 const LessonBuilder = () => {
+    const { currentUser, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     const [title, setTitle] = useState('');
     const [slides, setSlides] = useState([]);
     const [activeSlideId, setActiveSlideId] = useState(null);
     const [showTypeSelector, setShowTypeSelector] = useState(false);
+
+    React.useEffect(() => {
+        if (!authLoading && !currentUser) {
+            alert('로그인이 필요합니다.');
+            navigate('/teacher/login');
+        }
+    }, [currentUser, authLoading, navigate]);
 
     const activeSlide = slides.find(s => s.id === activeSlideId);
 
@@ -94,13 +103,12 @@ const LessonBuilder = () => {
         }
 
         try {
-            const userStr = localStorage.getItem('teacherUser');
-            if (!userStr) {
+            if (!currentUser) {
                 alert('로그인이 필요합니다.');
                 navigate('/teacher/login');
                 return;
             }
-            const teacherId = JSON.parse(userStr).uid;
+            const teacherId = currentUser.uid;
 
             // Bulk Save API
             const response = await fetch((import.meta.env.VITE_API_URL || '') + '/api/lessons/bulk', {
