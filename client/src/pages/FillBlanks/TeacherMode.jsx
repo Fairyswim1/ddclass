@@ -354,7 +354,7 @@ const TeacherMode = () => {
                                     <label>본문 내용</label>
                                     <textarea
                                         className="styled-textarea"
-                                        placeholder={"여기에 문제로 낼 지문을 입력하거나 붙여넣으세요.\n(💡 은, 는, 이, 가 등 조사는 띄어쓰지 않아도 자동으로 분리되어 단어만 선택할 수 있습니다!)"}
+                                        placeholder={"여기에 문제로 낼 지문을 입력하거나 붙여넣으세요."}
                                         value={inputText}
                                         onChange={(e) => setInputText(e.target.value)}
                                         rows={12}
@@ -377,11 +377,7 @@ const TeacherMode = () => {
                             <div className="card-header">
                                 <h3>빈칸을 선택해주세요</h3>
                                 <p>👉 본문에서 <strong>빈칸으로 만들 부분을 마우스로 드래그</strong>하여 선택하세요.</p>
-                                <div style={{ marginTop: '0.8rem', padding: '0.8rem 1rem', background: '#F0F9FF', borderRadius: '8px', display: 'inline-block', border: '1px solid #D0EFFF' }}>
-                                    <span style={{ color: '#2D6A8D', fontSize: '0.9rem', fontWeight: '600' }}>
-                                        💡 이제 조사 띄어쓰기 없이도 원하는 부분만 콕 집어서 빈칸을 만들 수 있습니다!
-                                    </span>
-                                </div>
+
                             </div>
 
                             <div
@@ -506,10 +502,6 @@ const TeacherMode = () => {
                         <div className="tip-box">
                             <h5>💡 디디의 꿀팁</h5>
                             <ul style={{ paddingLeft: '1.2rem', margin: 0, color: '#4A7A96', fontSize: '0.85rem', lineHeight: '1.5' }}>
-                                <li style={{ marginBottom: '0.5rem' }}>
-                                    <strong>조사 자동 분리!</strong><br />
-                                    '대한민국은' 처럼 붙여 써도 '대한민국'만 빈칸으로 뚫을 수 있어요.
-                                </li>
                                 <li>
                                     수학 선생님이라면 <strong>latex 수식</strong>을 사용해 수식을 입력해보세요! ($ 기호 사용)
                                 </li>
