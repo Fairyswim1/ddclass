@@ -22,6 +22,7 @@ const LessonMonitor = () => {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [maxAllowedStep, setMaxAllowedStep] = useState(0);
 
     const [socket, setSocket] = useState(null);
     const [students, setStudents] = useState([]);
@@ -107,34 +108,41 @@ const LessonMonitor = () => {
             setStudents(prev => prev.filter(s => s.id !== data.id));
         });
 
+        newSocket.on('maxAllowedStepUpdated', ({ maxAllowedStep }) => {
+            setMaxAllowedStep(maxAllowedStep);
+        });
+
+        newSocket.on('studentStepChanged', ({ id, name, currentStep }) => {
+            setStudents(prev => prev.map(s => s.id === id ? { ...s, currentStep } : s));
+        });
+
         newSocket.on('answerUpdated', (studentData) => {
             if (studentData.name === 'TEACHER_MONITOR') return;
             setStudents(prev => {
                 const exists = prev.find(s => s.name === studentData.name);
                 if (exists) {
-                    return prev.map(s => s.name === studentData.name ? { ...s, answer: studentData.answer, id: studentData.id } : s);
+                    return prev.map(s => s.name === studentData.name ? { ...s, answers: studentData.answers, answer: studentData.answer, id: studentData.id } : s);
                 }
-                return [...prev, { id: studentData.id, name: studentData.name, answer: studentData.answer }];
+                return [...prev, { id: studentData.id, name: studentData.name, answers: studentData.answers, answer: studentData.answer }];
             });
         });
 
-        newSocket.on('lessonStateChanged', ({ stepIndex }) => {
-            setCurrentStepIndex(stepIndex);
-        });
+        // The teacher controls their OWN view, but we don't need to force students anymore.
+        // We can just keep it for multiple teachers syncing or just remove our own listener.
+        // newSocket.on('lessonStateChanged', ({ stepIndex }) => { ... });
 
         return () => newSocket.disconnect();
     }, [id]);
 
     const handleStepChange = (newIndex) => {
         if (!socket || newIndex < 0 || newIndex >= problems.length) return;
-
-        socket.emit('changeLessonStep', {
-            lessonId: id,
-            stepIndex: newIndex
-        });
-
-        // Optimistic update
         setCurrentStepIndex(newIndex);
+    };
+
+    const updateMaxAllowedStep = (newMax) => {
+        if (!socket || newMax < 0 || newMax >= problems.length) return;
+        socket.emit('updateMaxAllowedStep', { lessonId: id, maxAllowedStep: newMax });
+        setMaxAllowedStep(newMax); // Optimistic update
     };
 
     if (loading) {
@@ -188,13 +196,31 @@ const LessonMonitor = () => {
                 >
                     <ArrowLeft size={20} /> 이전 문제
                 </button>
-                <div className="step-indicator">
-                    <span className="step-text">문제 {currentStepIndex + 1} / {problems.length}</span>
-                    <div className="step-progress">
+                <div className="step-indicator" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '300px' }}>
+                    <span className="step-text" style={{ fontSize: '0.9rem' }}>모니터링 뷰: {currentStepIndex + 1} / {problems.length}</span>
+                    <div className="step-progress" style={{ position: 'relative', width: '100%', marginTop: '0.5rem', background: '#e2e8f0', height: '6px', borderRadius: '3px' }}>
                         <div
                             className="step-progress-fill"
-                            style={{ width: `${((currentStepIndex + 1) / problems.length) * 100}%` }}
+                            style={{ width: `${((currentStepIndex + 1) / problems.length) * 100}%`, background: 'var(--color-brand-orange)', height: '100%', borderRadius: '3px' }}
                         />
+                        {/* Students positions on the progress bar */}
+                        {problems.map((_, idx) => {
+                            const studentsHere = students.filter(s => s.currentStep === idx);
+                            if (studentsHere.length === 0) return null;
+                            const leftPos = problems.length > 1 ? `${(idx / (problems.length - 1)) * 100}%` : '50%';
+                            return (
+                                <div key={`pos-${idx}`} style={{ position: 'absolute', left: leftPos, top: '-8px', display: 'flex', transform: 'translateX(-50%)', zIndex: 10 }}>
+                                    {studentsHere.slice(0, 3).map((s, i) => (
+                                        <div key={s.id} title={s.name} style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#3b82f6', border: '2px solid white', marginLeft: i > 0 ? '-6px' : '0', boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }} />
+                                    ))}
+                                    {studentsHere.length > 3 && (
+                                        <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#64748b', color: 'white', fontSize: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white', marginLeft: '-6px' }}>
+                                            +{studentsHere.length - 3}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
                 <button
@@ -204,57 +230,77 @@ const LessonMonitor = () => {
                 >
                     다음 문제 <ArrowRight size={20} />
                 </button>
+
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 'auto', padding: '0.4rem 0.8rem', background: '#fef3c7', borderRadius: '0.5rem', border: '1px dashed #fbbf24' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#b45309' }}>학생 접근 허용선</span>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', alignItems: 'center' }}>
+                        <button onClick={() => updateMaxAllowedStep(maxAllowedStep - 1)} disabled={maxAllowedStep === 0} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', borderRadius: '0.25rem', background: 'white', border: '1px solid #d1d5db', cursor: maxAllowedStep === 0 ? 'not-allowed' : 'pointer' }}>잠그기</button>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{maxAllowedStep + 1}번</span>
+                        <button onClick={() => updateMaxAllowedStep(maxAllowedStep + 1)} disabled={maxAllowedStep === problems.length - 1} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', borderRadius: '0.25rem', background: maxAllowedStep === problems.length - 1 ? '#e5e7eb' : '#F58220', color: maxAllowedStep === problems.length - 1 ? '#9ca3af' : 'white', border: 'none', cursor: maxAllowedStep === problems.length - 1 ? 'not-allowed' : 'pointer' }}>열어주기</button>
+                    </div>
+                </div>
             </div>
 
             <main className="lesson-content-area">
                 <h2 style={{ marginTop: 0, marginBottom: '1rem', color: '#666', fontSize: '1.2rem' }}>
-                    현재: <span style={{ color: 'var(--color-brand-brown)' }}><LatexRenderer text={currentProblem?.title || ''} /></span>
+                    현재 뷰: <span style={{ color: 'var(--color-brand-brown)' }}><LatexRenderer text={currentProblem?.title || ''} /></span>
                 </h2>
                 <div className="monitor-component-container">
-                    {/* Render the appropriate monitor component based on problem type */}
-                    {currentProblem && currentProblem.type === 'fill-blanks' && (
-                        <ProblemMonitor
-                            problemData={currentProblem}
-                            parentSocket={socket}
-                            parentStudents={students}
-                        />
-                    )}
-                    {currentProblem && currentProblem.type === 'free-drop' && (
-                        <FreeMonitor
-                            problemData={currentProblem}
-                            parentSocket={socket}
-                            parentStudents={students}
-                        />
-                    )}
-                    {currentProblem && currentProblem.type === 'order-matching' && (
-                        <div className="monitor-card text-center p-8 text-slate-500">
-                            순서 맞추기 문제는 현재 개별 모니터링 뷰를 지원하지 않습니다.
-                        </div>
-                    )}
-                    {currentProblem && currentProblem.type === 'multiple-choice' && (
-                        <MultipleChoiceMonitor
-                            problemData={currentProblem}
-                            parentStudents={students}
-                        />
-                    )}
-                    {currentProblem && currentProblem.type === 'short-answer' && (
-                        <ShortAnswerMonitor
-                            problemData={currentProblem}
-                            parentStudents={students}
-                        />
-                    )}
-                    {currentProblem && currentProblem.type === 'whiteboard' && (
-                        <WhiteboardMonitor
-                            problemData={currentProblem}
-                            parentStudents={students}
-                        />
-                    )}
-                    {currentProblem && currentProblem.type === 'poll' && (
-                        <PollMonitor
-                            problemData={currentProblem}
-                            parentStudents={students}
-                        />
-                    )}
+                    {/* Transform students array to map the answer for this specific step */}
+                    {(() => {
+                        const activeStudents = students.map(s => ({
+                            ...s,
+                            answer: s.answers?.[currentStepIndex] !== undefined ? s.answers[currentStepIndex] : s.answer
+                        }));
+                        
+                        return (
+                            <>
+                                {currentProblem && currentProblem.type === 'fill-blanks' && (
+                                    <ProblemMonitor
+                                        problemData={currentProblem}
+                                        parentSocket={socket}
+                                        parentStudents={activeStudents}
+                                    />
+                                )}
+                                {currentProblem && currentProblem.type === 'free-drop' && (
+                                    <FreeMonitor
+                                        problemData={currentProblem}
+                                        parentSocket={socket}
+                                        parentStudents={activeStudents}
+                                    />
+                                )}
+                                {currentProblem && currentProblem.type === 'order-matching' && (
+                                    <div className="monitor-card text-center p-8 text-slate-500">
+                                        순서 맞추기 문제는 현재 개별 모니터링 뷰를 지원하지 않습니다.
+                                    </div>
+                                )}
+                                {currentProblem && currentProblem.type === 'multiple-choice' && (
+                                    <MultipleChoiceMonitor
+                                        problemData={currentProblem}
+                                        parentStudents={activeStudents}
+                                    />
+                                )}
+                                {currentProblem && currentProblem.type === 'short-answer' && (
+                                    <ShortAnswerMonitor
+                                        problemData={currentProblem}
+                                        parentStudents={activeStudents}
+                                    />
+                                )}
+                                {currentProblem && currentProblem.type === 'whiteboard' && (
+                                    <WhiteboardMonitor
+                                        problemData={currentProblem}
+                                        parentStudents={activeStudents}
+                                    />
+                                )}
+                                {currentProblem && currentProblem.type === 'poll' && (
+                                    <PollMonitor
+                                        problemData={currentProblem}
+                                        parentStudents={activeStudents}
+                                    />
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
             </main>
         </div>

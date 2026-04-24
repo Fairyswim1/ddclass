@@ -532,7 +532,7 @@ io.on('connection', (socket) => {
     console.log(`${studentName} (${socket.id})가 수업 ${lessonId}에 입장`);
 
     if (!roomStates[lessonId]) {
-      roomStates[lessonId] = { students: {} };
+      roomStates[lessonId] = { students: {}, maxAllowedStep: 0 };
     }
 
     const isTeacher = studentName === 'TEACHER_MONITOR';
@@ -542,11 +542,14 @@ io.on('connection', (socket) => {
         id: socket.id,
         name: studentName,
         answer: [],
+        answers: {},
+        currentStep: 0,
         joinedAt: new Date()
       };
     }
 
     socket.emit('currentStudents', Object.values(roomStates[lessonId].students));
+    socket.emit('maxAllowedStepUpdated', { maxAllowedStep: roomStates[lessonId].maxAllowedStep || 0 });
 
     if (!isTeacher) {
       socket.to(lessonId).emit('studentJoined', roomStates[lessonId].students[socket.id]);
@@ -554,29 +557,42 @@ io.on('connection', (socket) => {
   });
 
   socket.on('changeLessonStep', ({ lessonId, stepIndex }) => {
-    console.log(`수업 ${lessonId} 인덱스 변경 -> ${stepIndex}`);
-    // 방 안의 모든 사람에게 새로운 인덱스 방송
-    io.to(lessonId).emit('lessonStateChanged', { stepIndex });
-
-    // 문제가 넘어갈 때 학생들의 제출 답안 초기화 (모니터링을 위해)
-    if (roomStates[lessonId] && roomStates[lessonId].students) {
-      Object.keys(roomStates[lessonId].students).forEach(socketId => {
-        roomStates[lessonId].students[socketId].answer = [];
-      });
-      io.to(lessonId).emit('currentStudents', Object.values(roomStates[lessonId].students));
-    }
+    // This is optional for teacher-only syncing if needed, but we do NOT clear student answers anymore.
   });
 
-  socket.on('submitLessonAnswer', ({ lessonId, studentName, answer }) => {
+  socket.on('changeStudentStep', ({ lessonId, studentName, stepIndex }) => {
+    if (!roomStates[lessonId] || !roomStates[lessonId].students[socket.id]) return;
+    roomStates[lessonId].students[socket.id].currentStep = stepIndex;
+    
+    socket.to(lessonId).emit('studentStepChanged', {
+      id: socket.id,
+      name: studentName,
+      currentStep: stepIndex
+    });
+  });
+
+  socket.on('updateMaxAllowedStep', ({ lessonId, maxAllowedStep }) => {
+    if (!roomStates[lessonId]) return;
+    roomStates[lessonId].maxAllowedStep = maxAllowedStep;
+    io.to(lessonId).emit('maxAllowedStepUpdated', { maxAllowedStep });
+  });
+
+  socket.on('submitLessonAnswer', ({ lessonId, studentName, stepIndex, answer }) => {
     if (!roomStates[lessonId] || !roomStates[lessonId].students[socket.id]) return;
 
-    roomStates[lessonId].students[socket.id].answer = answer;
+    roomStates[lessonId].students[socket.id].answers = roomStates[lessonId].students[socket.id].answers || {};
+    roomStates[lessonId].students[socket.id].answers[stepIndex] = answer;
+    
+    // For legacy compat inside the monitor if it renders using standard `.answer`
+    roomStates[lessonId].students[socket.id].answer = answer; 
     roomStates[lessonId].students[socket.id].updatedAt = new Date();
 
     socket.to(lessonId).emit('answerUpdated', {
       id: socket.id,
       name: studentName,
+      stepIndex,
       answer,
+      answers: roomStates[lessonId].students[socket.id].answers,
       updatedAt: roomStates[lessonId].students[socket.id].updatedAt
     });
   });
