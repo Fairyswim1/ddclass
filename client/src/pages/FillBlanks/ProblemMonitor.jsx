@@ -379,6 +379,43 @@ const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = nul
                                 ) : (
                                     // Fill Blanks View
                                     (() => {
+                                        if (activeBlanks.length > 0 && activeBlanks[0].startOffset !== undefined) {
+                                            // New format: startOffset / endOffset based rendering
+                                            const elements = [];
+                                            let currentIndex = 0;
+                                            const originalText = problemData?.originalText || '';
+
+                                            activeBlanks.forEach((blank, idx) => {
+                                                if (blank.startOffset > currentIndex) {
+                                                    const textPart = originalText.slice(currentIndex, blank.startOffset);
+                                                    elements.push(<span key={`text-${idx}`} className="normal-word">{textPart}</span>);
+                                                }
+
+                                                const studentAns = selectedStudent?.answer?.[blank.id];
+                                                const isCorrect = studentAns === blank.word;
+                                                const isFilled = !!studentAns;
+
+                                                elements.push(
+                                                    <span
+                                                        key={`blank-${blank.id}`}
+                                                        className={`mirrored-blank ${isFilled ? (isCorrect ? 'correct' : 'incorrect') : 'empty'}`}
+                                                    >
+                                                        <LatexRenderer text={studentAns || '(빈칸)'} />
+                                                        {isFilled && !isCorrect && <span className="correct-answer-hint">(<LatexRenderer text={blank.word} />)</span>}
+                                                    </span>
+                                                );
+
+                                                currentIndex = blank.endOffset;
+                                            });
+
+                                            if (currentIndex < originalText.length) {
+                                                const textPart = originalText.slice(currentIndex);
+                                                elements.push(<span key="text-end" className="normal-word">{textPart}</span>);
+                                            }
+
+                                            return <div style={{ whiteSpace: 'pre-wrap', lineHeight: '2.5' }}>{elements}</div>;
+                                        }
+
                                         // 저장된 words 배열이 있으면 사용 (조사 분리 적용된 새 문제), 없으면 regex fallback (구 문제 호환)
                                         let tokens;
                                         if (problemData.words && Array.isArray(problemData.words)) {
