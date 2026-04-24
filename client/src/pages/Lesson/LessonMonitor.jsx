@@ -188,56 +188,50 @@ const LessonMonitor = () => {
                 </div>
             </nav>
 
-            <div className="lesson-controls">
-                <button
-                    className="btn-step-control prev"
-                    onClick={() => handleStepChange(currentStepIndex - 1)}
-                    disabled={currentStepIndex === 0}
-                >
-                    <ArrowLeft size={20} /> 이전 문제
-                </button>
-                <div className="step-indicator" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '300px' }}>
-                    <span className="step-text" style={{ fontSize: '0.9rem' }}>모니터링 뷰: {currentStepIndex + 1} / {problems.length}</span>
-                    <div className="step-progress" style={{ position: 'relative', width: '100%', marginTop: '0.5rem', background: '#e2e8f0', height: '6px', borderRadius: '3px' }}>
-                        <div
-                            className="step-progress-fill"
-                            style={{ width: `${((currentStepIndex + 1) / problems.length) * 100}%`, background: 'var(--color-brand-orange)', height: '100%', borderRadius: '3px' }}
-                        />
-                        {/* Students positions on the progress bar */}
-                        {problems.map((_, idx) => {
-                            const studentsHere = students.filter(s => s.currentStep === idx);
-                            if (studentsHere.length === 0) return null;
-                            const leftPos = problems.length > 1 ? `${(idx / (problems.length - 1)) * 100}%` : '50%';
-                            return (
-                                <div key={`pos-${idx}`} style={{ position: 'absolute', left: leftPos, top: '-8px', display: 'flex', transform: 'translateX(-50%)', zIndex: 10 }}>
-                                    {studentsHere.slice(0, 3).map((s, i) => (
-                                        <div key={s.id} title={s.name} style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#3b82f6', border: '2px solid white', marginLeft: i > 0 ? '-6px' : '0', boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }} />
-                                    ))}
-                                    {studentsHere.length > 3 && (
-                                        <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#64748b', color: 'white', fontSize: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid white', marginLeft: '-6px' }}>
-                                            +{studentsHere.length - 3}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-                <button
-                    className="btn-step-control next"
-                    onClick={() => handleStepChange(currentStepIndex + 1)}
-                    disabled={currentStepIndex === problems.length - 1}
-                >
-                    다음 문제 <ArrowRight size={20} />
-                </button>
+            <div className="desmos-pacing-bar">
+                <div className="pacing-track">
+                    {problems.map((prob, idx) => {
+                        const isCurrent = currentStepIndex === idx;
+                        const isAllowed = idx <= maxAllowedStep;
+                        const studentsHere = students.filter(s => s.currentStep === idx);
 
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 'auto', padding: '0.4rem 0.8rem', background: '#fef3c7', borderRadius: '0.5rem', border: '1px dashed #fbbf24' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#b45309' }}>학생 접근 허용선</span>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem', alignItems: 'center' }}>
-                        <button onClick={() => updateMaxAllowedStep(maxAllowedStep - 1)} disabled={maxAllowedStep === 0} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', borderRadius: '0.25rem', background: 'white', border: '1px solid #d1d5db', cursor: maxAllowedStep === 0 ? 'not-allowed' : 'pointer' }}>잠그기</button>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{maxAllowedStep + 1}번</span>
-                        <button onClick={() => updateMaxAllowedStep(maxAllowedStep + 1)} disabled={maxAllowedStep === problems.length - 1} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', borderRadius: '0.25rem', background: maxAllowedStep === problems.length - 1 ? '#e5e7eb' : '#F58220', color: maxAllowedStep === problems.length - 1 ? '#9ca3af' : 'white', border: 'none', cursor: maxAllowedStep === problems.length - 1 ? 'not-allowed' : 'pointer' }}>열어주기</button>
-                    </div>
+                        return (
+                            <div 
+                                key={prob.id || idx} 
+                                className={`pacing-card ${isCurrent ? 'active' : ''} ${!isAllowed ? 'locked' : ''}`}
+                                onClick={() => handleStepChange(idx)}
+                                title={prob.title || '제목 없음'}
+                            >
+                                <div className="card-header">
+                                    <span className="card-number">{idx + 1}</span>
+                                    <button 
+                                        className={`btn-lock-toggle ${!isAllowed ? 'locked' : ''}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            updateMaxAllowedStep(idx);
+                                        }}
+                                        title={isAllowed ? `클릭시 ${idx}번까지만 허용토록 축소` : `클릭시 ${idx + 1}번까지 모두 허용 (오픈)`}
+                                    >
+                                        {isAllowed ? '🔓' : '🔒'}
+                                    </button>
+                                </div>
+                                <div className="card-title-preview">
+                                    <LatexRenderer text={prob.title || '제목 없음'} />
+                                </div>
+                                
+                                {studentsHere.length > 0 && (
+                                    <div className="card-students">
+                                        {studentsHere.slice(0, 3).map((s, i) => (
+                                            <div key={s.id} title={s.name} className="student-dot" style={{ zIndex: 10 + i }} />
+                                        ))}
+                                        {studentsHere.length > 3 && (
+                                            <div className="student-dot-more">+{studentsHere.length - 3}</div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 

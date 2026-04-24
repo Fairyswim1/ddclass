@@ -89,84 +89,152 @@
     letter-spacing: 2px;
 }
 
-.lesson-controls {
+/* Desmos Style Pacing Bar */
+.desmos-pacing-bar {
+    background: #3B82F6;
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    border-bottom: 2px solid #2563EB;
+}
+
+.desmos-pacing-bar::-webkit-scrollbar {
+    height: 8px;
+}
+
+.desmos-pacing-bar::-webkit-scrollbar-track {
+    background: #1D4ED8;
+}
+
+.desmos-pacing-bar::-webkit-scrollbar-thumb {
+    background: #60A5FA;
+    border-radius: 4px;
+}
+
+.pacing-track {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.pacing-card {
+    min-width: 140px;
+    max-width: 160px;
+    height: 100px;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border: 3px solid transparent;
+    transition: all 0.2s;
+    user-select: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.pacing-card.locked {
+    opacity: 0.7;
+    background: #f1f5f9;
+}
+
+.pacing-card.active {
+    border-color: #FBBF24;
+    transform: translateY(-2px);
+    z-index: 2;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.pacing-card:hover {
+    border-color: #93C5FD;
+}
+
+.pacing-card.active:hover {
+    border-color: #FDE68A;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.card-number {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #334155;
+}
+
+.btn-lock-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+}
+
+.btn-lock-toggle:hover {
+    opacity: 1;
+}
+
+.btn-lock-toggle.locked {
+    opacity: 0.8;
+}
+
+.card-title-preview {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.8rem;
+    color: #475569;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.3;
+}
+
+.card-students {
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 4px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 5;
+}
+
+.student-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3B82F6;
+    border: 2px solid white;
+}
+
+.student-dot + .student-dot {
+    margin-left: -8px;
+}
+
+.student-dot-more {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #64748b;
+    color: white;
+    font-size: 9px;
+    font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem 2.5%;
-    background: white;
-    border-bottom: 2px solid #F0EEE9;
-    gap: 1.5rem;
-}
-
-.btn-step-control {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.8rem 1.5rem;
-    border-radius: 12px;
-    border: none;
-    font-weight: 800;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-step-control.prev {
-    background: #F3F4F6;
-    color: #4B5563;
-}
-
-.btn-step-control.prev:hover:not(:disabled) {
-    background: #E5E7EB;
-}
-
-.btn-step-control.next {
-    background: var(--color-brand-orange);
-    color: white;
-    box-shadow: 0 4px 0 #E65100;
-}
-
-.btn-step-control.next:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 0 #E65100;
-}
-
-.btn-step-control.next:active:not(:disabled) {
-    transform: translateY(2px);
-    box-shadow: none;
-}
-
-.btn-step-control:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.step-indicator {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 150px;
-}
-
-.step-text {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: var(--color-brand-brown);
-}
-
-.step-progress {
-    width: 100%;
-    height: 6px;
-    background: #F0EEE9;
-    border-radius: 3px;
-    margin-top: 0.5rem;
-}
-
-.step-progress-fill {
-    height: 100%;
-    background: var(--color-brand-blue);
-    transition: width 0.3s ease;
+    border: 2px solid white;
+    margin-left: -8px;
 }
 
 .lesson-content-area {
