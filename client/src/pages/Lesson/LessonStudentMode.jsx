@@ -66,11 +66,11 @@ const LessonStudentMode = () => {
                 lessonId,
                 studentName: nickname
             });
-            // 방금 들어왔으니 교사에게 현재 내 step 위치를 알림
+            // 방금 들어왔으니 교사에게 초기 step 위치(0)를 알림
             newSocket.emit('changeStudentStep', {
                 lessonId,
                 studentName: nickname,
-                stepIndex: currentStepIndex
+                stepIndex: 0
             });
         };
 
@@ -84,7 +84,7 @@ const LessonStudentMode = () => {
         });
 
         return () => newSocket.disconnect();
-    }, [lessonId, nickname, navigate, currentStepIndex]);
+    }, [lessonId, nickname, navigate]); // Removed currentStepIndex to prevent reconnect loop
 
     // Fetch the specific problem data whenever the step index changes
     useEffect(() => {

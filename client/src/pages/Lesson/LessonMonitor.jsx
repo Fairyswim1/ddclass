@@ -208,7 +208,8 @@ const LessonMonitor = () => {
                                         className={`btn-lock-toggle ${!isAllowed ? 'locked' : ''}`}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            updateMaxAllowedStep(idx);
+                                            const newMax = isAllowed ? idx - 1 : idx;
+                                            updateMaxAllowedStep(newMax);
                                         }}
                                         title={isAllowed ? `클릭시 ${idx}번까지만 허용토록 축소` : `클릭시 ${idx + 1}번까지 모두 허용 (오픈)`}
                                     >
