@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../firebase';
 import { ArrowLeft, Plus, Check, Trash2, Save, Layout, List, CheckSquare, MessageSquare, Edit3, PieChart } from 'lucide-react';
+import { resolveApiUrl } from '../../utils/url';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import './LessonBuilder.css';
 
@@ -111,7 +112,7 @@ const LessonBuilder = () => {
             const teacherId = currentUser.uid;
 
             // Bulk Save API
-            const response = await fetch((import.meta.env.VITE_API_URL || '') + '/api/lessons/bulk', {
+            const response = await fetch(resolveApiUrl('/api/lessons/bulk'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
