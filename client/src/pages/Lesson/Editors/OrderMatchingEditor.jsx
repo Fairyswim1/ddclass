@@ -36,17 +36,7 @@ const OrderMatchingEditor = ({ slide, onChange }) => {
 
     return (
         <div className="order-editor">
-            <div className="editor-group" style={{ marginBottom: '1.5rem' }}>
-                <label>순서 맞추기 문제</label>
-                <input
-                    type="text"
-                    className="slide-input"
-                    placeholder="문제를 입력하세요 (예: 다음 사건을 일어난 순서대로 나열하세요)"
-                    value={slide.question || ''}
-                    onChange={(e) => onChange({ question: e.target.value })}
-                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', marginTop: '0.5rem' }}
-                />
-            </div>
+
 
             <div className="editor-group" style={{ marginBottom: '1.5rem' }}>
                 <label>단계 내용 일괄 입력</label>
