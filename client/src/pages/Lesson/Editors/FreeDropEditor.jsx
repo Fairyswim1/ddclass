@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Upload, Trash2, Plus, Type, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { resolveApiUrl } from '../../../utils/url';
 
-const FreeDropEditor = ({ slide, updateSlide }) => {
+const FreeDropEditor = ({ slide, onChange }) => {
     const [uploading, setUploading] = useState(false);
 
     const items = slide.items || [];
@@ -25,7 +25,7 @@ const FreeDropEditor = ({ slide, updateSlide }) => {
             if (!response.ok) throw new Error('업로드 실패');
 
             const data = await response.json();
-            updateSlide(slide.id, { backgroundUrl: data.url });
+            onChange({ backgroundUrl: data.url });
         } catch (error) {
             console.error('Error uploading background:', error);
             alert('배경 이미지 업로드에 실패했습니다.');
@@ -44,7 +44,7 @@ const FreeDropEditor = ({ slide, updateSlide }) => {
             scale: 1,
             isLocked: false
         }];
-        updateSlide(slide.id, { items: newItems });
+        onChange({ items: newItems });
     };
 
     const handleAddImage = async (e) => {
@@ -73,7 +73,7 @@ const FreeDropEditor = ({ slide, updateSlide }) => {
                 scale: 1,
                 isLocked: false
             }];
-            updateSlide(slide.id, { items: newItems });
+            onChange({ items: newItems });
         } catch (error) {
             console.error('Error uploading item image:', error);
             alert('이미지 업로드에 실패했습니다.');
@@ -84,7 +84,7 @@ const FreeDropEditor = ({ slide, updateSlide }) => {
 
     const handleRemoveItem = (id) => {
         const newItems = items.filter(i => i.id !== id);
-        updateSlide(slide.id, { items: newItems });
+        onChange({ items: newItems });
     };
 
     return (
@@ -96,7 +96,7 @@ const FreeDropEditor = ({ slide, updateSlide }) => {
                     className="slide-input"
                     placeholder="문제를 입력하세요"
                     value={slide.question || ''}
-                    onChange={(e) => updateSlide(slide.id, { question: e.target.value })}
+                    onChange={(e) => onChange({ question: e.target.value })}
                     style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '0.5rem', marginTop: '0.5rem' }}
                 />
             </div>
@@ -108,7 +108,7 @@ const FreeDropEditor = ({ slide, updateSlide }) => {
                         <div style={{ position: 'relative', display: 'inline-block' }}>
                             <img src={resolveApiUrl(backgroundUrl)} alt="background preview" style={{ maxHeight: '150px', objectFit: 'contain', borderRadius: '0.25rem' }} />
                             <button
-                                onClick={() => updateSlide(slide.id, { backgroundUrl: null })}
+                                onClick={() => onChange({ backgroundUrl: null })}
                                 style={{ position: 'absolute', top: '-0.5rem', right: '-0.5rem', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', padding: '0.25rem', cursor: 'pointer' }}
                             >
                                 <Trash2 size={16} />
