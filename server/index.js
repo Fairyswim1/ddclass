@@ -1,4 +1,4 @@
-// Last Redeploy Trigger: 2026-03-18 10:22 (VERSION: 1.0.3 - ROOT TEST)
+// Last Redeploy Trigger: 2026-04-26 20:34 (LESSON PACING SYNC)
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -534,6 +534,9 @@ io.on('connection', (socket) => {
     if (!roomStates[lessonId]) {
       roomStates[lessonId] = { students: {}, maxAllowedStep: 0 };
     }
+    if (typeof roomStates[lessonId].maxAllowedStep !== 'number') {
+      roomStates[lessonId].maxAllowedStep = 0;
+    }
 
     const isTeacher = studentName === 'TEACHER_MONITOR';
 
@@ -548,22 +551,26 @@ io.on('connection', (socket) => {
       };
     }
 
+    // 현재 방의 모든 학생 목록 (교사·학생 모두에게 동기화)
     socket.emit('currentStudents', Object.values(roomStates[lessonId].students));
-    socket.emit('maxAllowedStepUpdated', { maxAllowedStep: roomStates[lessonId].maxAllowedStep || 0 });
+    // 현재 페이싱(잠금) 상태 동기화 — 새로 들어온 사람도 즉시 정확한 잠금 상태를 받음
+    socket.emit('maxAllowedStepUpdated', { maxAllowedStep: roomStates[lessonId].maxAllowedStep });
 
     if (!isTeacher) {
       socket.to(lessonId).emit('studentJoined', roomStates[lessonId].students[socket.id]);
     }
   });
 
+  // (legacy) 교사가 수업 step을 옮기는 이벤트 — 현재는 교사 자신의 뷰만 바뀌므로 no-op
   socket.on('changeLessonStep', ({ lessonId, stepIndex }) => {
-    // This is optional for teacher-only syncing if needed, but we do NOT clear student answers anymore.
+    // 학생 답안을 더이상 초기화하지 않음 (페이싱 도입 후 학생별 진행 상태 보존)
   });
 
+  // 학생이 자신의 step을 이동했을 때 — 교사 페이싱 바의 학생 위치 점을 갱신
   socket.on('changeStudentStep', ({ lessonId, studentName, stepIndex }) => {
     if (!roomStates[lessonId] || !roomStates[lessonId].students[socket.id]) return;
     roomStates[lessonId].students[socket.id].currentStep = stepIndex;
-    
+
     socket.to(lessonId).emit('studentStepChanged', {
       id: socket.id,
       name: studentName,
@@ -571,29 +578,36 @@ io.on('connection', (socket) => {
     });
   });
 
+  // 교사가 자물쇠를 토글해서 학생 진행 가능 범위를 변경
   socket.on('updateMaxAllowedStep', ({ lessonId, maxAllowedStep }) => {
-    if (!roomStates[lessonId]) return;
+    if (!roomStates[lessonId]) {
+      // 교사가 학생보다 먼저 잠금을 조정한 경우 대비
+      roomStates[lessonId] = { students: {}, maxAllowedStep: 0 };
+    }
     roomStates[lessonId].maxAllowedStep = maxAllowedStep;
+    // 방 안의 모두(자기 자신 포함)에게 즉시 새 페이싱 방송
     io.to(lessonId).emit('maxAllowedStepUpdated', { maxAllowedStep });
   });
 
   socket.on('submitLessonAnswer', ({ lessonId, studentName, stepIndex, answer }) => {
     if (!roomStates[lessonId] || !roomStates[lessonId].students[socket.id]) return;
 
-    roomStates[lessonId].students[socket.id].answers = roomStates[lessonId].students[socket.id].answers || {};
-    roomStates[lessonId].students[socket.id].answers[stepIndex] = answer;
-    
-    // For legacy compat inside the monitor if it renders using standard `.answer`
-    roomStates[lessonId].students[socket.id].answer = answer; 
-    roomStates[lessonId].students[socket.id].updatedAt = new Date();
+    const studentRec = roomStates[lessonId].students[socket.id];
+    studentRec.answers = studentRec.answers || {};
+    if (typeof stepIndex === 'number') {
+      studentRec.answers[stepIndex] = answer;
+    }
+    // 레거시 호환: 단일 모니터가 .answer를 그대로 읽는 경우 대비
+    studentRec.answer = answer;
+    studentRec.updatedAt = new Date();
 
     socket.to(lessonId).emit('answerUpdated', {
       id: socket.id,
       name: studentName,
       stepIndex,
       answer,
-      answers: roomStates[lessonId].students[socket.id].answers,
-      updatedAt: roomStates[lessonId].students[socket.id].updatedAt
+      answers: studentRec.answers,
+      updatedAt: studentRec.updatedAt
     });
   });
 
