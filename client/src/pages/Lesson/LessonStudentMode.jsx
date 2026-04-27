@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { db } from '../../firebase';
@@ -25,6 +25,10 @@ const LessonStudentMode = () => {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [maxAllowedStep, setMaxAllowedStep] = useState(0);
     const [loading, setLoading] = useState(true);
+
+    // ref로 항상 최신 step 값을 추적 — 자식 컴포넌트의 stale closure 문제 방지
+    const currentStepIndexRef = useRef(0);
+    currentStepIndexRef.current = currentStepIndex;
 
     const state = location.state || {};
     const { pin, nickname, lessonId } = state;
@@ -140,11 +144,12 @@ const LessonStudentMode = () => {
     };
 
     // Wrap socket to auto-inject stepIndex for any child components emitting answers
+    // currentStepIndexRef.current 를 사용해 자식이 오래된 wrapper를 갖고 있어도 항상 최신 step 반영
     const socketWrapper = socket ? {
         ...socket,
         emit: (event, data) => {
             if (event === 'submitLessonAnswer') {
-                data.stepIndex = currentStepIndex;
+                data.stepIndex = currentStepIndexRef.current;
             }
             socket.emit(event, data);
         },
@@ -191,11 +196,7 @@ const LessonStudentMode = () => {
             </div>
             
             {/* 페이싱 네비게이션 컨트롤바 */}
-            <div style={{ padding: '1rem', background: 'white', borderTop: '2px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-            data-debug={`step:${currentStepIndex} maxAllowed:${maxAllowedStep} total:${problemIds.length}`}>
-                <span style={{ position: 'absolute', bottom: '3.5rem', right: '0.5rem', fontSize: '0.7rem', background: '#1e293b', color: '#94a3b8', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace', zIndex: 999 }}>
-                    dbg: step={currentStepIndex} max={maxAllowedStep} total={problemIds.length}
-                </span>
+            <div style={{ padding: '1rem', background: 'white', borderTop: '2px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <button 
                     onClick={handlePrev} 
                     disabled={currentStepIndex === 0}
