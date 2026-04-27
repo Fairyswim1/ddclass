@@ -191,7 +191,11 @@ const LessonStudentMode = () => {
             </div>
             
             {/* 페이싱 네비게이션 컨트롤바 */}
-            <div style={{ padding: '1rem', background: 'white', borderTop: '2px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '1rem', background: 'white', borderTop: '2px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            data-debug={`step:${currentStepIndex} maxAllowed:${maxAllowedStep} total:${problemIds.length}`}>
+                <span style={{ position: 'absolute', bottom: '3.5rem', right: '0.5rem', fontSize: '0.7rem', background: '#1e293b', color: '#94a3b8', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace', zIndex: 999 }}>
+                    dbg: step={currentStepIndex} max={maxAllowedStep} total={problemIds.length}
+                </span>
                 <button 
                     onClick={handlePrev} 
                     disabled={currentStepIndex === 0}

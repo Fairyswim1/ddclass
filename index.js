@@ -97,7 +97,19 @@ app.use((req, res, next) => {
 // -----------------------------------------------------
 // [DIAGNOSTIC] 서버 상태 및 실시간 모니터링 상태 조회
 // -----------------------------------------------------
-app.get('/api/health', (req, res) => res.json({ success: true, version: '1.0.2', timestamp: new Date() }));
+app.get('/api/health', (req, res) => res.json({ success: true, version: '1.0.4-PACING', timestamp: new Date() }));
+
+// [DEBUG] 특정 수업의 현재 서버 side maxAllowedStep 조회
+app.get('/api/debug/lesson-state/:lessonId', (req, res) => {
+  const { lessonId } = req.params;
+  const state = roomStates[lessonId];
+  if (!state) return res.json({ exists: false, maxAllowedStep: null, studentCount: 0 });
+  res.json({
+    exists: true,
+    maxAllowedStep: state.maxAllowedStep,
+    studentCount: Object.keys(state.students).length
+  });
+});
 
 // POST & GET (for testing) versions of the status endpoint
 app.post('/api/problem-status', getStatusHandler);
