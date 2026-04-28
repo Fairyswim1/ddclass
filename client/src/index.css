@@ -1,10 +1,10 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
 
 :root {
-  --font-family: 'Jua', sans-serif;
+  --font-family: 'Gowun Dodum', sans-serif;
   --line-height: 1.6;
   --font-weight: 400;
 

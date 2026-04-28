@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Jua', 'sans-serif'],
+        sans: ['Gowun Dodum', 'sans-serif'],
       },
     },
   },

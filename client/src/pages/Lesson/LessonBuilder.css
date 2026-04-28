@@ -485,3 +485,35 @@
     outline: none;
     border-color: var(--color-brand-purple, #7c3aed);
 }
+
+.slide-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: white;
+    color: #1e293b;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.slide-input:focus {
+    outline: none;
+    border-color: var(--color-brand-purple, #7c3aed);
+}
+
+.help-text {
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.option-index {
+    min-width: 24px;
+    font-weight: 700;
+    color: #64748b;
+    margin-top: 0.5rem;
+    flex-shrink: 0;
+}
