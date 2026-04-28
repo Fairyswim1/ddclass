@@ -9,9 +9,10 @@ const PollMonitor = ({ problemData, parentStudents }) => {
     const studentsByOption = Array(options.length).fill().map(() => []);
 
     parentStudents.forEach(student => {
-        if (student.answer !== undefined && student.answer !== null) {
-            const idx = parseInt(student.answer, 10);
-            if (idx >= 0 && idx < options.length) {
+        const ans = student.answer;
+        if (ans !== undefined && ans !== null && typeof ans !== 'object') {
+            const idx = parseInt(ans, 10);
+            if (!isNaN(idx) && idx >= 0 && idx < options.length) {
                 voteCounts[idx]++;
                 studentsByOption[idx].push(student.name);
             }

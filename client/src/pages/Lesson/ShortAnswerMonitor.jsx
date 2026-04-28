@@ -18,12 +18,15 @@ const ShortAnswerMonitor = ({ problemData, parentStudents }) => {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {parentStudents.map((student) => {
-                    const studentAnswer = student.answer;
-                    const hasAnswer = studentAnswer !== undefined && studentAnswer !== null && studentAnswer !== '';
+                    const rawAnswer = student.answer;
+                    // 답안이 문자열/숫자여야 유효 (다른 스텝의 객체 답안 방지)
+                    const displayAnswer = (typeof rawAnswer === 'string' || typeof rawAnswer === 'number')
+                        ? String(rawAnswer) : null;
+                    const hasAnswer = displayAnswer !== null && displayAnswer !== '';
 
                     let isCorrect = false;
                     if (hasAnswer && correctAnswer) {
-                        isCorrect = String(studentAnswer).toLowerCase().includes(String(correctAnswer).toLowerCase());
+                        isCorrect = displayAnswer.toLowerCase().includes(String(correctAnswer).toLowerCase());
                     }
 
                     return (
@@ -47,7 +50,7 @@ const ShortAnswerMonitor = ({ problemData, parentStudents }) => {
                             <div className="flex-1 flex items-center justify-center text-center overflow-y-auto custom-scrollbar">
                                 {hasAnswer ? (
                                     <span className={`text-base font-bold break-words w-full ${isCorrect ? 'text-green-700' : 'text-slate-800'}`}>
-                                        {studentAnswer}
+                                        {displayAnswer}
                                     </span>
                                 ) : (
                                     <div className="flex flex-col items-center justify-center text-slate-400 space-y-2">

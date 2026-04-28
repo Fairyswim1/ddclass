@@ -245,7 +245,8 @@ const LessonMonitor = () => {
                     {(() => {
                         const activeStudents = students.map(s => ({
                             ...s,
-                            answer: s.answers?.[currentStepIndex] !== undefined ? s.answers[currentStepIndex] : s.answer
+                            // 현재 스텝 답안만 사용 (다른 스텝의 답안이 섞이지 않도록)
+                            answer: s.answers?.[currentStepIndex]
                         }));
                         
                         return (
