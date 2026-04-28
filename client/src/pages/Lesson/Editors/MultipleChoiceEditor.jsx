@@ -113,7 +113,7 @@ const MultipleChoiceEditor = ({ slide, onChange }) => {
                 </div>
                 <textarea
                     ref={questionRef}
-                    placeholder="학생들에게 물어볼 질문을 입력하세요... (수식: $x^2+1$)"
+                    placeholder="학생들에게 물어볼 질문을 입력하세요..."
                     value={question}
                     onChange={handleQuestionChange}
                     className="slide-textarea"
@@ -126,6 +126,7 @@ const MultipleChoiceEditor = ({ slide, onChange }) => {
                         <LatexRenderer text={question} />
                     </div>
                 )}
+                <p className="help-text">💡 수식 버튼을 눌러 LaTeX 수식을 입력할 수 있어요.</p>
             </div>
 
             <div className="editor-group options-group">
@@ -146,7 +147,7 @@ const MultipleChoiceEditor = ({ slide, onChange }) => {
                                     <input
                                         type="text"
                                         ref={el => optionRefs.current[idx] = el}
-                                        placeholder={`선택지 ${idx + 1} (수식: $x^2$)`}
+                                        placeholder={`선택지 ${idx + 1}`}
                                         value={opt.text}
                                         onChange={(e) => handleOptionTextChange(idx, e.target.value)}
                                         className="option-input"

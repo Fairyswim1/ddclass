@@ -46,7 +46,7 @@ const ShortAnswerEditor = ({ slide, onChange }) => {
                 </div>
                 <textarea
                     ref={questionRef}
-                    placeholder="학생들에게 물어볼 주관식 질문을 입력하세요... (수식: $x^2+1$)"
+                    placeholder="학생들에게 물어볼 주관식 질문을 입력하세요..."
                     value={question}
                     onChange={handleQuestionChange}
                     className="slide-textarea"
@@ -59,6 +59,7 @@ const ShortAnswerEditor = ({ slide, onChange }) => {
                         <LatexRenderer text={question} />
                     </div>
                 )}
+                <p className="help-text">💡 수식 버튼을 눌러 LaTeX 수식을 입력할 수 있어요.</p>
             </div>
 
             <div className="editor-group">
