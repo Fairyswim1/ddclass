@@ -10,6 +10,7 @@ import MultipleChoiceMonitor from './MultipleChoiceMonitor';
 import ShortAnswerMonitor from './ShortAnswerMonitor';
 import WhiteboardMonitor from './WhiteboardMonitor';
 import PollMonitor from './PollMonitor';
+import OrderMatchingMonitor from './OrderMatchingMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
 import './LessonMonitor.css';
 
@@ -265,9 +266,10 @@ const LessonMonitor = () => {
                                     />
                                 )}
                                 {currentProblem && currentProblem.type === 'order-matching' && (
-                                    <div className="monitor-card text-center p-8 text-slate-500">
-                                        순서 맞추기 문제는 현재 개별 모니터링 뷰를 지원하지 않습니다.
-                                    </div>
+                                    <OrderMatchingMonitor
+                                        problemData={currentProblem}
+                                        parentStudents={activeStudents}
+                                    />
                                 )}
                                 {currentProblem && currentProblem.type === 'multiple-choice' && (
                                     <MultipleChoiceMonitor
