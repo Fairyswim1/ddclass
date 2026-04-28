@@ -1,5 +1,9 @@
 import React from 'react';
 import { Users } from 'lucide-react';
+import LatexRenderer from '../../components/LatexRenderer';
+
+const getOptText = (opt) => (typeof opt === 'object' && opt !== null) ? opt.text : String(opt || '');
+const getOptImageUrl = (opt) => (typeof opt === 'object' && opt !== null) ? opt.imageUrl : '';
 
 const MultipleChoiceMonitor = ({ problemData, parentStudents }) => {
     const { question, options, answerIndex } = problemData;
@@ -39,9 +43,10 @@ const MultipleChoiceMonitor = ({ problemData, parentStudents }) => {
                                     <span className={`w-8 h-8 flex justify-center items-center rounded-full font-bold text-sm ${isCorrect ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
                                         {idx + 1}
                                     </span>
-                                    <span className={`font-medium ${isCorrect ? 'text-green-700' : 'text-slate-700'}`}>
-                                        {opt}
-                                    </span>
+                                    <div className={`font-medium flex flex-col gap-1 ${isCorrect ? 'text-green-700' : 'text-slate-700'}`}>
+                                        {getOptImageUrl(opt) && <img src={getOptImageUrl(opt)} alt="" style={{ maxHeight: '40px', objectFit: 'contain' }} />}
+                                        <LatexRenderer text={getOptText(opt)} />
+                                    </div>
                                     {isCorrect && <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded ml-2">정답</span>}
                                 </div>
                                 <div className="text-right font-bold text-lg text-slate-700 w-24">

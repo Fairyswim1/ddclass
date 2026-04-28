@@ -23,7 +23,7 @@ const ShortAnswerMonitor = ({ problemData, parentStudents }) => {
 
                     let isCorrect = false;
                     if (hasAnswer && correctAnswer) {
-                        isCorrect = studentAnswer.toLowerCase().includes(correctAnswer.toLowerCase());
+                        isCorrect = String(studentAnswer).toLowerCase().includes(String(correctAnswer).toLowerCase());
                     }
 
                     return (

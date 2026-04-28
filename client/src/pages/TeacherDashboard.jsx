@@ -128,10 +128,9 @@ const TeacherDashboard = () => {
                 where('teacherId', '==', currentUser.uid)
             );
             const problemsSnapshot = await getDocs(problemsQ);
-            const problemItems = problemsSnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
+            const problemItems = problemsSnapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() }))
+                .filter(p => p.pinNumber !== null && p.pinNumber !== undefined && p.pinNumber !== '');
 
             const lessonsQ = query(
                 collection(db, 'lessons'),
@@ -306,7 +305,7 @@ const TeacherDashboard = () => {
                                 </button>
                                 <div style={{ borderTop: '1px solid #eee', margin: '4px 0' }}></div>
                                 <button onClick={() => navigate('/create-lesson')} style={{ color: 'var(--color-brand-blue)' }}>
-                                    <Globe size={18} /> 새 수업 묶음 만들기
+                                    <Globe size={18} /> 새 수업 꾸러미 만들기
                                 </button>
                             </div>
                         )}
@@ -482,7 +481,7 @@ const TeacherDashboard = () => {
                                         className="btn-icon-subtle"
                                         onClick={() => {
                                             if (problem.type === 'lesson') {
-                                                alert('수업 묶음 수정은 아직 지원되지 않습니다.');
+                                                alert('수업 꾸러미 수정은 아직 지원되지 않습니다.');
                                                 return;
                                             }
                                             const routeType = problem.type === 'free-drop' ? 'free-dnd' : problem.type;

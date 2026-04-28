@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { storage } from '../../../firebase';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { resolveApiUrl } from '../../../utils/url';
 import { ImageIcon, Upload, X, Loader2 } from 'lucide-react';
 
 const ImageEditor = ({ slide, onChange }) => {
@@ -9,24 +8,35 @@ const ImageEditor = ({ slide, onChange }) => {
     const [uploadProgress, setUploadProgress] = useState(0);
     const fileInputRef = useRef(null);
 
-    const uploadImage = (file) => {
+    const uploadImage = async (file) => {
         if (!file || !file.type.startsWith('image/')) {
             alert('이미지 파일만 업로드할 수 있습니다.');
             return;
         }
         setUploading(true);
-        setUploadProgress(0);
-        const storageRef = ref(storage, `lesson-images/${Date.now()}_${file.name}`);
-        const task = uploadBytesResumable(storageRef, file);
-        task.on('state_changed',
-            (snap) => setUploadProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)),
-            (err) => { console.error(err); setUploading(false); alert('업로드 실패: ' + err.message); },
-            async () => {
-                const url = await getDownloadURL(task.snapshot.ref);
-                onChange({ imageUrl: url });
-                setUploading(false);
+        setUploadProgress(30);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folder', 'lesson-images');
+
+            const res = await fetch(resolveApiUrl('/api/upload'), {
+                method: 'POST',
+                body: formData
+            });
+            setUploadProgress(80);
+            const data = await res.json();
+            if (data.success) {
+                onChange({ imageUrl: data.url });
+            } else {
+                alert('업로드 실패: ' + data.message);
             }
-        );
+        } catch (err) {
+            alert('업로드 중 오류: ' + err.message);
+        } finally {
+            setUploading(false);
+            setUploadProgress(0);
+        }
     };
 
     const handleDrop = (e) => {

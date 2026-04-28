@@ -294,3 +294,194 @@
     text-align: center;
     gap: 1rem;
 }
+
+/* ── Editor Form Components ── */
+.editor-group {
+    margin-bottom: 1.5rem;
+}
+
+.editor-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.slide-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    color: #1e293b;
+    background: white;
+}
+
+.slide-textarea:focus {
+    outline: none;
+    border-color: var(--color-brand-purple, #7c3aed);
+}
+
+/* Multiple Choice Editor */
+.mc-editor {
+    width: 100%;
+}
+
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.option-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fafafa;
+    transition: all 0.2s;
+}
+
+.option-item.is-answer {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.btn-set-answer {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    margin-top: 0.5rem;
+}
+
+.option-input {
+    flex: 1;
+    padding: 0.6rem 0.875rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: white;
+    color: #1e293b;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.option-input:focus {
+    outline: none;
+    border-color: var(--color-brand-purple, #7c3aed);
+}
+
+.btn-remove-option {
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 0.3rem;
+    transition: color 0.2s;
+}
+
+.btn-remove-option:hover {
+    color: #ef4444;
+}
+
+.btn-add-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding: 0.6rem 1rem;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-add-option:hover {
+    border-color: var(--color-brand-purple, #7c3aed);
+    color: var(--color-brand-purple, #7c3aed);
+}
+
+.option-latex-preview {
+    margin-top: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    background: #f0f9ff;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: #0c4a6e;
+    border: 1px solid #bae6fd;
+}
+
+.option-image-preview {
+    margin-top: 0.35rem;
+    max-height: 80px;
+    object-fit: contain;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-option-image {
+    background: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.4rem 0.6rem;
+    cursor: pointer;
+    color: #64748b;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+    margin-top: 0.3rem;
+    transition: all 0.2s;
+}
+
+.btn-option-image:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+    background: #eef2ff;
+}
+
+/* Short Answer / Poll / Common Editors */
+.sa-editor,
+.poll-editor {
+    width: 100%;
+}
+
+.editor-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: white;
+    color: #1e293b;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.editor-input:focus {
+    outline: none;
+    border-color: var(--color-brand-purple, #7c3aed);
+}
