@@ -5,25 +5,41 @@ import LatexRenderer from '../../components/LatexRenderer';
 const getOptText = (opt) => (typeof opt === 'object' && opt !== null) ? opt.text : String(opt || '');
 const getOptImageUrl = (opt) => (typeof opt === 'object' && opt !== null) ? opt.imageUrl : '';
 
+const getAnswerIndices = (problemData) => {
+    if (Array.isArray(problemData.answerIndices)) return problemData.answerIndices;
+    if (problemData.answerIndex !== undefined) return [problemData.answerIndex];
+    return [0];
+};
+
+// 학생 answer → 배열로 정규화
+const toIndexArray = (ans) => {
+    if (ans === null || ans === undefined) return [];
+    if (Array.isArray(ans)) return ans.map(Number).filter(n => !isNaN(n));
+    const n = parseInt(ans, 10);
+    return isNaN(n) ? [] : [n];
+};
+
 const MultipleChoiceMonitor = ({ problemData, parentStudents, socket, lessonId }) => {
-    const { question, options, answerIndex } = problemData;
+    const { question, options } = problemData;
+    const answerIndices = getAnswerIndices(problemData);
+    const allowMultiple = problemData.allowMultiple || false;
     const [msgTarget, setMsgTarget] = useState(null);
     const [msgText, setMsgText] = useState('');
 
     const voteCounts = Array(options.length).fill(0);
-    const studentsByOption = Array(options.length).fill().map(() => []);
+    const studentsByOption = Array(options.length).fill(null).map(() => []);
 
     parentStudents.forEach(student => {
-        const ans = student.answer;
-        if (ans !== undefined && ans !== null && typeof ans !== 'object') {
-            const idx = parseInt(ans, 10);
-            if (!isNaN(idx) && idx >= 0 && idx < options.length) {
+        const indices = toIndexArray(student.answer);
+        indices.forEach(idx => {
+            if (idx >= 0 && idx < options.length) {
                 voteCounts[idx]++;
                 studentsByOption[idx].push({ name: student.name, id: student.id });
             }
-        }
+        });
     });
 
+    const answeredCount = parentStudents.filter(s => toIndexArray(s.answer).length > 0).length;
     const totalVotes = voteCounts.reduce((a, b) => a + b, 0);
 
     const handleSend = () => {
@@ -35,7 +51,6 @@ const MultipleChoiceMonitor = ({ problemData, parentStudents, socket, lessonId }
 
     return (
         <div className="mc-monitor p-6 bg-white rounded-xl shadow-sm" style={{ position: 'relative' }}>
-            {/* 개별 메시지 모달 */}
             {msgTarget && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', width: '360px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
@@ -58,15 +73,28 @@ const MultipleChoiceMonitor = ({ problemData, parentStudents, socket, lessonId }
                 </div>
             )}
 
-            <h3 className="text-xl font-bold mb-6 text-slate-800 border-b pb-4">
-                문제: {question}
-            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid #e2e8f0' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#1e293b', flex: 1 }}>
+                    <LatexRenderer text={question} />
+                </h3>
+                <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                    {allowMultiple && (
+                        <span style={{ fontSize: '0.75rem', background: '#ede9fe', color: '#6d28d9', padding: '0.2rem 0.6rem', borderRadius: '999px' }}>
+                            복수정답
+                        </span>
+                    )}
+                    <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                        <Users size={14} style={{ display: 'inline', marginRight: '3px' }} />
+                        {answeredCount}/{parentStudents.length}명 응답
+                    </span>
+                </div>
+            </div>
 
             <div className="options-stats flex flex-col gap-4">
                 {options.map((opt, idx) => {
                     const count = voteCounts[idx];
                     const percentage = totalVotes === 0 ? 0 : Math.round((count / totalVotes) * 100);
-                    const isCorrect = idx === answerIndex;
+                    const isCorrect = answerIndices.includes(idx);
                     const students = studentsByOption[idx];
 
                     return (
@@ -102,7 +130,6 @@ const MultipleChoiceMonitor = ({ problemData, parentStudents, socket, lessonId }
                                             key={s.name}
                                             className="bg-slate-100 px-2 py-0.5 rounded"
                                             style={{ cursor: socket ? 'pointer' : 'default' }}
-                                            title={socket ? '클릭하여 메시지 보내기' : ''}
                                             onClick={() => socket && setMsgTarget({ id: s.id, name: s.name })}
                                         >
                                             {s.name}

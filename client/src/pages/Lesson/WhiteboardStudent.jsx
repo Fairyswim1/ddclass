@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { resolveApiUrl } from '../../utils/url';
+import { getPresetBackgroundStyle } from '../../utils/whiteboardPresets';
 import { Eraser, Pen, Trash2 } from 'lucide-react';
 import './LessonShared.css';
 
@@ -11,7 +12,8 @@ const WhiteboardStudent = ({ lessonProblemData, lessonRoomId, lessonNickname, le
     const [lineWidth, setLineWidth] = useState(3);
     const [isEraser, setIsEraser] = useState(false);
 
-    const { backgroundUrl } = lessonProblemData;
+    const { backgroundUrl, backgroundType = 'blank' } = lessonProblemData;
+    const presetStyle = backgroundUrl ? {} : getPresetBackgroundStyle(backgroundType);
 
     useEffect(() => {
         const resizeCanvas = () => {
@@ -167,7 +169,7 @@ const WhiteboardStudent = ({ lessonProblemData, lessonRoomId, lessonNickname, le
             <div
                 ref={containerRef}
                 className="wb-canvas-container"
-                style={{ cursor: 'crosshair' }}
+                style={{ cursor: 'crosshair', ...presetStyle }}
             >
                 {backgroundUrl && (
                     <img

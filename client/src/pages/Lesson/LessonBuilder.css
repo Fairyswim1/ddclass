@@ -558,6 +558,75 @@
     flex-shrink: 0;
 }
 
+/* ── Whiteboard Editor ── */
+.wb-preset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.wb-preset-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.wb-preset-btn:hover {
+    border-color: #9B7FE8;
+}
+
+.wb-preset-btn.active {
+    border-color: #9B7FE8;
+    background: #f5f0ff;
+}
+
+.wb-preset-thumb {
+    width: 100%;
+    height: 60px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.wb-preset-label {
+    font-size: 0.72rem;
+    color: #475569;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.wb-custom-upload-section {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.wb-custom-upload-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+}
+
+.wb-custom-drop {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.wb-custom-drop.active {
+    border-color: #9B7FE8;
+    background: #f5f0ff;
+}
+
 /* ── Free Drop Editor ── */
 .free-bg-upload {
     margin-top: 0.5rem;
