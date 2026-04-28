@@ -10,7 +10,6 @@ import MultipleChoiceMonitor from './MultipleChoiceMonitor';
 import ShortAnswerMonitor from './ShortAnswerMonitor';
 import WhiteboardMonitor from './WhiteboardMonitor';
 import PollMonitor from './PollMonitor';
-import OrderMatchingMonitor from './OrderMatchingMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
 import './LessonMonitor.css';
 
@@ -266,8 +265,9 @@ const LessonMonitor = () => {
                                     />
                                 )}
                                 {currentProblem && currentProblem.type === 'order-matching' && (
-                                    <OrderMatchingMonitor
+                                    <ProblemMonitor
                                         problemData={currentProblem}
+                                        parentSocket={socket}
                                         parentStudents={activeStudents}
                                     />
                                 )}
