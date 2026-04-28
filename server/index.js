@@ -637,12 +637,19 @@ io.on('connection', (socket) => {
   // 교사 전체 공지 메시지 (방 안 모든 학생에게 브로드캐스트)
   socket.on('broadcastMessage', ({ roomId, message, teacherName }) => {
     console.log(`전체 공지: ${teacherName} -> 방[${roomId}]: ${message}`);
-    socket.to(roomId).emit('messageReceived', {
+    // io.to() 사용 - 발신자 포함 전원에게 (더 안정적)
+    io.to(roomId).emit('messageReceived', {
       message,
       from: teacherName,
       timestamp: new Date(),
       isBroadcast: true
     });
+  });
+
+  // 교사 → 학생 실시간 YouTube 재생 모드 전환
+  socket.on('setVideoMode', ({ lessonId, stepIndex, videoMode }) => {
+    console.log(`[VIDEO MODE] 수업[${lessonId}] 스텝[${stepIndex}] → ${videoMode}`);
+    socket.to(lessonId).emit('videoModeChanged', { stepIndex, videoMode });
   });
 
   socket.on('disconnect', () => {

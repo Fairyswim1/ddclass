@@ -28,6 +28,8 @@ const LessonMonitor = () => {
     const [students, setStudents] = useState([]);
     const [broadcastText, setBroadcastText] = useState('');
     const [broadcastSent, setBroadcastSent] = useState(false);
+    // 실시간 YouTube 모드 { [stepIndex]: 'class' | 'homework' }
+    const [liveVideoModes, setLiveVideoModes] = useState({});
 
     useEffect(() => {
         const fetchLessonAndProblems = async () => {
@@ -153,6 +155,12 @@ const LessonMonitor = () => {
         setBroadcastText('');
         setBroadcastSent(true);
         setTimeout(() => setBroadcastSent(false), 2000);
+    };
+
+    const handleSetVideoMode = (stepIndex, mode) => {
+        if (!socket) return;
+        setLiveVideoModes(prev => ({ ...prev, [stepIndex]: mode }));
+        socket.emit('setVideoMode', { lessonId: id, stepIndex, videoMode: mode });
     };
 
     if (loading) {
@@ -344,8 +352,28 @@ const LessonMonitor = () => {
                                 {currentProblem && currentProblem.type === 'video' && (() => {
                                     const match = (currentProblem.videoUrl || '').match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
                                     const videoId = match ? match[1] : null;
+                                    const currentMode = liveVideoModes[currentStepIndex] ?? (currentProblem.videoMode || 'class');
                                     return (
                                         <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem' }}>
+                                            {/* 실시간 모드 전환 컨트롤 */}
+                                            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', padding: '1rem', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                                                <span style={{ fontWeight: 'bold', color: '#334155', marginRight: '0.5rem', alignSelf: 'center' }}>📺 학생 재생 모드:</span>
+                                                <button
+                                                    onClick={() => handleSetVideoMode(currentStepIndex, 'class')}
+                                                    style={{ padding: '0.5rem 1.2rem', borderRadius: '8px', border: '2px solid', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem', background: currentMode === 'class' ? '#1e293b' : 'white', color: currentMode === 'class' ? 'white' : '#64748b', borderColor: currentMode === 'class' ? '#1e293b' : '#e2e8f0', transition: 'all 0.2s' }}
+                                                >
+                                                    📺 수업 모드 (선생님 화면 보기)
+                                                </button>
+                                                <button
+                                                    onClick={() => handleSetVideoMode(currentStepIndex, 'homework')}
+                                                    style={{ padding: '0.5rem 1.2rem', borderRadius: '8px', border: '2px solid', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem', background: currentMode === 'homework' ? '#16a34a' : 'white', color: currentMode === 'homework' ? 'white' : '#64748b', borderColor: currentMode === 'homework' ? '#16a34a' : '#e2e8f0', transition: 'all 0.2s' }}
+                                                >
+                                                    📱 과제 모드 (각자 재생)
+                                                </button>
+                                                <span style={{ alignSelf: 'center', fontSize: '0.8rem', color: '#94a3b8', marginLeft: 'auto' }}>
+                                                    현재: {currentMode === 'class' ? '수업 모드' : '과제 모드'} · 클릭하면 학생 화면이 즉시 바뀝니다
+                                                </span>
+                                            </div>
                                             {videoId
                                                 ? <div style={{ aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden' }}>
                                                     <iframe src={`https://www.youtube.com/embed/${videoId}`} title="YouTube" style={{ width: '100%', height: '100%', border: 'none' }} allowFullScreen />

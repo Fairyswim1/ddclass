@@ -32,6 +32,8 @@ const LessonStudentMode = () => {
     const [maxAllowedStep, setMaxAllowedStep] = useState(0);
     const [loading, setLoading] = useState(true);
     const [incomingMessage, setIncomingMessage] = useState(null);
+    // 교사가 실시간으로 바꾼 YouTube 모드 { [stepIndex]: 'class' | 'homework' }
+    const [liveVideoModes, setLiveVideoModes] = useState({});
 
     // ref로 항상 최신 step 값을 추적 — 자식 컴포넌트의 stale closure 문제 방지
     const currentStepIndexRef = useRef(0);
@@ -98,6 +100,11 @@ const LessonStudentMode = () => {
         newSocket.on('messageReceived', (data) => {
             setIncomingMessage(data);
             setTimeout(() => setIncomingMessage(null), 6000);
+        });
+
+        // 교사가 실시간으로 YouTube 모드 변경
+        newSocket.on('videoModeChanged', ({ stepIndex, videoMode }) => {
+            setLiveVideoModes(prev => ({ ...prev, [stepIndex]: videoMode }));
         });
 
         return () => newSocket.disconnect();
@@ -220,7 +227,9 @@ const LessonStudentMode = () => {
                 );
             case 'video': {
                 const videoId = extractYoutubeId(currentProblemData.videoUrl);
-                const isClassMode = (currentProblemData.videoMode || 'class') === 'class';
+                // 교사가 실시간으로 바꾼 모드 우선, 없으면 슬라이드 저장값
+                const effectiveMode = liveVideoModes[currentStepIndex] ?? (currentProblemData.videoMode || 'class');
+                const isClassMode = effectiveMode === 'class';
                 return (
                     <div style={{ display: 'flex', flexDirection: 'column', padding: '2rem', gap: '1rem' }}>
                         {currentProblemData.title && (

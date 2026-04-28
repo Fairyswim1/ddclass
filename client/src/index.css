@@ -53,6 +53,12 @@ input, textarea, select, button, a {
   font-family: inherit;
 }
 
+/* 학생 메시지 토스트 애니메이션 */
+@keyframes slideDown {
+  from { transform: translateX(-50%) translateY(-24px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}
+
 body {
   margin: 0;
   min-width: 320px;
