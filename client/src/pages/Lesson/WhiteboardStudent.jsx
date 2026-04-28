@@ -101,8 +101,8 @@ const WhiteboardStudent = ({ lessonProblemData, lessonRoomId, lessonNickname, le
         if (lessonSocket && lessonRoomId) {
             const dataUrl = canvasRef.current.toDataURL('image/png');
             lessonSocket.emit('submitLessonAnswer', {
-                roomId: lessonRoomId,
-                nickname: lessonNickname,
+                lessonId: lessonRoomId,
+                studentName: lessonNickname,
                 answer: { type: 'image', data: dataUrl }
             });
         }

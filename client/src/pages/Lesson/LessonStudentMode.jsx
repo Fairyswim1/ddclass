@@ -150,6 +150,8 @@ const LessonStudentMode = () => {
         emit: (event, data) => {
             if (event === 'submitLessonAnswer') {
                 data.stepIndex = currentStepIndexRef.current;
+                data.lessonId = lessonId;
+                data.studentName = nickname;
             }
             socket.emit(event, data);
         },

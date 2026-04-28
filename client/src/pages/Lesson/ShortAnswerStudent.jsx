@@ -20,8 +20,8 @@ const ShortAnswerStudent = ({ lessonProblemData, lessonRoomId, lessonNickname, l
         setIsSubmitted(true);
         if (lessonSocket && lessonRoomId) {
             lessonSocket.emit('submitLessonAnswer', {
-                roomId: lessonRoomId,
-                nickname: lessonNickname,
+                lessonId: lessonRoomId,
+                studentName: lessonNickname,
                 answer: answer.trim()
             });
         }

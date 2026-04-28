@@ -16,8 +16,8 @@ const MultipleChoiceStudent = ({ lessonProblemData, lessonRoomId, lessonNickname
         // Submit answer to teacher
         if (lessonSocket && lessonRoomId) {
             lessonSocket.emit('submitLessonAnswer', {
-                roomId: lessonRoomId,
-                nickname: lessonNickname,
+                lessonId: lessonRoomId,
+                studentName: lessonNickname,
                 answer: idx
             });
         }

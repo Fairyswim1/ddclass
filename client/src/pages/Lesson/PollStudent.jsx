@@ -14,8 +14,8 @@ const PollStudent = ({ lessonProblemData, lessonRoomId, lessonNickname, lessonSo
 
         if (lessonSocket && lessonRoomId) {
             lessonSocket.emit('submitLessonAnswer', {
-                roomId: lessonRoomId,
-                nickname: lessonNickname,
+                lessonId: lessonRoomId,
+                studentName: lessonNickname,
                 answer: idx
             });
         }
