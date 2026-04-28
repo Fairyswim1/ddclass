@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { ArrowLeft, Users, Layout, Send } from 'lucide-react';
+import { ArrowLeft, Users, Layout, Send, Volume2 } from 'lucide-react';
 import './FreeMonitor.css';
 import { resolveApiUrl } from '../../utils/url';
 import LatexRenderer from '../../components/LatexRenderer';
@@ -16,6 +16,8 @@ const FreeMonitor = () => {
     const [socket, setSocket] = useState(null);
     const [detailWidth, setDetailWidth] = useState(1000);
     const detailCanvasRef = useRef(null);
+    const [broadcastText, setBroadcastText] = useState('');
+    const [broadcastSent, setBroadcastSent] = useState(false);
 
     const selectedStudent = students.find(s => s.name === selectedStudentName);
 
@@ -99,6 +101,14 @@ const FreeMonitor = () => {
         alert('메시지를 전송했습니다.');
     };
 
+    const handleBroadcast = () => {
+        if (!socket || !broadcastText.trim() || !id) return;
+        socket.emit('broadcastMessage', { roomId: id, message: broadcastText.trim(), teacherName: '교사' });
+        setBroadcastText('');
+        setBroadcastSent(true);
+        setTimeout(() => setBroadcastSent(false), 2000);
+    };
+
     return (
         <div className="free-monitor-container">
             <nav className="game-nav">
@@ -114,6 +124,26 @@ const FreeMonitor = () => {
                     </button>
                 </div>
             </nav>
+
+            {/* 전체 공지 바 */}
+            <div style={{ background: '#1e293b', padding: '0.6rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <Volume2 size={16} color="#94a3b8" />
+                <span style={{ color: '#94a3b8', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: 600 }}>전체 공지</span>
+                <input
+                    value={broadcastText}
+                    onChange={e => setBroadcastText(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleBroadcast()}
+                    placeholder="모든 학생에게 공지사항을 보냅니다..."
+                    style={{ flex: 1, padding: '0.4rem 0.75rem', background: '#334155', border: 'none', borderRadius: '6px', color: 'white', fontSize: '0.85rem', outline: 'none' }}
+                />
+                <button
+                    onClick={handleBroadcast}
+                    disabled={!broadcastText.trim()}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.75rem', background: broadcastSent ? '#22c55e' : '#f59e0b', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem' }}
+                >
+                    <Send size={13} /> {broadcastSent ? '전송됨!' : '전송'}
+                </button>
+            </div>
 
             <div className="monitor-stats">
                 <div className="stat-card">

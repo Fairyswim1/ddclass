@@ -18,6 +18,7 @@ const VideoEditor = ({ slide, onChange }) => {
     const [inputUrl, setInputUrl] = useState(slide.videoUrl || '');
 
     const videoId = extractYoutubeId(slide.videoUrl || '');
+    const videoMode = slide.videoMode || 'class';
 
     const handleApply = () => {
         const id = extractYoutubeId(inputUrl);
@@ -30,6 +31,35 @@ const VideoEditor = ({ slide, onChange }) => {
 
     return (
         <div style={{ padding: '1.5rem' }}>
+            {/* 재생 모드 선택 */}
+            <div style={{ marginBottom: '1.25rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1rem' }}>
+                <p style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#334155', marginBottom: '0.75rem' }}>재생 모드 선택</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '0.5rem', borderRadius: '8px', background: videoMode === 'class' ? '#e0e7ff' : 'transparent' }}>
+                        <input
+                            type="radio" name="videoMode" value="class"
+                            checked={videoMode === 'class'}
+                            onChange={() => onChange({ videoMode: 'class' })}
+                        />
+                        <span>
+                            <strong>📺 수업 모드</strong>
+                            <span style={{ color: '#64748b', fontSize: '0.85rem', marginLeft: '0.5rem' }}>학생들은 선생님 화면을 함께 봅니다 (학생 화면에 영상 미표시)</span>
+                        </span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '0.5rem', borderRadius: '8px', background: videoMode === 'homework' ? '#dcfce7' : 'transparent' }}>
+                        <input
+                            type="radio" name="videoMode" value="homework"
+                            checked={videoMode === 'homework'}
+                            onChange={() => onChange({ videoMode: 'homework' })}
+                        />
+                        <span>
+                            <strong>📱 과제 모드</strong>
+                            <span style={{ color: '#64748b', fontSize: '0.85rem', marginLeft: '0.5rem' }}>학생 각자 화면에서 영상 재생 가능</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
             <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem' }}>
                 YouTube 영상 URL을 입력하면 학생 화면에 바로 재생됩니다.
             </p>

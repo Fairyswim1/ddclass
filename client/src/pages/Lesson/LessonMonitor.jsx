@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, Send, Volume2 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { db } from '../../firebase';
 import { doc, getDoc, getDocs, collection, query, documentId, where } from 'firebase/firestore';
@@ -26,6 +26,8 @@ const LessonMonitor = () => {
 
     const [socket, setSocket] = useState(null);
     const [students, setStudents] = useState([]);
+    const [broadcastText, setBroadcastText] = useState('');
+    const [broadcastSent, setBroadcastSent] = useState(false);
 
     useEffect(() => {
         const fetchLessonAndProblems = async () => {
@@ -145,6 +147,14 @@ const LessonMonitor = () => {
         setMaxAllowedStep(newMax); // Optimistic update
     };
 
+    const handleBroadcast = () => {
+        if (!socket || !broadcastText.trim()) return;
+        socket.emit('broadcastMessage', { roomId: id, message: broadcastText.trim(), teacherName: '교사' });
+        setBroadcastText('');
+        setBroadcastSent(true);
+        setTimeout(() => setBroadcastSent(false), 2000);
+    };
+
     if (loading) {
         return (
             <div className="lesson-page-loading">
@@ -236,6 +246,26 @@ const LessonMonitor = () => {
                 </div>
             </div>
 
+            {/* 전체 공지 메시지 바 */}
+            <div style={{ background: '#1e293b', padding: '0.6rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <Volume2 size={18} color="#94a3b8" />
+                <span style={{ color: '#94a3b8', fontSize: '0.85rem', whiteSpace: 'nowrap', fontWeight: 600 }}>전체 공지</span>
+                <input
+                    value={broadcastText}
+                    onChange={e => setBroadcastText(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleBroadcast()}
+                    placeholder="모든 학생에게 공지사항을 보냅니다..."
+                    style={{ flex: 1, padding: '0.4rem 0.75rem', background: '#334155', border: 'none', borderRadius: '6px', color: 'white', fontSize: '0.9rem', outline: 'none' }}
+                />
+                <button
+                    onClick={handleBroadcast}
+                    disabled={!broadcastText.trim()}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 1rem', background: broadcastSent ? '#22c55e' : '#f59e0b', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem', transition: 'background 0.2s' }}
+                >
+                    <Send size={14} /> {broadcastSent ? '전송됨!' : '전송'}
+                </button>
+            </div>
+
             <main className="lesson-content-area">
                 <h2 style={{ marginTop: 0, marginBottom: '1rem', color: '#666', fontSize: '1.2rem' }}>
                     현재 뷰: <span style={{ color: 'var(--color-brand-brown)' }}><LatexRenderer text={currentProblem?.title || ''} /></span>
@@ -276,24 +306,32 @@ const LessonMonitor = () => {
                                     <MultipleChoiceMonitor
                                         problemData={currentProblem}
                                         parentStudents={activeStudents}
+                                        socket={socket}
+                                        lessonId={id}
                                     />
                                 )}
                                 {currentProblem && currentProblem.type === 'short-answer' && (
                                     <ShortAnswerMonitor
                                         problemData={currentProblem}
                                         parentStudents={activeStudents}
+                                        socket={socket}
+                                        lessonId={id}
                                     />
                                 )}
                                 {currentProblem && currentProblem.type === 'whiteboard' && (
                                     <WhiteboardMonitor
                                         problemData={currentProblem}
                                         parentStudents={activeStudents}
+                                        socket={socket}
+                                        lessonId={id}
                                     />
                                 )}
                                 {currentProblem && currentProblem.type === 'poll' && (
                                     <PollMonitor
                                         problemData={currentProblem}
                                         parentStudents={activeStudents}
+                                        socket={socket}
+                                        lessonId={id}
                                     />
                                 )}
                                 {currentProblem && currentProblem.type === 'image' && (

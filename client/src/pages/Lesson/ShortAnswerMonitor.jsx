@@ -1,11 +1,43 @@
-import React from 'react';
-import { User } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Send, X } from 'lucide-react';
 
-const ShortAnswerMonitor = ({ problemData, parentStudents }) => {
+const ShortAnswerMonitor = ({ problemData, parentStudents, socket, lessonId }) => {
     const { question, answer: correctAnswer } = problemData;
+    const [msgTarget, setMsgTarget] = useState(null); // { id, name }
+    const [msgText, setMsgText] = useState('');
+
+    const handleSend = () => {
+        if (!socket || !msgTarget || !msgText.trim()) return;
+        socket.emit('sendMessage', { studentSocketId: msgTarget.id, message: msgText.trim(), teacherName: '교사' });
+        setMsgText('');
+        setMsgTarget(null);
+    };
 
     return (
-        <div className="sa-monitor p-6 bg-white rounded-xl shadow-sm">
+        <div className="sa-monitor p-6 bg-white rounded-xl shadow-sm" style={{ position: 'relative' }}>
+            {/* 개별 메시지 모달 */}
+            {msgTarget && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', width: '360px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h3 style={{ fontWeight: 'bold', color: '#1e293b' }}>💬 {msgTarget.name}에게 메시지</h3>
+                            <button onClick={() => setMsgTarget(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
+                        </div>
+                        <textarea
+                            value={msgText} onChange={e => setMsgText(e.target.value)}
+                            placeholder="메시지를 입력하세요..."
+                            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                            style={{ width: '100%', minHeight: '80px', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', resize: 'none', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }}
+                            autoFocus
+                        />
+                        <button onClick={handleSend} disabled={!msgText.trim()}
+                            style={{ marginTop: '0.75rem', width: '100%', padding: '0.75rem', background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                            <Send size={16} /> 보내기
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <h3 className="text-xl font-bold mb-2 text-slate-800">
                 문제: {question}
             </h3>
@@ -19,7 +51,6 @@ const ShortAnswerMonitor = ({ problemData, parentStudents }) => {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {parentStudents.map((student) => {
                     const rawAnswer = student.answer;
-                    // 답안이 문자열/숫자여야 유효 (다른 스텝의 객체 답안 방지)
                     const displayAnswer = (typeof rawAnswer === 'string' || typeof rawAnswer === 'number')
                         ? String(rawAnswer) : null;
                     const hasAnswer = displayAnswer !== null && displayAnswer !== '';
@@ -39,6 +70,9 @@ const ShortAnswerMonitor = ({ problemData, parentStudents }) => {
                                     : 'bg-slate-50 border-dashed border-slate-200 opacity-60'
                                 }
                             `}
+                            style={{ cursor: socket ? 'pointer' : 'default' }}
+                            title={socket ? '클릭하여 메시지 보내기' : ''}
+                            onClick={() => socket && setMsgTarget({ id: student.id, name: student.name })}
                         >
                             <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-100/50">
                                 <User size={14} className={hasAnswer ? 'text-indigo-400' : 'text-slate-400'} />

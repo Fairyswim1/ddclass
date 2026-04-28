@@ -81,7 +81,7 @@ const LessonBuilder = () => {
             ...(type === 'whiteboard' && { backgroundUrl: null }),
             ...(type === 'poll' && { question: '', options: ['', ''] }),
             ...(type === 'image' && { imageUrl: null }),
-            ...(type === 'video' && { videoUrl: '', videoId: '' }),
+            ...(type === 'video' && { videoUrl: '', videoId: '', videoMode: 'class' }),
             ...(type === 'ppt' && { pptEmbedUrl: '' })
         };
         setSlides([...slides, newSlide]);

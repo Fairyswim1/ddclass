@@ -344,7 +344,7 @@
 .wb-canvas-container {
     flex: 1;
     position: relative;
-    background: white;
+    background-color: white;
     border: 1px solid #e2e8f0;
     border-top: none;
     border-radius: 0 0 12px 12px;

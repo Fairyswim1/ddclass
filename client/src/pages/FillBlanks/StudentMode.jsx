@@ -27,7 +27,7 @@ const StudentMode = ({ lessonProblemData = null, lessonRoomId = null, lessonNick
     const [lastMessage, setLastMessage] = useState(null);
 
     useEffect(() => {
-        if (!socket) return;
+        if (!socket || isLessonMode) return; // lesson 모드에선 LessonStudentMode가 처리
 
         const handleMessage = (data) => {
             setLastMessage(data);
@@ -36,7 +36,7 @@ const StudentMode = ({ lessonProblemData = null, lessonRoomId = null, lessonNick
 
         socket.on('messageReceived', handleMessage);
         return () => socket.off('messageReceived', handleMessage);
-    }, [socket]);
+    }, [socket, isLessonMode]);
 
     // Lesson Mode / Auto Join
     useEffect(() => {

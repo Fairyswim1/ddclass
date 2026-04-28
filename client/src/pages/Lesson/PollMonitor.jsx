@@ -1,9 +1,11 @@
-import React from 'react';
-import { Users, BarChart3 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, BarChart3, Send, X } from 'lucide-react';
 import './LessonShared.css';
 
-const PollMonitor = ({ problemData, parentStudents }) => {
+const PollMonitor = ({ problemData, parentStudents, socket, lessonId }) => {
     const { question, options } = problemData;
+    const [msgTarget, setMsgTarget] = useState(null);
+    const [msgText, setMsgText] = useState('');
 
     const voteCounts = Array(options.length).fill(0);
     const studentsByOption = Array(options.length).fill().map(() => []);
@@ -14,35 +16,55 @@ const PollMonitor = ({ problemData, parentStudents }) => {
             const idx = parseInt(ans, 10);
             if (!isNaN(idx) && idx >= 0 && idx < options.length) {
                 voteCounts[idx]++;
-                studentsByOption[idx].push(student.name);
+                studentsByOption[idx].push({ name: student.name, id: student.id });
             }
         }
     });
 
     const totalVotes = voteCounts.reduce((a, b) => a + b, 0);
 
-    const OPTION_COLORS = [
-        '#3b82f6', '#14b8a6', '#eab308', '#f43f5e', '#a855f7',
-        '#f97316', '#06b6d4', '#ec4899', '#6366f1', '#84cc16'
-    ];
-    const BG_COLORS = [
-        '#eff6ff', '#f0fdfa', '#fefce8', '#fff1f2', '#faf5ff',
-        '#fff7ed', '#ecfeff', '#fdf2f8', '#eef2ff', '#f7fee7'
-    ];
+    const OPTION_COLORS = ['#3b82f6', '#14b8a6', '#eab308', '#f43f5e', '#a855f7', '#f97316', '#06b6d4', '#ec4899', '#6366f1', '#84cc16'];
+    const BG_COLORS = ['#eff6ff', '#f0fdfa', '#fefce8', '#fff1f2', '#faf5ff', '#fff7ed', '#ecfeff', '#fdf2f8', '#eef2ff', '#f7fee7'];
+
+    const handleSend = () => {
+        if (!socket || !msgTarget || !msgText.trim()) return;
+        socket.emit('sendMessage', { studentSocketId: msgTarget.id, message: msgText.trim(), teacherName: '교사' });
+        setMsgText('');
+        setMsgTarget(null);
+    };
 
     return (
-        <div className="monitor-card">
+        <div className="monitor-card" style={{ position: 'relative' }}>
+            {/* 개별 메시지 모달 */}
+            {msgTarget && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', width: '360px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h3 style={{ fontWeight: 'bold', color: '#1e293b' }}>💬 {msgTarget.name}에게 메시지</h3>
+                            <button onClick={() => setMsgTarget(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
+                        </div>
+                        <textarea
+                            value={msgText} onChange={e => setMsgText(e.target.value)}
+                            placeholder="메시지를 입력하세요..."
+                            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                            style={{ width: '100%', minHeight: '80px', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', resize: 'none', fontSize: '0.95rem', outline: 'none', boxSizing: 'border-box' }}
+                            autoFocus
+                        />
+                        <button onClick={handleSend} disabled={!msgText.trim()}
+                            style={{ marginTop: '0.75rem', width: '100%', padding: '0.75rem', background: '#4f46e5', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                            <Send size={16} /> 보내기
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div className="flex items-center gap-3 mb-6 border-b pb-4">
                 <div style={{ padding: '0.5rem', background: '#e0e7ff', color: '#4f46e5', borderRadius: '0.5rem' }}>
                     <BarChart3 size={24} />
                 </div>
                 <div>
-                    <h3 className="text-xl font-bold text-slate-800">
-                        {question}
-                    </h3>
-                    <p className="text-sm mt-1" style={{ color: '#64748b' }}>
-                        총 {totalVotes}명 참여 중
-                    </p>
+                    <h3 className="text-xl font-bold text-slate-800">{question}</h3>
+                    <p className="text-sm mt-1" style={{ color: '#64748b' }}>총 {totalVotes}명 참여 중</p>
                 </div>
             </div>
 
@@ -50,26 +72,18 @@ const PollMonitor = ({ problemData, parentStudents }) => {
                 {options.map((opt, idx) => {
                     const count = voteCounts[idx];
                     const percentage = totalVotes === 0 ? 0 : Math.round((count / totalVotes) * 100);
-
                     const barColor = OPTION_COLORS[idx % OPTION_COLORS.length];
                     const bgColor = BG_COLORS[idx % BG_COLORS.length];
+                    const students = studentsByOption[idx];
 
                     return (
                         <div key={idx} className="stat-bar-container">
                             <div className="stat-bar-header" style={{ backgroundColor: bgColor }}>
                                 <div className="flex items-center gap-3 flex-1">
-                                    <span
-                                        style={{
-                                            width: '2rem', height: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            borderRadius: '50%', fontWeight: 'bold', fontSize: '0.875rem',
-                                            backgroundColor: barColor, color: 'white'
-                                        }}
-                                    >
+                                    <span style={{ width: '2rem', height: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', fontWeight: 'bold', fontSize: '0.875rem', backgroundColor: barColor, color: 'white' }}>
                                         {idx + 1}
                                     </span>
-                                    <span className="font-semibold text-lg" style={{ color: barColor }}>
-                                        {opt}
-                                    </span>
+                                    <span className="font-semibold text-lg" style={{ color: barColor }}>{opt}</span>
                                 </div>
                                 <div className="text-right flex flex-col items-end">
                                     <span className="font-bold text-xl" style={{ color: '#1e293b' }}>{count}표</span>
@@ -78,18 +92,21 @@ const PollMonitor = ({ problemData, parentStudents }) => {
                             </div>
 
                             <div className="stat-bar-track">
-                                <div
-                                    className="stat-bar-fill"
-                                    style={{ width: `${percentage}%`, backgroundColor: barColor, transition: 'width 0.7s ease-out' }}
-                                />
+                                <div className="stat-bar-fill" style={{ width: `${percentage}%`, backgroundColor: barColor, transition: 'width 0.7s ease-out' }} />
                             </div>
 
-                            {studentsByOption[idx].length > 0 && (
+                            {students.length > 0 && (
                                 <div className="p-3 bg-white text-sm flex gap-2" style={{ borderTop: '1px solid #e2e8f0', color: '#475569', flexWrap: 'wrap' }}>
-                                    {studentsByOption[idx].map(name => (
-                                        <span key={name} className="flex items-center gap-2" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.25rem 0.5rem', borderRadius: '0.25rem' }}>
+                                    {students.map(s => (
+                                        <span
+                                            key={s.name}
+                                            className="flex items-center gap-2"
+                                            style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', cursor: socket ? 'pointer' : 'default' }}
+                                            title={socket ? '클릭하여 메시지 보내기' : ''}
+                                            onClick={() => socket && setMsgTarget({ id: s.id, name: s.name })}
+                                        >
                                             <Users size={12} color="#94a3b8" />
-                                            {name}
+                                            {s.name}
                                         </span>
                                     ))}
                                 </div>

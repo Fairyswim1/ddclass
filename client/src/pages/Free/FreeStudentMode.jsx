@@ -33,7 +33,7 @@ const FreeStudentMode = ({ lessonProblemData = null, lessonRoomId = null, lesson
     const fontScale = problem ? currentWidth / (problem.baseWidth || 1000) : 1;
 
     useEffect(() => {
-        if (!socket) return;
+        if (!socket || isLessonMode) return; // lesson 모드에선 LessonStudentMode가 처리
 
         const handleMessage = (data) => {
             setFeedback(data.message);
@@ -42,7 +42,7 @@ const FreeStudentMode = ({ lessonProblemData = null, lessonRoomId = null, lesson
 
         socket.on('messageReceived', handleMessage);
         return () => socket.off('messageReceived', handleMessage);
-    }, [socket]);
+    }, [socket, isLessonMode]);
 
     useEffect(() => {
         if (!canvasRef.current) return;

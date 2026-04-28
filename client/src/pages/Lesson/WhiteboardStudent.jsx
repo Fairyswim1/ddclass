@@ -167,14 +167,19 @@ const WhiteboardStudent = ({ lessonProblemData, lessonRoomId, lessonNickname, le
             <div
                 ref={containerRef}
                 className="wb-canvas-container"
-                style={{
-                    backgroundImage: backgroundUrl ? `url(${resolveApiUrl(backgroundUrl)})` : 'none',
-                    backgroundSize: 'contain',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    cursor: 'crosshair'
-                }}
+                style={{ cursor: 'crosshair' }}
             >
+                {backgroundUrl && (
+                    <img
+                        src={resolveApiUrl(backgroundUrl)}
+                        alt="배경"
+                        style={{
+                            position: 'absolute', top: 0, left: 0,
+                            width: '100%', height: '100%',
+                            objectFit: 'contain', pointerEvents: 'none', zIndex: 1
+                        }}
+                    />
+                )}
                 <canvas
                     ref={canvasRef}
                     style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10 }}

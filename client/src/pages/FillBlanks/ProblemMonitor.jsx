@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
-import { X, Send, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { X, Send, CheckCircle, XCircle, AlertCircle, Volume2 } from 'lucide-react';
 import './ProblemMonitor.css';
 import LatexRenderer from '../../components/LatexRenderer';
 import { resolveApiUrl } from '../../utils/url';
@@ -11,6 +11,8 @@ const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = nul
     const [selectedStudentName, setSelectedStudentName] = useState(null);
     const [message, setMessage] = useState('');
     const [isFullScreen, setIsFullScreen] = useState(false);
+    const [broadcastText, setBroadcastText] = useState('');
+    const [broadcastSent, setBroadcastSent] = useState(false);
     const mirrorRef = useRef(null);
     const [mirrorWidth, setMirrorWidth] = useState(1000);
 
@@ -163,6 +165,14 @@ const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = nul
         setMessage('');
     };
 
+    const handleBroadcast = () => {
+        if (!socket || !broadcastText.trim() || !problemData?.id) return;
+        socket.emit('broadcastMessage', { roomId: problemData.id, message: broadcastText.trim(), teacherName: '선생님' });
+        setBroadcastText('');
+        setBroadcastSent(true);
+        setTimeout(() => setBroadcastSent(false), 2000);
+    };
+
     const getValueDisplay = (val) => {
         if (typeof val === 'object' && val !== null) {
             // Free Board case: match with problemData.items to show actual content
@@ -179,6 +189,28 @@ const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = nul
 
     return (
         <div className="monitor-container">
+            {/* 전체 공지 바 (standalone 모드에서만 표시) */}
+            {!parentSocket && (
+                <div style={{ background: '#1e293b', borderRadius: '10px', padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                    <Volume2 size={16} color="#94a3b8" />
+                    <span style={{ color: '#94a3b8', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: 600 }}>전체 공지</span>
+                    <input
+                        value={broadcastText}
+                        onChange={e => setBroadcastText(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleBroadcast()}
+                        placeholder="모든 학생에게 공지..."
+                        style={{ flex: 1, padding: '0.4rem 0.75rem', background: '#334155', border: 'none', borderRadius: '6px', color: 'white', fontSize: '0.85rem', outline: 'none' }}
+                    />
+                    <button
+                        onClick={handleBroadcast}
+                        disabled={!broadcastText.trim()}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.75rem', background: broadcastSent ? '#22c55e' : '#f59e0b', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem' }}
+                    >
+                        <Send size={13} /> {broadcastSent ? '전송됨!' : '전송'}
+                    </button>
+                </div>
+            )}
+
             <div className="monitor-header">
                 <div className="stat-card">
                     <span className="label">접속한 학생</span>

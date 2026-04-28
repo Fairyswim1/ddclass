@@ -623,13 +623,25 @@ io.on('connection', (socket) => {
     });
   });
 
-  // 교사 메시지 전송
+  // 교사 개별 메시지 전송
   socket.on('sendMessage', ({ studentSocketId, message, teacherName }) => {
     console.log(`메시지 전송: ${teacherName} -> ${studentSocketId}: ${message}`);
     io.to(studentSocketId).emit('messageReceived', {
       message,
       from: teacherName,
-      timestamp: new Date()
+      timestamp: new Date(),
+      isBroadcast: false
+    });
+  });
+
+  // 교사 전체 공지 메시지 (방 안 모든 학생에게 브로드캐스트)
+  socket.on('broadcastMessage', ({ roomId, message, teacherName }) => {
+    console.log(`전체 공지: ${teacherName} -> 방[${roomId}]: ${message}`);
+    socket.to(roomId).emit('messageReceived', {
+      message,
+      from: teacherName,
+      timestamp: new Date(),
+      isBroadcast: true
     });
   });
 

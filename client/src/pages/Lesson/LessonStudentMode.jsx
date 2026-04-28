@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { db } from '../../firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, MessageCircle, Volume2 } from 'lucide-react';
 import { resolveApiUrl } from '../../utils/url';
 
 // Import the specific student mode components
@@ -31,6 +31,7 @@ const LessonStudentMode = () => {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [maxAllowedStep, setMaxAllowedStep] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [incomingMessage, setIncomingMessage] = useState(null);
 
     // ref로 항상 최신 step 값을 추적 — 자식 컴포넌트의 stale closure 문제 방지
     const currentStepIndexRef = useRef(0);
@@ -91,6 +92,12 @@ const LessonStudentMode = () => {
         newSocket.on('maxAllowedStepUpdated', ({ maxAllowedStep }) => {
             console.log('Teacher changed max allowed step to:', maxAllowedStep);
             setMaxAllowedStep(maxAllowedStep);
+        });
+
+        // 개별/전체 메시지 수신
+        newSocket.on('messageReceived', (data) => {
+            setIncomingMessage(data);
+            setTimeout(() => setIncomingMessage(null), 6000);
         });
 
         return () => newSocket.disconnect();
@@ -213,6 +220,7 @@ const LessonStudentMode = () => {
                 );
             case 'video': {
                 const videoId = extractYoutubeId(currentProblemData.videoUrl);
+                const isClassMode = (currentProblemData.videoMode || 'class') === 'class';
                 return (
                     <div style={{ display: 'flex', flexDirection: 'column', padding: '2rem', gap: '1rem' }}>
                         {currentProblemData.title && (
@@ -220,7 +228,13 @@ const LessonStudentMode = () => {
                                 {currentProblemData.title}
                             </h2>
                         )}
-                        {videoId ? (
+                        {isClassMode ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', gap: '1.5rem', background: '#0f0f0f', borderRadius: '16px', padding: '3rem' }}>
+                                <div style={{ fontSize: '4rem' }}>📺</div>
+                                <p style={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold', textAlign: 'center' }}>선생님 화면을 함께 봐주세요!</p>
+                                <p style={{ color: '#9ca3af', fontSize: '1rem', textAlign: 'center' }}>교사가 수업 화면으로 영상을 재생합니다.</p>
+                            </div>
+                        ) : videoId ? (
                             <div style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '16/9' }}>
                                 <iframe
                                     src={`https://www.youtube.com/embed/${videoId}`}
@@ -263,6 +277,33 @@ const LessonStudentMode = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#FAFAFA' }}>
+            {/* 교사 메시지 토스트 */}
+            {incomingMessage && (
+                <div style={{
+                    position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 9999, maxWidth: '90vw', width: '420px',
+                    background: incomingMessage.isBroadcast ? '#1e293b' : '#4f46e5',
+                    color: 'white', borderRadius: '14px',
+                    padding: '1rem 1.5rem', boxShadow: '0 8px 30px rgba(0,0,0,0.25)',
+                    display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+                    animation: 'slideDown 0.3s ease'
+                }}>
+                    <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>
+                        {incomingMessage.isBroadcast ? '📢' : '💬'}
+                    </span>
+                    <div>
+                        <div style={{ fontSize: '0.8rem', opacity: 0.8, marginBottom: '0.2rem' }}>
+                            {incomingMessage.isBroadcast ? '전체 공지' : '선생님 메시지'}
+                        </div>
+                        <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{incomingMessage.message}</div>
+                    </div>
+                    <button
+                        onClick={() => setIncomingMessage(null)}
+                        style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '1.2rem', padding: 0 }}
+                    >×</button>
+                </div>
+            )}
+
             <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }}>
                 {renderProblemComponent()}
             </div>
