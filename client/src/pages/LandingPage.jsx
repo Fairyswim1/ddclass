@@ -86,7 +86,7 @@ const LandingPage = () => {
             id: 'lesson-builder',
             title: '수업 꾸러미 만들기',
             description: '빈칸·순서맞추기·퀴즈·동영상·이미지를 한 번에!\n흐름 있는 한 수업을 뚝딱 설계하세요.',
-            icon: <BookMarked size={24} fill="currentColor" />,
+            icon: <Layers size={24} />,
             color: 'var(--color-brand-purple)',
             path: '/create-lesson',
             highlight: true
