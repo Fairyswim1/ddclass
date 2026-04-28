@@ -462,6 +462,46 @@
     background: #eef2ff;
 }
 
+/* Editor group header (label + 수식 버튼 나란히) */
+.editor-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.editor-group-header label {
+    margin-bottom: 0;
+}
+
+.btn-latex-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    border: 1.5px solid #d1c4f5;
+    background: white;
+    color: #7c5cbf;
+    font-size: 0.78rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.btn-latex-toggle:hover,
+.btn-latex-toggle.active {
+    background: #9B7FE8;
+    border-color: #9B7FE8;
+    color: white;
+}
+
+.btn-latex-toggle.sm {
+    padding: 0.2rem 0.45rem;
+    font-size: 0.72rem;
+}
+
 /* Short Answer / Poll / Common Editors */
 .sa-editor,
 .poll-editor {

@@ -1,0 +1,62 @@
+.latex-keyboard {
+    border: 1.5px solid #e0d6f7;
+    border-radius: 10px;
+    background: #faf7ff;
+    padding: 0.6rem 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.latex-kb-tabs {
+    display: flex;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.latex-kb-tab {
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    border: 1.5px solid #d1c4f5;
+    background: white;
+    color: #7c5cbf;
+    font-size: 0.75rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.latex-kb-tab.active {
+    background: #9B7FE8;
+    border-color: #9B7FE8;
+    color: white;
+}
+
+.latex-kb-tab:hover:not(.active) {
+    background: #f0e9ff;
+}
+
+.latex-kb-symbols {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.latex-kb-sym {
+    min-width: 42px;
+    padding: 0.35rem 0.5rem;
+    border-radius: 7px;
+    border: 1.5px solid #e0d6f7;
+    background: white;
+    color: #3d2b7a;
+    font-size: 0.95rem;
+    font-family: 'KaTeX_Math', 'Latin Modern Math', math, serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+}
+
+.latex-kb-sym:hover {
+    background: #9B7FE8;
+    border-color: #9B7FE8;
+    color: white;
+}

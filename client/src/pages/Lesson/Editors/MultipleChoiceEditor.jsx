@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
-import { Plus, Trash2, CheckCircle, ImageIcon, X } from 'lucide-react';
+import React, { useRef, useState, useCallback } from 'react';
+import { Plus, Trash2, CheckCircle, ImageIcon, X, Sigma } from 'lucide-react';
 import LatexRenderer from '../../../components/LatexRenderer';
+import LatexKeyboard from '../../../components/LatexKeyboard';
 import { resolveApiUrl } from '../../../utils/url';
 
 // 선택지는 { text: '', imageUrl: '' } 또는 string (하위 호환)
@@ -9,6 +10,11 @@ const toObj = (opt) => typeof opt === 'object' && opt !== null ? opt : { text: S
 const MultipleChoiceEditor = ({ slide, onChange }) => {
     const { question = '', options = ['', ''], answerIndex = 0 } = slide;
     const fileInputRefs = useRef([]);
+    const questionRef = useRef(null);
+    const optionRefs = useRef([]);
+
+    // LaTeX 키보드 표시 상태: 'question' | 'option-{idx}' | null
+    const [latexTarget, setLatexTarget] = useState(null);
 
     const normalizedOptions = options.map(toObj);
 
@@ -17,6 +23,38 @@ const MultipleChoiceEditor = ({ slide, onChange }) => {
     const handleOptionTextChange = (index, value) => {
         const newOptions = normalizedOptions.map((o, i) => i === index ? { ...o, text: value } : o);
         onChange({ options: newOptions });
+    };
+
+    const insertIntoField = useCallback((textareaRef, currentValue, insertText, onChangeFn) => {
+        const el = textareaRef;
+        if (!el) { onChangeFn(currentValue + insertText); return; }
+        const start = el.selectionStart ?? currentValue.length;
+        const end = el.selectionEnd ?? currentValue.length;
+        const before = currentValue.slice(0, start);
+        const after = currentValue.slice(end);
+        // 수식이 인라인이면 $...$로 감싸기
+        const needsDollar = !before.endsWith('$') && !insertText.startsWith('$');
+        const newVal = needsDollar
+            ? before + '$' + insertText + '$' + after
+            : before + insertText + after;
+        onChangeFn(newVal);
+        setTimeout(() => {
+            el.focus();
+            const pos = (needsDollar ? start + 1 : start) + insertText.length + (needsDollar ? 1 : 0);
+            el.setSelectionRange(pos, pos);
+        }, 0);
+    }, []);
+
+    const handleInsertLatexToQuestion = (sym) => {
+        insertIntoField(questionRef.current, question, sym, (v) => onChange({ question: v }));
+    };
+
+    const handleInsertLatexToOption = (idx, sym) => {
+        const opt = normalizedOptions[idx];
+        insertIntoField(optionRefs.current[idx], opt.text, sym, (v) => {
+            const newOptions = normalizedOptions.map((o, i) => i === idx ? { ...o, text: v } : o);
+            onChange({ options: newOptions });
+        });
     };
 
     const handleOptionImageUpload = async (index, file) => {
@@ -57,16 +95,32 @@ const MultipleChoiceEditor = ({ slide, onChange }) => {
 
     const handleSetAnswer = (index) => onChange({ answerIndex: index });
 
+    const toggleLatex = (target) => setLatexTarget(prev => prev === target ? null : target);
+
     return (
         <div className="mc-editor">
             <div className="editor-group">
-                <label>질문</label>
+                <div className="editor-group-header">
+                    <label>질문</label>
+                    <button
+                        type="button"
+                        className={`btn-latex-toggle ${latexTarget === 'question' ? 'active' : ''}`}
+                        onClick={() => toggleLatex('question')}
+                        title="수식 입력판 열기"
+                    >
+                        <Sigma size={14} /> 수식
+                    </button>
+                </div>
                 <textarea
-                    placeholder="학생들에게 물어볼 질문을 입력하세요..."
+                    ref={questionRef}
+                    placeholder="학생들에게 물어볼 질문을 입력하세요... (수식: $x^2+1$)"
                     value={question}
                     onChange={handleQuestionChange}
                     className="slide-textarea"
                 />
+                {latexTarget === 'question' && (
+                    <LatexKeyboard onInsert={handleInsertLatexToQuestion} />
+                )}
                 {question && (question.includes('$') || question.includes('\\[')) && (
                     <div className="option-latex-preview">
                         <LatexRenderer text={question} />
@@ -88,13 +142,27 @@ const MultipleChoiceEditor = ({ slide, onChange }) => {
                             </button>
 
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                                <input
-                                    type="text"
-                                    placeholder={`선택지 ${idx + 1} (LaTeX 수식: $x^2$)`}
-                                    value={opt.text}
-                                    onChange={(e) => handleOptionTextChange(idx, e.target.value)}
-                                    className="option-input"
-                                />
+                                <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                                    <input
+                                        type="text"
+                                        ref={el => optionRefs.current[idx] = el}
+                                        placeholder={`선택지 ${idx + 1} (수식: $x^2$)`}
+                                        value={opt.text}
+                                        onChange={(e) => handleOptionTextChange(idx, e.target.value)}
+                                        className="option-input"
+                                    />
+                                    <button
+                                        type="button"
+                                        className={`btn-latex-toggle sm ${latexTarget === `option-${idx}` ? 'active' : ''}`}
+                                        onClick={() => toggleLatex(`option-${idx}`)}
+                                        title="수식 입력판"
+                                    >
+                                        <Sigma size={12} />
+                                    </button>
+                                </div>
+                                {latexTarget === `option-${idx}` && (
+                                    <LatexKeyboard onInsert={(sym) => handleInsertLatexToOption(idx, sym)} />
+                                )}
                                 {opt.text && (opt.text.includes('$') || opt.text.includes('\\[')) && (
                                     <div className="option-latex-preview">
                                         <LatexRenderer text={opt.text} />
