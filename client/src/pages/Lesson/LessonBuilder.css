@@ -557,3 +557,166 @@
     margin-top: 0.5rem;
     flex-shrink: 0;
 }
+
+/* ── Free Drop Editor ── */
+.free-bg-upload {
+    margin-top: 0.5rem;
+}
+
+.free-bg-drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem;
+    border: 2px dashed #cbd5e1;
+    border-radius: 10px;
+    background: #f8fafc;
+    cursor: pointer;
+    color: #64748b;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.free-bg-drop:hover {
+    border-color: var(--color-brand-purple, #9B7FE8);
+    background: #f5f0ff;
+    color: var(--color-brand-purple, #9B7FE8);
+}
+
+.free-bg-preview {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.free-bg-preview img {
+    max-height: 160px;
+    border-radius: 8px;
+    border: 1.5px solid #e2e8f0;
+    object-fit: contain;
+}
+
+.free-bg-remove {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.7rem;
+    background: #fee2e2;
+    border: none;
+    border-radius: 6px;
+    color: #ef4444;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.free-add-text-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.free-add-text-row .slide-input {
+    flex: 1;
+    padding: 0.6rem 0.875rem;
+    margin: 0;
+}
+
+.free-font-size-btns {
+    display: flex;
+    gap: 0.2rem;
+    flex-shrink: 0;
+}
+
+.free-size-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1.5px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.15s;
+}
+
+.free-size-btn.active {
+    background: var(--color-brand-purple, #9B7FE8);
+    border-color: var(--color-brand-purple, #9B7FE8);
+    color: white;
+}
+
+.free-image-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 8px;
+    background: white;
+    color: #64748b;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    margin-bottom: 0.75rem;
+}
+
+.free-image-upload-btn:hover {
+    border-color: var(--color-brand-purple, #9B7FE8);
+    color: var(--color-brand-purple, #9B7FE8);
+}
+
+.free-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: #475569;
+    font-size: 0.875rem;
+    user-select: none;
+    padding: 0.4rem 0;
+}
+
+.free-items-list {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.free-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: white;
+}
+
+.free-item-row:last-child {
+    border-bottom: none;
+}
+
+.free-item-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    overflow: hidden;
+}
+
+.free-inline-edit {
+    flex: 1;
+    border: 1px solid var(--color-brand-purple, #9B7FE8);
+    border-radius: 5px;
+    padding: 0.2rem 0.5rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+}
