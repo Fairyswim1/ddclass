@@ -1,10 +1,10 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Single+Day&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 
 :root {
-  --font-family: 'Gowun Dodum', sans-serif;
+  --font-family: 'Jua', sans-serif;
   --line-height: 1.6;
   --font-weight: 400;
 
@@ -46,6 +46,11 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* 모든 폼 요소에 폰트 강제 상속 (브라우저 기본값 override) */
+input, textarea, select, button, a {
+  font-family: inherit;
 }
 
 body {
