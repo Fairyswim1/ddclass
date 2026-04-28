@@ -15,6 +15,12 @@ import ShortAnswerStudent from './ShortAnswerStudent';
 import WhiteboardStudent from './WhiteboardStudent';
 import PollStudent from './PollStudent';
 
+const extractYoutubeId = (url) => {
+    if (!url) return null;
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : null;
+};
+
 const LessonStudentMode = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -186,6 +192,70 @@ const LessonStudentMode = () => {
                 return <WhiteboardStudent {...commonProps} />;
             case 'poll':
                 return <PollStudent {...commonProps} />;
+            case 'image':
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', minHeight: '60vh' }}>
+                        {currentProblemData.title && (
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '1.5rem', textAlign: 'center' }}>
+                                {currentProblemData.title}
+                            </h2>
+                        )}
+                        {currentProblemData.imageUrl ? (
+                            <img
+                                src={currentProblemData.imageUrl}
+                                alt={currentProblemData.title || '이미지'}
+                                style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                            />
+                        ) : (
+                            <p style={{ color: '#94a3b8' }}>이미지가 없습니다.</p>
+                        )}
+                    </div>
+                );
+            case 'video': {
+                const videoId = extractYoutubeId(currentProblemData.videoUrl);
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', padding: '2rem', gap: '1rem' }}>
+                        {currentProblemData.title && (
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b', textAlign: 'center' }}>
+                                {currentProblemData.title}
+                            </h2>
+                        )}
+                        {videoId ? (
+                            <div style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '16/9' }}>
+                                <iframe
+                                    src={`https://www.youtube.com/embed/${videoId}`}
+                                    title="YouTube video"
+                                    style={{ width: '100%', height: '100%', border: 'none' }}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                />
+                            </div>
+                        ) : (
+                            <p style={{ color: '#94a3b8', textAlign: 'center' }}>동영상이 없습니다.</p>
+                        )}
+                    </div>
+                );
+            }
+            case 'ppt':
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', padding: '2rem', gap: '1rem', height: 'calc(100vh - 120px)' }}>
+                        {currentProblemData.title && (
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b', textAlign: 'center' }}>
+                                {currentProblemData.title}
+                            </h2>
+                        )}
+                        {currentProblemData.pptEmbedUrl ? (
+                            <iframe
+                                src={currentProblemData.pptEmbedUrl}
+                                title="PPT"
+                                style={{ flex: 1, border: 'none', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                                allowFullScreen
+                            />
+                        ) : (
+                            <p style={{ color: '#94a3b8', textAlign: 'center' }}>PPT가 없습니다.</p>
+                        )}
+                    </div>
+                );
             default:
                 return <div>지원하지 않는 문제 유형입니다.</div>;
         }

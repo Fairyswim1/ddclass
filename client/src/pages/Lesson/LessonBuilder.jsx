@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../firebase';
-import { ArrowLeft, Plus, Check, Trash2, Save, Layout, List, CheckSquare, MessageSquare, Edit3, PieChart } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Trash2, Save, Layout, List, CheckSquare, MessageSquare, Edit3, PieChart, Image, Youtube, Presentation } from 'lucide-react';
 import { resolveApiUrl } from '../../utils/url';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import './LessonBuilder.css';
@@ -15,6 +15,9 @@ import MultipleChoiceEditor from './Editors/MultipleChoiceEditor';
 import ShortAnswerEditor from './Editors/ShortAnswerEditor';
 import WhiteboardEditor from './Editors/WhiteboardEditor';
 import PollEditor from './Editors/PollEditor';
+import ImageEditor from './Editors/ImageEditor';
+import VideoEditor from './Editors/VideoEditor';
+import PptEditor from './Editors/PptEditor';
 
 const TYPE_ICONS = {
     'fill-blanks': <CheckSquare size={16} />,
@@ -23,7 +26,10 @@ const TYPE_ICONS = {
     'multiple-choice': <Check size={16} />,
     'short-answer': <MessageSquare size={16} />,
     'whiteboard': <Edit3 size={16} />,
-    'poll': <PieChart size={16} />
+    'poll': <PieChart size={16} />,
+    'image': <Image size={16} />,
+    'video': <Youtube size={16} />,
+    'ppt': <Presentation size={16} />
 };
 
 const TYPE_LABELS = {
@@ -33,8 +39,16 @@ const TYPE_LABELS = {
     'multiple-choice': '객관식 퀴즈',
     'short-answer': '주관식 퀴즈',
     'whiteboard': '화이트보드',
-    'poll': '투표'
+    'poll': '투표',
+    'image': '이미지',
+    'video': '동영상 (YouTube)',
+    'ppt': 'PPT (Google 슬라이드)'
 };
+
+const TYPE_GROUPS = [
+    { label: '퀴즈 & 활동', types: ['fill-blanks', 'order-matching', 'free-drop', 'multiple-choice', 'short-answer', 'whiteboard', 'poll'] },
+    { label: '미디어 콘텐츠', types: ['image', 'video', 'ppt'] }
+];
 
 const LessonBuilder = () => {
     const { currentUser, loading: authLoading } = useAuth();
@@ -65,7 +79,10 @@ const LessonBuilder = () => {
             ...(type === 'multiple-choice' && { question: '', options: ['', ''], answerIndex: 0 }),
             ...(type === 'short-answer' && { question: '', answer: '' }),
             ...(type === 'whiteboard' && { backgroundUrl: null }),
-            ...(type === 'poll' && { question: '', options: ['', ''] })
+            ...(type === 'poll' && { question: '', options: ['', ''] }),
+            ...(type === 'image' && { imageUrl: null }),
+            ...(type === 'video' && { videoUrl: '', videoId: '' }),
+            ...(type === 'ppt' && { pptEmbedUrl: '' })
         };
         setSlides([...slides, newSlide]);
         setActiveSlideId(newSlide.id);
@@ -205,10 +222,15 @@ const LessonBuilder = () => {
 
                         {showTypeSelector && (
                             <div className="type-selector-menu">
-                                {Object.keys(TYPE_LABELS).map(type => (
-                                    <button key={type} className="type-option" onClick={() => handleAddSlide(type)}>
-                                        {TYPE_ICONS[type]} {TYPE_LABELS[type]}
-                                    </button>
+                                {TYPE_GROUPS.map(group => (
+                                    <div key={group.label}>
+                                        <div className="type-group-label">{group.label}</div>
+                                        {group.types.map(type => (
+                                            <button key={type} className="type-option" onClick={() => handleAddSlide(type)}>
+                                                {TYPE_ICONS[type]} {TYPE_LABELS[type]}
+                                            </button>
+                                        ))}
+                                    </div>
                                 ))}
                             </div>
                         )}
@@ -239,6 +261,9 @@ const LessonBuilder = () => {
                                     {activeSlide.type === 'short-answer' && <ShortAnswerEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
                                     {activeSlide.type === 'whiteboard' && <WhiteboardEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
                                     {activeSlide.type === 'poll' && <PollEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
+                                    {activeSlide.type === 'image' && <ImageEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
+                                    {activeSlide.type === 'video' && <VideoEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
+                                    {activeSlide.type === 'ppt' && <PptEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
                                 </div>
                             </div>
                         </div>

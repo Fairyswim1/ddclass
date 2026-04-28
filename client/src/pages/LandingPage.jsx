@@ -16,7 +16,8 @@ import {
     MonitorPlay,
     Share2,
     Zap,
-    User
+    User,
+    BookMarked
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebase';
@@ -81,6 +82,15 @@ const LandingPage = () => {
     };
 
     const services = [
+        {
+            id: 'lesson-builder',
+            title: '수업 묶음 만들기',
+            description: '빈칸·순서맞추기·퀴즈·동영상·이미지를 한 번에!\n흐름 있는 한 수업을 뚝딱 설계하세요.',
+            icon: <BookMarked size={24} fill="currentColor" />,
+            color: 'var(--color-brand-purple)',
+            path: '/create-lesson',
+            highlight: true
+        },
         {
             id: 'fill-blanks',
             title: '주요 용어 & 빈칸 채우기',
@@ -196,6 +206,14 @@ const LandingPage = () => {
                                     animate={{ x: 0, opacity: 1 }}
                                     transition={{ delay: 0.2 + (index * 0.1) }}
                                 >
+                                    {service.highlight && (
+                                        <span style={{
+                                            position: 'absolute', top: '-0.6rem', right: '1rem',
+                                            background: 'var(--color-brand-orange)', color: 'white',
+                                            fontSize: '0.7rem', fontWeight: '800', padding: '0.2rem 0.6rem',
+                                            borderRadius: '999px', letterSpacing: '0.03em'
+                                        }}>NEW</span>
+                                    )}
                                     <div className="mode-icon-box" style={{ backgroundColor: service.color }}>
                                         {service.icon}
                                     </div>

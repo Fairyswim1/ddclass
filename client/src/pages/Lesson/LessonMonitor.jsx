@@ -295,6 +295,33 @@ const LessonMonitor = () => {
                                         parentStudents={activeStudents}
                                     />
                                 )}
+                                {currentProblem && currentProblem.type === 'image' && (
+                                    <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', textAlign: 'center' }}>
+                                        {currentProblem.imageUrl
+                                            ? <img src={currentProblem.imageUrl} alt="이미지 슬라이드" style={{ maxWidth: '100%', maxHeight: '500px', objectFit: 'contain', borderRadius: '8px' }} />
+                                            : <p style={{ color: '#94a3b8' }}>이미지가 없습니다.</p>}
+                                    </div>
+                                )}
+                                {currentProblem && currentProblem.type === 'video' && (() => {
+                                    const match = (currentProblem.videoUrl || '').match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+                                    const videoId = match ? match[1] : null;
+                                    return (
+                                        <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem' }}>
+                                            {videoId
+                                                ? <div style={{ aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden' }}>
+                                                    <iframe src={`https://www.youtube.com/embed/${videoId}`} title="YouTube" style={{ width: '100%', height: '100%', border: 'none' }} allowFullScreen />
+                                                  </div>
+                                                : <p style={{ color: '#94a3b8', textAlign: 'center' }}>동영상이 없습니다.</p>}
+                                        </div>
+                                    );
+                                })()}
+                                {currentProblem && currentProblem.type === 'ppt' && (
+                                    <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', aspectRatio: '16/9' }}>
+                                        {currentProblem.pptEmbedUrl
+                                            ? <iframe src={currentProblem.pptEmbedUrl} title="PPT" style={{ width: '100%', height: '100%', border: 'none', borderRadius: '8px' }} allowFullScreen />
+                                            : <p style={{ color: '#94a3b8', textAlign: 'center' }}>PPT가 없습니다.</p>}
+                                    </div>
+                                )}
                             </>
                         );
                     })()}
