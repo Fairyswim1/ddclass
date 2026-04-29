@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { Plus, Trash2, CheckCircle, ImageIcon, X, Sigma, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, ImageIcon, X, Sigma, ToggleLeft, ToggleRight, Loader2 } from 'lucide-react';
 import LatexRenderer from '../../../components/LatexRenderer';
 import LatexKeyboard from '../../../components/LatexKeyboard';
 import { resolveApiUrl } from '../../../utils/url';
@@ -19,9 +19,11 @@ const MultipleChoiceEditor = ({ slide, onChange }) => {
     const answerIndices = getAnswerIndices(slide);
 
     const fileInputRefs = useRef([]);
+    const questionImgRef = useRef(null);
     const questionRef = useRef(null);
     const optionRefs = useRef([]);
     const [latexTarget, setLatexTarget] = useState(null);
+    const [questionImgUploading, setQuestionImgUploading] = useState(false);
 
     const normalizedOptions = options.map(toObj);
 
@@ -79,6 +81,27 @@ const MultipleChoiceEditor = ({ slide, onChange }) => {
         // 단일 정답으로 줄이면 첫 번째만 유지
         const newIndices = next ? answerIndices : (answerIndices.length > 0 ? [answerIndices[0]] : [0]);
         onChange({ allowMultiple: next, answerIndices: newIndices, answerIndex: newIndices[0] ?? 0 });
+    };
+
+    const handleQuestionImageUpload = async (file) => {
+        if (!file || !file.type.startsWith('image/')) return;
+        setQuestionImgUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folder', 'lesson-images');
+            const res = await fetch(resolveApiUrl('/api/upload'), { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) {
+                onChange({ questionImageUrl: data.url });
+            } else {
+                alert('이미지 업로드 실패: ' + data.message);
+            }
+        } catch (err) {
+            alert('업로드 오류: ' + err.message);
+        } finally {
+            setQuestionImgUploading(false);
+        }
     };
 
     const handleOptionImageUpload = async (index, file) => {
@@ -142,6 +165,22 @@ const MultipleChoiceEditor = ({ slide, onChange }) => {
                     >
                         <Sigma size={14} /> 수식
                     </button>
+                    <button
+                        type="button"
+                        className="btn-latex-toggle"
+                        onClick={() => questionImgRef.current?.click()}
+                        title="질문에 이미지 첨부"
+                        disabled={questionImgUploading}
+                        style={{ marginLeft: '0.25rem' }}
+                    >
+                        {questionImgUploading ? <Loader2 size={14} className="animate-spin" /> : <ImageIcon size={14} />}
+                        {' '}이미지
+                    </button>
+                    <input
+                        type="file" accept="image/*" style={{ display: 'none' }}
+                        ref={questionImgRef}
+                        onChange={e => handleQuestionImageUpload(e.target.files[0])}
+                    />
                 </div>
                 <textarea
                     ref={questionRef}
@@ -156,6 +195,27 @@ const MultipleChoiceEditor = ({ slide, onChange }) => {
                 {question && (question.includes('$') || question.includes('\\[')) && (
                     <div className="option-latex-preview">
                         <LatexRenderer text={question} />
+                    </div>
+                )}
+                {slide.questionImageUrl && (
+                    <div style={{ position: 'relative', display: 'inline-block', marginTop: '0.5rem' }}>
+                        <img
+                            src={slide.questionImageUrl}
+                            alt="질문 이미지"
+                            style={{ maxWidth: '100%', maxHeight: '220px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                        />
+                        <button
+                            onClick={() => onChange({ questionImageUrl: '' })}
+                            style={{
+                                position: 'absolute', top: '4px', right: '4px',
+                                background: 'rgba(0,0,0,0.55)', color: 'white', border: 'none',
+                                borderRadius: '50%', width: '1.4rem', height: '1.4rem',
+                                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}
+                            title="이미지 제거"
+                        >
+                            <X size={12} />
+                        </button>
                     </div>
                 )}
                 <p className="help-text">💡 수식 버튼을 눌러 LaTeX 수식을 입력할 수 있어요.</p>

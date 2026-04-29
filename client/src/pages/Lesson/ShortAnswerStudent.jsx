@@ -27,10 +27,19 @@ const ShortAnswerStudent = ({ lessonProblemData, lessonRoomId, lessonNickname, l
         }
     };
 
+    const questionImageUrl = lessonProblemData.questionImageUrl || '';
+
     return (
         <div className="student-container">
             <h2 className="question-card">
                 {question}
+                {questionImageUrl && (
+                    <img
+                        src={questionImageUrl}
+                        alt="질문 이미지"
+                        style={{ display: 'block', maxWidth: '100%', maxHeight: '260px', objectFit: 'contain', margin: '0.75rem auto 0', borderRadius: '10px' }}
+                    />
+                )}
             </h2>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">

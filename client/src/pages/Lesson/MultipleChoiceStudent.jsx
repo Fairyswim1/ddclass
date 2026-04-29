@@ -41,6 +41,7 @@ const MultipleChoiceStudent = ({ lessonProblemData, lessonRoomId, lessonNickname
         }
     };
 
+    const questionImageUrl = lessonProblemData.questionImageUrl || '';
     const isSubmitted = selected.length > 0;
 
     // 제출 후 정답 표시 여부 (선생님이 공개했을 때만 — 지금은 항상 숨김)
@@ -60,6 +61,13 @@ const MultipleChoiceStudent = ({ lessonProblemData, lessonRoomId, lessonNickname
 
             <h2 className="question-card">
                 <LatexRenderer text={question} />
+                {questionImageUrl && (
+                    <img
+                        src={questionImageUrl}
+                        alt="질문 이미지"
+                        style={{ display: 'block', maxWidth: '100%', maxHeight: '260px', objectFit: 'contain', margin: '0.75rem auto 0', borderRadius: '10px' }}
+                    />
+                )}
             </h2>
 
             <div className="flex flex-col gap-4">
