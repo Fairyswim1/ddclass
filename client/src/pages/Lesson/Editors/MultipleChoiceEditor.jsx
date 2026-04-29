@@ -268,19 +268,34 @@ const MultipleChoiceEditor = ({ slide, onChange }) => {
                                         </div>
                                     )}
                                     {opt.imageUrl && (
-                                        <div style={{ position: 'relative', display: 'inline-block' }}>
-                                            <img src={opt.imageUrl} alt="선택지 이미지" className="option-image-preview" />
+                                        <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
+                                            <img
+                                                src={opt.imageUrl}
+                                                alt="선택지 이미지"
+                                                style={{
+                                                    display: 'block',
+                                                    maxHeight: '120px',
+                                                    maxWidth: '100%',
+                                                    width: 'auto',
+                                                    height: 'auto',
+                                                    objectFit: 'contain',
+                                                    borderRadius: '6px',
+                                                    border: '1px solid #e2e8f0',
+                                                    marginTop: '0.35rem',
+                                                }}
+                                                onError={e => { e.currentTarget.style.display = 'none'; }}
+                                            />
                                             <button
                                                 onClick={() => handleRemoveImage(idx)}
                                                 style={{
-                                                    position: 'absolute', top: '2px', right: '2px',
-                                                    background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none',
-                                                    borderRadius: '50%', width: '1.2rem', height: '1.2rem',
+                                                    position: 'absolute', top: '6px', right: '2px',
+                                                    background: 'rgba(0,0,0,0.55)', color: 'white', border: 'none',
+                                                    borderRadius: '50%', width: '1.4rem', height: '1.4rem',
                                                     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    fontSize: '0.7rem'
                                                 }}
+                                                title="이미지 제거"
                                             >
-                                                <X size={10} />
+                                                <X size={11} />
                                             </button>
                                         </div>
                                     )}
