@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Loader2, Send, Volume2, BarChart2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, Send, Volume2, BarChart2, Save } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { db } from '../../firebase';
-import { doc, getDoc, getDocs, collection, query, documentId, where } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, query, documentId, where, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../../contexts/AuthContext';
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import FreeMonitor from '../Free/FreeMonitor';
 import MultipleChoiceMonitor from './MultipleChoiceMonitor';
@@ -25,12 +26,14 @@ const LessonMonitor = () => {
     const [error, setError] = useState(null);
     const [maxAllowedStep, setMaxAllowedStep] = useState(0);
 
+    const { currentUser } = useAuth();
     const [socket, setSocket] = useState(null);
     const [students, setStudents] = useState([]);
     const [broadcastText, setBroadcastText] = useState('');
     const [broadcastSent, setBroadcastSent] = useState(false);
     const [liveVideoModes, setLiveVideoModes] = useState({});
     const [showStats, setShowStats] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         const fetchLessonAndProblems = async () => {
@@ -154,6 +157,93 @@ const LessonMonitor = () => {
         return () => newSocket.disconnect();
     }, [id]);
 
+    // 세션 저장 (Firestore sessions 컬렉션)
+    const handleSaveSession = async () => {
+        if (!currentUser) { alert('로그인이 필요합니다.'); return; }
+        if (students.length === 0) { alert('참여 학생이 없습니다.'); return; }
+        try {
+            setSaving(true);
+
+            // 문제 스냅샷 (평가에 필요한 필드만)
+            const problemsSnapshot = problems.map(p => ({
+                id: p.id,
+                type: p.type,
+                title: p.title || '',
+                blanks: p.blanks || null,
+                steps: p.steps || null,
+                options: p.options || null,
+                answerIndices: p.answerIndices || null,
+                answerIndex: p.answerIndex || null,
+                answer: p.answer || null,
+            }));
+
+            // 전체 정답률 계산
+            const evalAnswer = (prob, answer) => {
+                if (!prob || !answer) return { correct: 0, total: 0 };
+                if (prob.type === 'fill-blanks') {
+                    const blanks = prob.blanks || [];
+                    return { correct: blanks.filter(b => answer[b.id] === b.word).length, total: blanks.length };
+                }
+                if (prob.type === 'order-matching') {
+                    const steps = prob.steps || [];
+                    if (!Array.isArray(answer)) return { correct: 0, total: steps.length };
+                    return { correct: steps.filter((s, i) => answer[i]?.id === s.id).length, total: steps.length };
+                }
+                if (prob.type === 'multiple-choice') {
+                    const ai = Array.isArray(prob.answerIndices) ? prob.answerIndices : (prob.answerIndex !== undefined ? [prob.answerIndex] : [0]);
+                    const si = Array.isArray(answer) ? answer.map(Number) : [parseInt(answer, 10)].filter(n => !isNaN(n));
+                    const ok = ai.every(i => si.includes(i)) && si.every(i => ai.includes(i));
+                    return { correct: ok ? 1 : 0, total: 1 };
+                }
+                if (prob.type === 'short-answer') {
+                    const ca = prob.answer;
+                    if (!ca) return { correct: 0, total: 0 };
+                    const ok = typeof answer === 'string' && answer.toLowerCase().includes(String(ca).toLowerCase());
+                    return { correct: ok ? 1 : 0, total: 1 };
+                }
+                return { correct: 0, total: 0 };
+            };
+
+            let totalCorrect = 0, totalPossible = 0;
+            students.forEach(student => {
+                problems.forEach((prob, idx) => {
+                    const answer = student.answers?.[idx] ?? null;
+                    const r = evalAnswer(prob, answer);
+                    totalCorrect += r.correct;
+                    totalPossible += r.total;
+                });
+            });
+            const overallAccuracy = totalPossible > 0 ? Math.round((totalCorrect / totalPossible) * 100) : null;
+
+            await addDoc(collection(db, 'sessions'), {
+                teacherId: currentUser.uid,
+                type: 'lesson',
+                sourceId: id,
+                title: lessonData.title || '제목 없음',
+                slideCount: problems.length,
+                studentCount: students.length,
+                problems: problemsSnapshot,
+                students: students.map(s => ({
+                    name: s.name,
+                    answers: s.answers || {},
+                    submitCount: s.submitCount || 0,
+                    slideSubmitCounts: s.slideSubmitCounts || {},
+                })),
+                totalCorrect,
+                totalPossible,
+                overallAccuracy,
+                createdAt: serverTimestamp(),
+            });
+
+            alert('수업 기록이 저장되었습니다!');
+        } catch (e) {
+            alert('저장 실패: ' + e.message);
+            console.error(e);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleStepChange = (newIndex) => {
         if (!socket || newIndex < 0 || newIndex >= problems.length) return;
         setCurrentStepIndex(newIndex);
@@ -215,6 +305,18 @@ const LessonMonitor = () => {
                     </h1>
                 </div>
                 <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <button
+                        onClick={handleSaveSession}
+                        disabled={saving}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '0.5rem',
+                            padding: '0.45rem 1rem', background: saving ? '#94a3b8' : '#16a34a', color: 'white',
+                            border: 'none', borderRadius: '8px', cursor: saving ? 'not-allowed' : 'pointer',
+                            fontWeight: 700, fontSize: '0.85rem'
+                        }}
+                    >
+                        <Save size={16} /> {saving ? '저장 중...' : '수업 저장'}
+                    </button>
                     <button
                         onClick={() => setShowStats(true)}
                         style={{

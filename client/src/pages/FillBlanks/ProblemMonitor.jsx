@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
-import { X, Send, CheckCircle, XCircle, AlertCircle, Volume2, BarChart2 } from 'lucide-react';
+import { X, Send, CheckCircle, XCircle, AlertCircle, Volume2, BarChart2, Save } from 'lucide-react';
 import './ProblemMonitor.css';
 import LatexRenderer from '../../components/LatexRenderer';
 import { resolveApiUrl } from '../../utils/url';
 import SessionStatsPanel from '../../components/SessionStatsPanel';
+import { db } from '../../firebase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../../contexts/AuthContext';
 
 const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = null }) => {
+    const { currentUser } = useAuth();
     const [localSocket, setLocalSocket] = useState(null);
     const [localStudents, setLocalStudents] = useState([]);
     const [selectedStudentName, setSelectedStudentName] = useState(null);
@@ -15,6 +19,7 @@ const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = nul
     const [broadcastText, setBroadcastText] = useState('');
     const [broadcastSent, setBroadcastSent] = useState(false);
     const [showStats, setShowStats] = useState(false);
+    const [saving, setSaving] = useState(false);
     const mirrorRef = useRef(null);
     const [mirrorWidth, setMirrorWidth] = useState(1000);
 
@@ -153,6 +158,64 @@ const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = nul
         return () => observer.disconnect();
     }, [selectedStudentName]);
 
+    // 세션 저장
+    const handleSaveSession = async () => {
+        if (!currentUser || parentSocket) return; // standalone 모드에서만
+        if (students.length === 0) { alert('참여 학생이 없습니다.'); return; }
+        try {
+            setSaving(true);
+            const evalAnswer = (prob, answer) => {
+                if (!prob || !answer) return { correct: 0, total: 0 };
+                if (prob.type === 'fill-blanks') {
+                    const blanks = prob.blanks || [];
+                    return { correct: blanks.filter(b => answer[b.id] === b.word).length, total: blanks.length };
+                }
+                if (prob.type === 'order-matching') {
+                    const steps = prob.steps || [];
+                    if (!Array.isArray(answer)) return { correct: 0, total: steps.length };
+                    return { correct: steps.filter((s, i) => answer[i]?.id === s.id).length, total: steps.length };
+                }
+                return { correct: 0, total: 0 };
+            };
+            let totalCorrect = 0, totalPossible = 0;
+            students.forEach(s => {
+                const r = evalAnswer(problemData, s.answer);
+                totalCorrect += r.correct;
+                totalPossible += r.total;
+            });
+            const overallAccuracy = totalPossible > 0 ? Math.round((totalCorrect / totalPossible) * 100) : null;
+
+            await addDoc(collection(db, 'sessions'), {
+                teacherId: currentUser.uid,
+                type: problemData?.type || 'problem',
+                sourceId: problemData?.id,
+                title: problemData?.title || '제목 없음',
+                slideCount: 1,
+                studentCount: students.length,
+                problems: [{
+                    id: problemData?.id, type: problemData?.type,
+                    title: problemData?.title || '',
+                    blanks: problemData?.blanks || null,
+                    steps: problemData?.steps || null,
+                }],
+                students: students.map(s => ({
+                    name: s.name,
+                    answer: s.answer || null,
+                    answers: {},
+                    submitCount: s.submitCount || 0,
+                    slideSubmitCounts: {},
+                })),
+                totalCorrect, totalPossible, overallAccuracy,
+                createdAt: serverTimestamp(),
+            });
+            alert('수업 기록이 저장되었습니다!');
+        } catch (e) {
+            alert('저장 실패: ' + e.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleSendMessage = (e) => {
         e.preventDefault();
         if (!message.trim() || !selectedStudent || !socket) return;
@@ -226,6 +289,15 @@ const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = nul
                     >
                         <BarChart2 size={13} /> 통계 보기
                     </button>
+                    {!parentSocket && (
+                        <button
+                            onClick={handleSaveSession}
+                            disabled={saving}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.9rem', background: saving ? '#94a3b8' : '#16a34a', color: 'white', border: 'none', borderRadius: '6px', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                        >
+                            <Save size={13} /> {saving ? '저장 중...' : '기록 저장'}
+                        </button>
+                    )}
                 </div>
             )}
 

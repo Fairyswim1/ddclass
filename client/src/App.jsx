@@ -16,6 +16,8 @@ import MonitorPage from './pages/MonitorPage';
 import LessonBuilder from './pages/Lesson/LessonBuilder';
 import LessonMonitor from './pages/Lesson/LessonMonitor';
 import LessonStudentMode from './pages/Lesson/LessonStudentMode';
+import SessionHistory from './pages/SessionHistory';
+import SessionDetail from './pages/SessionDetail';
 import './App.css';
 
 function App() {
@@ -60,6 +62,8 @@ function App() {
           <Route path="/teacher/library" element={<PublicLibrary />} />
           <Route path="/teacher/monitor/:id" element={<MonitorPage />} />
           <Route path="/teacher/lesson-monitor/:id" element={<LessonMonitor />} />
+          <Route path="/teacher/history" element={<SessionHistory />} />
+          <Route path="/teacher/history/:id" element={<SessionDetail />} />
           <Route path="/monitor/:id" element={<MonitorPage />} />
         </Routes>
       </div>

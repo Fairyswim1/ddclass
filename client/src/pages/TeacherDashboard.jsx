@@ -18,7 +18,8 @@ import {
     User,
     Check,
     X as CloseIcon,
-    RefreshCw
+    RefreshCw,
+    BarChart2
 } from 'lucide-react';
 import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
 import LatexRenderer from '../components/LatexRenderer';
@@ -310,6 +311,10 @@ const TeacherDashboard = () => {
                             </div>
                         )}
                     </div>
+                    <button className="btn-secondary" onClick={() => navigate('/teacher/history')}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <BarChart2 size={18} /> 수업 기록
+                    </button>
                     <button className="btn-secondary" onClick={() => navigate('/teacher/library')}>
                         <Globe size={18} /> 라이브러리 가기
                     </button>
