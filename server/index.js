@@ -459,7 +459,62 @@ app.post('/api/lessons/bulk', async (req, res) => {
   }
 });
 
-// 2. 단일 문제 연결용 (기존)
+// 2. 수업 수정 (PUT /api/lessons/bulk/:id)
+app.put('/api/lessons/bulk/:id', async (req, res) => {
+  try {
+    const lessonId = req.params.id;
+    const { title, slides, teacherId } = req.body;
+
+    if (!slides || !Array.isArray(slides)) {
+      return res.status(400).json({ success: false, message: '슬라이드 데이터가 없습니다.' });
+    }
+
+    const lessonDoc = await db.collection('lessons').doc(lessonId).get();
+    if (!lessonDoc.exists) {
+      return res.status(404).json({ success: false, message: '수업을 찾을 수 없습니다.' });
+    }
+
+    const existingProblemIds = lessonDoc.data().problemIds || [];
+    const batch = db.batch();
+
+    // 기존 문제 삭제
+    existingProblemIds.forEach(pid => {
+      batch.delete(db.collection('problems').doc(pid));
+    });
+
+    // 새 문제 생성
+    const newProblemIds = [];
+    slides.forEach((slideData, index) => {
+      const problemId = `${lessonId}_slide_${index}`;
+      newProblemIds.push(problemId);
+      batch.set(db.collection('problems').doc(problemId), {
+        ...slideData,
+        id: problemId,
+        pinNumber: null,
+        teacherId: teacherId || null,
+        isPublic: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    });
+
+    // 수업 메타 업데이트
+    batch.update(db.collection('lessons').doc(lessonId), {
+      title,
+      problemIds: newProblemIds,
+      slideCount: slides.length,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    await batch.commit();
+    console.log(`[UPDATED BULK] 수업: ${title} | ID: ${lessonId} | 슬라이드 수: ${slides.length}`);
+    res.json({ success: true, lessonId });
+  } catch (error) {
+    console.error('수업 수정 실패:', error);
+    res.status(500).json({ success: false, message: '서버 오류' });
+  }
+});
+
+// 3. 단일 문제 연결용 (기존)
 app.post('/api/lessons', async (req, res) => {
   try {
     const { title, problemIds, teacherId } = req.body;
@@ -634,13 +689,22 @@ io.on('connection', (socket) => {
     io.to(lessonId).emit('maxAllowedStepUpdated', { maxAllowedStep });
   });
 
-  socket.on('submitLessonAnswer', ({ lessonId, studentName, stepIndex, answer }) => {
+  socket.on('submitLessonAnswer', ({ lessonId, studentName, stepIndex, answer, isQuizAnswer, quizId, isCorrect }) => {
     if (!roomStates[lessonId] || !roomStates[lessonId].students[socket.id]) return;
 
     const studentRec = roomStates[lessonId].students[socket.id];
     studentRec.answers = studentRec.answers || {};
+
     if (typeof stepIndex === 'number') {
-      studentRec.answers[stepIndex] = answer;
+      if (isQuizAnswer && quizId) {
+        // 동영상 퀴즈 답변: 슬라이드 내 복수 퀴즈를 객체로 누적 저장
+        const prev = studentRec.answers[stepIndex];
+        const quizAnswers = (prev && typeof prev === 'object' && prev.__videoQuiz) ? prev : { __videoQuiz: true };
+        quizAnswers[quizId] = { answer, isCorrect: !!isCorrect };
+        studentRec.answers[stepIndex] = quizAnswers;
+      } else {
+        studentRec.answers[stepIndex] = answer;
+      }
     }
     // 레거시 호환
     studentRec.answer = answer;

@@ -50,6 +50,16 @@ function evaluateAnswer(problem, answer) {
       const isCorrect = answered && studentAnswer.toLowerCase().includes(String(correctAnswer).toLowerCase());
       return { correct: isCorrect ? 1 : 0, total: 1, percentage: isCorrect ? 100 : 0, hasObjective: true, answered };
     }
+    case 'video': {
+      // 동영상 퀴즈: 서버에서 { __videoQuiz: true, [quizId]: { answer, isCorrect } } 형태로 누적
+      const quizPoints = problem.quizPoints;
+      if (!quizPoints || quizPoints.length === 0) return { correct: 0, total: 0, percentage: 0, hasObjective: false, answered: false };
+      if (!answer || typeof answer !== 'object' || !answer.__videoQuiz) return { correct: 0, total: quizPoints.length, percentage: 0, hasObjective: true, answered: false };
+      const answered_count = Object.keys(answer).filter(k => k !== '__videoQuiz').length;
+      const correct = Object.values(answer).filter(v => v && v.isCorrect === true).length;
+      const total = quizPoints.length;
+      return { correct, total, percentage: total > 0 ? Math.round((correct / total) * 100) : 0, hasObjective: true, answered: answered_count > 0 };
+    }
     case 'poll':
       return { correct: 0, total: 0, percentage: 0, hasObjective: false, answered: answer !== null && answer !== undefined };
     default:

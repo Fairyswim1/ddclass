@@ -175,6 +175,7 @@ const LessonMonitor = () => {
                 answerIndices: p.answerIndices || null,
                 answerIndex: p.answerIndex || null,
                 answer: p.answer || null,
+                quizPoints: p.quizPoints || null,  // 동영상 퀴즈 채점용
             }));
 
             // 전체 정답률 계산

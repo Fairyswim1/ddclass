@@ -520,7 +520,7 @@ const TeacherDashboard = () => {
                                         <div className="card-actions-fixed">
                                             <button className="btn-icon-subtle" onClick={() => handlePreview(problem)} title="학생 화면 미리보기"><Eye size={18} /></button>
                                             <button className="btn-icon-subtle" onClick={() => {
-                                                if (problem.type === 'lesson') { alert('수업 꾸러미 수정은 아직 지원되지 않습니다.'); return; }
+                                                if (problem.type === 'lesson') { navigate(`/teacher/lesson-edit/${problem.id}`); return; }
                                                 const routeType = problem.type === 'free-drop' ? 'free-dnd' : problem.type;
                                                 navigate(`/${routeType}/${problem.id}`);
                                             }} title="수정"><Edit2 size={18} /></button>

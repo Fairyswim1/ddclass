@@ -14,6 +14,7 @@ import TeacherDashboard from './pages/TeacherDashboard';
 import PublicLibrary from './pages/PublicLibrary';
 import MonitorPage from './pages/MonitorPage';
 import LessonBuilder from './pages/Lesson/LessonBuilder';
+import LessonEditor from './pages/Lesson/LessonEditor';
 import LessonMonitor from './pages/Lesson/LessonMonitor';
 import LessonStudentMode from './pages/Lesson/LessonStudentMode';
 import SessionHistory from './pages/SessionHistory';
@@ -32,8 +33,9 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
 
-          {/* 수업 생성 */}
+          {/* 수업 생성 / 수정 */}
           <Route path="/create-lesson" element={<LessonBuilder />} />
+          <Route path="/teacher/lesson-edit/:id" element={<LessonEditor />} />
 
           {/* 기능 1: 빈칸 채우기 */}
           <Route path="/fill-blanks/:id?" element={<TeacherMode />} />

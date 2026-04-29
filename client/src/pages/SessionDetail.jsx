@@ -54,6 +54,15 @@ function evaluateAnswer(problem, answer) {
             const isCorrect = answered && studentAnswer.toLowerCase().includes(String(correctAnswer).toLowerCase());
             return { correct: isCorrect ? 1 : 0, total: 1, percentage: isCorrect ? 100 : 0, hasObjective: true, answered };
         }
+        case 'video': {
+            const quizPoints = problem.quizPoints;
+            if (!quizPoints || quizPoints.length === 0) return { correct: 0, total: 0, percentage: 0, hasObjective: false, answered: false };
+            if (!answer || typeof answer !== 'object' || !answer.__videoQuiz) return { correct: 0, total: quizPoints.length, percentage: 0, hasObjective: true, answered: false };
+            const correct = Object.values(answer).filter(v => v && v.isCorrect === true).length;
+            const total = quizPoints.length;
+            const answeredCount = Object.keys(answer).filter(k => k !== '__videoQuiz').length;
+            return { correct, total, percentage: total > 0 ? Math.round((correct / total) * 100) : 0, hasObjective: true, answered: answeredCount > 0 };
+        }
         default:
             return { correct: 0, total: 0, percentage: 0, hasObjective: false, answered: false };
     }
@@ -379,7 +388,7 @@ const SessionDetail = () => {
                     {/* 테이블 헤더 */}
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: isLesson ? '60px 160px 1fr 80px 80px 280px' : '60px 160px 1fr 80px 80px 280px',
+                        gridTemplateColumns: '50px 130px 1fr 70px 70px',
                         padding: '0.6rem 1.5rem',
                         background: '#f8fafc', borderBottom: '1px solid #e2e8f0',
                         fontSize: '0.75rem', fontWeight: 700, color: '#64748b',
@@ -390,7 +399,6 @@ const SessionDetail = () => {
                         <span>정답률</span>
                         <span style={{ textAlign: 'center' }}>정답</span>
                         <span style={{ textAlign: 'center' }}>시도</span>
-                        <span>생기부 문구</span>
                     </div>
 
                     {studentStats.map((student, idx) => {
@@ -403,10 +411,11 @@ const SessionDetail = () => {
                                 key={student.name}
                                 style={{
                                     display: 'grid',
-                                    gridTemplateColumns: '60px 160px 1fr 80px 80px 280px',
+                                    gridTemplateColumns: '50px 130px 1fr 70px 70px',
                                     padding: '0.9rem 1.5rem',
                                     borderBottom: '1px solid #f8fafc',
-                                    alignItems: 'center'
+                                    alignItems: 'start',
+                                    gap: '0.5rem'
                                 }}
                             >
                                 {/* 순위 */}
@@ -452,28 +461,34 @@ const SessionDetail = () => {
                                     {student.avgAttempts > 0 ? `${student.avgAttempts}회` : '—'}
                                 </div>
 
-                                {/* 생기부 문구 */}
-                                <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'flex-start' }}>
+                                {/* 생기부 문구 - 전체 너비 행으로 분리 */}
+                                <div style={{
+                                    gridColumn: '1 / -1',
+                                    display: 'flex', gap: '0.5rem', alignItems: 'flex-start',
+                                    background: '#f8fafc', borderRadius: '8px',
+                                    padding: '0.6rem 0.75rem',
+                                    marginTop: '0.1rem'
+                                }}>
+                                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', whiteSpace: 'nowrap', paddingTop: '1px' }}>생기부</span>
                                     <p style={{
-                                        margin: 0, fontSize: '0.75rem', color: '#475569',
-                                        lineHeight: 1.5, flex: 1,
-                                        display: '-webkit-box', WebkitLineClamp: 2,
-                                        WebkitBoxOrient: 'vertical', overflow: 'hidden'
+                                        margin: 0, fontSize: '0.82rem', color: '#334155',
+                                        lineHeight: 1.6, flex: 1
                                     }}>
                                         {student.record}
                                     </p>
                                     <button
                                         onClick={() => handleCopyRecord(idx, student.record)}
                                         style={{
-                                            background: copied === idx ? '#16a34a' : '#f1f5f9',
+                                            background: copied === idx ? '#16a34a' : '#e2e8f0',
                                             border: 'none', borderRadius: '6px', cursor: 'pointer',
                                             color: copied === idx ? 'white' : '#64748b',
-                                            padding: '4px 6px', display: 'flex',
-                                            flexShrink: 0, transition: 'all 0.2s'
+                                            padding: '4px 8px', display: 'flex', alignItems: 'center', gap: '4px',
+                                            flexShrink: 0, transition: 'all 0.2s', fontSize: '0.72rem', fontWeight: 600
                                         }}
                                         title="생기부 문구 복사"
                                     >
-                                        {copied === idx ? <Check size={13} /> : <Copy size={13} />}
+                                        {copied === idx ? <Check size={12} /> : <Copy size={12} />}
+                                        {copied === idx ? '복사됨' : '복사'}
                                     </button>
                                 </div>
                             </div>
