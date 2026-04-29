@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
-import { X, Send, CheckCircle, XCircle, AlertCircle, Volume2 } from 'lucide-react';
+import { X, Send, CheckCircle, XCircle, AlertCircle, Volume2, BarChart2 } from 'lucide-react';
 import './ProblemMonitor.css';
 import LatexRenderer from '../../components/LatexRenderer';
 import { resolveApiUrl } from '../../utils/url';
+import SessionStatsPanel from '../../components/SessionStatsPanel';
 
 const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = null }) => {
     const [localSocket, setLocalSocket] = useState(null);
@@ -13,6 +14,7 @@ const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = nul
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [broadcastText, setBroadcastText] = useState('');
     const [broadcastSent, setBroadcastSent] = useState(false);
+    const [showStats, setShowStats] = useState(false);
     const mirrorRef = useRef(null);
     const [mirrorWidth, setMirrorWidth] = useState(1000);
 
@@ -72,11 +74,11 @@ const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = nul
                 const exists = prev.find(s => s.name === studentData.name);
                 if (exists) {
                     return prev.map(s => s.name === studentData.name
-                        ? { ...s, answer: studentData.answer, id: studentData.id }
+                        ? { ...s, answer: studentData.answer, id: studentData.id, submitCount: studentData.submitCount ?? s.submitCount }
                         : s
                     );
                 }
-                return [...prev, { id: studentData.id, name: studentData.name, answer: studentData.answer }];
+                return [...prev, { id: studentData.id, name: studentData.name, answer: studentData.answer, submitCount: studentData.submitCount ?? 0 }];
             });
         });
 
@@ -189,6 +191,16 @@ const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = nul
 
     return (
         <div className="monitor-container">
+            {showStats && (
+                <SessionStatsPanel
+                    mode="problem"
+                    students={students}
+                    problems={[problemData]}
+                    title={problemData?.title || '문제'}
+                    onClose={() => setShowStats(false)}
+                />
+            )}
+
             {/* 전체 공지 바 (standalone 모드에서만 표시) */}
             {!parentSocket && (
                 <div style={{ background: '#1e293b', borderRadius: '10px', padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
@@ -207,6 +219,12 @@ const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = nul
                         style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.75rem', background: broadcastSent ? '#22c55e' : '#f59e0b', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem' }}
                     >
                         <Send size={13} /> {broadcastSent ? '전송됨!' : '전송'}
+                    </button>
+                    <button
+                        onClick={() => setShowStats(true)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.9rem', background: '#6366f1', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                    >
+                        <BarChart2 size={13} /> 통계 보기
                     </button>
                 </div>
             )}

@@ -115,6 +115,38 @@ app.get('/api/debug/lesson-state/:lessonId', (req, res) => {
 app.post('/api/problem-status', getStatusHandler);
 app.get('/api/problem-status', getStatusHandler);
 
+// -----------------------------------------------------
+// [NEW] 세션 통계 조회 — 교사가 수업/문제 종료 후 통계 패널에 사용
+// roomId 는 problemId 또는 lessonId 모두 가능
+// -----------------------------------------------------
+app.get('/api/session-stats/:roomId', (req, res) => {
+  const { roomId } = req.params;
+  const state = roomStates[roomId];
+
+  if (!state) {
+    return res.json({ success: true, students: [], roomId });
+  }
+
+  const students = Object.values(state.students).map(s => ({
+    id: s.id,
+    name: s.name,
+    answer: s.answer ?? null,
+    answers: s.answers ?? {},
+    submitCount: s.submitCount ?? 0,
+    slideSubmitCounts: s.slideSubmitCounts ?? {},
+    currentStep: s.currentStep ?? 0,
+    joinedAt: s.joinedAt
+  }));
+
+  res.json({
+    success: true,
+    roomId,
+    students,
+    studentCount: students.length,
+    maxAllowedStep: state.maxAllowedStep ?? null
+  });
+});
+
 function getStatusHandler(req, res) {
   try {
     const problemIds = req.method === 'POST' ? req.body.problemIds : req.query.problemIds?.split(',');
@@ -521,16 +553,17 @@ io.on('connection', (socket) => {
   socket.on('submitAnswer', ({ problemId, studentName, answer }) => {
     if (!roomStates[problemId] || !roomStates[problemId].students[socket.id]) return;
 
-    // 메모리 상태 업데이트
-    roomStates[problemId].students[socket.id].answer = answer;
-    roomStates[problemId].students[socket.id].updatedAt = new Date();
+    const student = roomStates[problemId].students[socket.id];
+    student.answer = answer;
+    student.submitCount = (student.submitCount || 0) + 1;
+    student.updatedAt = new Date();
 
-    // 다른 사람들에게(주로 교사) 답변 업데이트 브로드캐스트
     socket.to(problemId).emit('answerUpdated', {
       id: socket.id,
       name: studentName,
       answer,
-      updatedAt: roomStates[problemId].students[socket.id].updatedAt
+      submitCount: student.submitCount,
+      updatedAt: student.updatedAt
     });
   });
 
@@ -609,9 +642,15 @@ io.on('connection', (socket) => {
     if (typeof stepIndex === 'number') {
       studentRec.answers[stepIndex] = answer;
     }
-    // 레거시 호환: 단일 모니터가 .answer를 그대로 읽는 경우 대비
+    // 레거시 호환
     studentRec.answer = answer;
     studentRec.updatedAt = new Date();
+
+    // 슬라이드별 제출 횟수 추적
+    if (!studentRec.slideSubmitCounts) studentRec.slideSubmitCounts = {};
+    if (typeof stepIndex === 'number') {
+      studentRec.slideSubmitCounts[stepIndex] = (studentRec.slideSubmitCounts[stepIndex] || 0) + 1;
+    }
 
     socket.to(lessonId).emit('answerUpdated', {
       id: socket.id,
@@ -619,6 +658,7 @@ io.on('connection', (socket) => {
       stepIndex,
       answer,
       answers: studentRec.answers,
+      slideSubmitCounts: studentRec.slideSubmitCounts,
       updatedAt: studentRec.updatedAt
     });
   });

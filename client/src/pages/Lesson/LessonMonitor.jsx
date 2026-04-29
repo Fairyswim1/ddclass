@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Loader2, Send, Volume2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, Send, Volume2, BarChart2 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { db } from '../../firebase';
 import { doc, getDoc, getDocs, collection, query, documentId, where } from 'firebase/firestore';
@@ -11,6 +11,7 @@ import ShortAnswerMonitor from './ShortAnswerMonitor';
 import WhiteboardMonitor from './WhiteboardMonitor';
 import PollMonitor from './PollMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
+import SessionStatsPanel from '../../components/SessionStatsPanel';
 import './LessonMonitor.css';
 
 const LessonMonitor = () => {
@@ -28,8 +29,8 @@ const LessonMonitor = () => {
     const [students, setStudents] = useState([]);
     const [broadcastText, setBroadcastText] = useState('');
     const [broadcastSent, setBroadcastSent] = useState(false);
-    // 실시간 YouTube 모드 { [stepIndex]: 'class' | 'homework' }
     const [liveVideoModes, setLiveVideoModes] = useState({});
+    const [showStats, setShowStats] = useState(false);
 
     useEffect(() => {
         const fetchLessonAndProblems = async () => {
@@ -125,9 +126,24 @@ const LessonMonitor = () => {
             setStudents(prev => {
                 const exists = prev.find(s => s.name === studentData.name);
                 if (exists) {
-                    return prev.map(s => s.name === studentData.name ? { ...s, answers: studentData.answers, answer: studentData.answer, id: studentData.id } : s);
+                    return prev.map(s => s.name === studentData.name
+                        ? {
+                            ...s,
+                            answers: studentData.answers,
+                            answer: studentData.answer,
+                            id: studentData.id,
+                            slideSubmitCounts: studentData.slideSubmitCounts ?? s.slideSubmitCounts
+                          }
+                        : s
+                    );
                 }
-                return [...prev, { id: studentData.id, name: studentData.name, answers: studentData.answers, answer: studentData.answer }];
+                return [...prev, {
+                    id: studentData.id,
+                    name: studentData.name,
+                    answers: studentData.answers,
+                    answer: studentData.answer,
+                    slideSubmitCounts: studentData.slideSubmitCounts ?? {}
+                }];
             });
         });
 
@@ -198,13 +214,34 @@ const LessonMonitor = () => {
                         <span className="type-label">수업 (다중 문제)</span>
                     </h1>
                 </div>
-                <div className="nav-right">
+                <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <button
+                        onClick={() => setShowStats(true)}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '0.5rem',
+                            padding: '0.45rem 1rem', background: '#6366f1', color: 'white',
+                            border: 'none', borderRadius: '8px', cursor: 'pointer',
+                            fontWeight: 700, fontSize: '0.85rem'
+                        }}
+                    >
+                        <BarChart2 size={16} /> 수업 통계
+                    </button>
                     <div className="pin-pill">
                         <span className="label">학생 참여 PIN</span>
                         <span className="value">{lessonData.pinNumber}</span>
                     </div>
                 </div>
             </nav>
+
+            {showStats && (
+                <SessionStatsPanel
+                    mode="lesson"
+                    students={students}
+                    problems={problems}
+                    title={lessonData.title}
+                    onClose={() => setShowStats(false)}
+                />
+            )}
 
             <div className="desmos-pacing-bar">
                 <div className="pacing-track">
