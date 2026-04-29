@@ -289,6 +289,49 @@ const LessonStudentMode = () => {
                         )}
                     </div>
                 );
+            case 'website': {
+                const siteUrl = currentProblemData.websiteUrl;
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', padding: '1.5rem', gap: '0.75rem', height: 'calc(100vh - 120px)' }}>
+                        {currentProblemData.title && (
+                            <h2 style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#1e293b', textAlign: 'center' }}>
+                                {currentProblemData.title}
+                            </h2>
+                        )}
+                        {siteUrl ? (
+                            <>
+                                <div style={{ flex: 1, borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', position: 'relative' }}>
+                                    <iframe
+                                        src={siteUrl}
+                                        title={currentProblemData.title || '웹사이트'}
+                                        style={{ width: '100%', height: '100%', border: 'none' }}
+                                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                                        allowFullScreen
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                    <a
+                                        href={siteUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        style={{
+                                            display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                                            padding: '0.45rem 1rem', background: '#f0fdf4',
+                                            border: '1px solid #86efac', borderRadius: '999px',
+                                            fontSize: '0.82rem', color: '#16a34a',
+                                            textDecoration: 'none', fontWeight: 600
+                                        }}
+                                    >
+                                        🌐 새 탭에서 열기
+                                    </a>
+                                </div>
+                            </>
+                        ) : (
+                            <p style={{ color: '#94a3b8', textAlign: 'center' }}>웹사이트가 없습니다.</p>
+                        )}
+                    </div>
+                );
+            }
             default:
                 return <div>지원하지 않는 문제 유형입니다.</div>;
         }

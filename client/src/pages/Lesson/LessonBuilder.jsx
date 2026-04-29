@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../firebase';
-import { ArrowLeft, Plus, Check, Trash2, Save, Layout, List, CheckSquare, MessageSquare, Edit3, PieChart, Image, Youtube, Presentation } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Trash2, Save, Layout, List, CheckSquare, MessageSquare, Edit3, PieChart, Image, Youtube, Presentation, Globe } from 'lucide-react';
 import { resolveApiUrl } from '../../utils/url';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import './LessonBuilder.css';
@@ -18,6 +18,7 @@ import PollEditor from './Editors/PollEditor';
 import ImageEditor from './Editors/ImageEditor';
 import VideoEditor from './Editors/VideoEditor';
 import PptEditor from './Editors/PptEditor';
+import WebsiteEditor from './Editors/WebsiteEditor';
 
 const TYPE_ICONS = {
     'fill-blanks': <CheckSquare size={16} />,
@@ -29,7 +30,8 @@ const TYPE_ICONS = {
     'poll': <PieChart size={16} />,
     'image': <Image size={16} />,
     'video': <Youtube size={16} />,
-    'ppt': <Presentation size={16} />
+    'ppt': <Presentation size={16} />,
+    'website': <Globe size={16} />
 };
 
 const TYPE_LABELS = {
@@ -42,12 +44,13 @@ const TYPE_LABELS = {
     'poll': '투표',
     'image': '이미지',
     'video': '동영상 (YouTube)',
-    'ppt': 'PPT (Google 슬라이드)'
+    'ppt': 'PPT (Google 슬라이드)',
+    'website': '웹사이트 임베드'
 };
 
 const TYPE_GROUPS = [
     { label: '퀴즈 & 활동', types: ['fill-blanks', 'order-matching', 'free-drop', 'multiple-choice', 'short-answer', 'whiteboard', 'poll'] },
-    { label: '미디어 콘텐츠', types: ['image', 'video', 'ppt'] }
+    { label: '미디어 콘텐츠', types: ['image', 'video', 'ppt', 'website'] }
 ];
 
 const LessonBuilder = () => {
@@ -82,7 +85,8 @@ const LessonBuilder = () => {
             ...(type === 'poll' && { question: '', options: ['', ''] }),
             ...(type === 'image' && { imageUrl: null }),
             ...(type === 'video' && { videoUrl: '', videoId: '', videoMode: 'class' }),
-            ...(type === 'ppt' && { pptEmbedUrl: '' })
+            ...(type === 'ppt' && { pptEmbedUrl: '' }),
+            ...(type === 'website' && { websiteUrl: '' })
         };
         setSlides([...slides, newSlide]);
         setActiveSlideId(newSlide.id);
@@ -264,6 +268,7 @@ const LessonBuilder = () => {
                                     {activeSlide.type === 'image' && <ImageEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
                                     {activeSlide.type === 'video' && <VideoEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
                                     {activeSlide.type === 'ppt' && <PptEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
+                                    {activeSlide.type === 'website' && <WebsiteEditor slide={activeSlide} onChange={(data) => handleUpdateSlide(activeSlide.id, data)} />}
                                 </div>
                             </div>
                         </div>
