@@ -19,7 +19,11 @@ import {
     Check,
     X as CloseIcon,
     RefreshCw,
-    BarChart2
+    BarChart2,
+    Calendar,
+    Users,
+    ChevronRight,
+    BookOpen
 } from 'lucide-react';
 import StudentPreviewModal from '../components/Preview/StudentPreviewModal';
 import LatexRenderer from '../components/LatexRenderer';
@@ -70,17 +74,21 @@ const TeacherDashboard = () => {
     const [filterGrade, setFilterGrade] = useState('all');
     const [showCreateOptions, setShowCreateOptions] = useState(false);
 
+    // Tab state
+    const [activeTab, setActiveTab] = useState('problems');
+
+    // Session history
+    const [sessions, setSessions] = useState([]);
+    const [sessionsLoading, setSessionsLoading] = useState(false);
+
     // Live Room Status
     const [roomStatus, setRoomStatus] = useState({}); // { problemId: { count: number } }
 
     useEffect(() => {
         if (authLoading) return;
-
-        if (!currentUser) {
-            navigate('/teacher/login');
-            return;
-        }
+        if (!currentUser) { navigate('/teacher/login'); return; }
         fetchMyProblems();
+        fetchSessions();
         setNewNickname(nickname);
     }, [currentUser, authLoading, nickname]);
 
@@ -116,6 +124,24 @@ const TeacherDashboard = () => {
 
         return () => clearInterval(intervalId);
     }, [problems]);
+
+    const fetchSessions = async () => {
+        if (!currentUser) return;
+        try {
+            setSessionsLoading(true);
+            const q = query(
+                collection(db, 'sessions'),
+                where('teacherId', '==', currentUser.uid),
+                orderBy('createdAt', 'desc')
+            );
+            const snap = await getDocs(q);
+            setSessions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        } catch (e) {
+            console.error('세션 불러오기 오류:', e);
+        } finally {
+            setSessionsLoading(false);
+        }
+    };
 
     const fetchMyProblems = async () => {
         if (!currentUser) return;
@@ -311,10 +337,6 @@ const TeacherDashboard = () => {
                             </div>
                         )}
                     </div>
-                    <button className="btn-secondary" onClick={() => navigate('/teacher/history')}
-                        style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <BarChart2 size={18} /> 수업 기록
-                    </button>
                     <button className="btn-secondary" onClick={() => navigate('/teacher/library')}>
                         <Globe size={18} /> 라이브러리 가기
                     </button>
@@ -411,138 +433,240 @@ const TeacherDashboard = () => {
                 </button>
             </section>
 
-            <div className="dashboard-controls">
-                <div className="search-bar">
-                    <Search size={20} />
-                    <input
-                        type="text"
-                        placeholder="문제 제목으로 검색..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="filter-group">
-                    <select
-                        className="dashboard-select"
-                        value={filterType}
-                        onChange={(e) => setFilterType(e.target.value)}
-                    >
-                        <option value="all">모든 유형</option>
-                        <option value="fill-blanks">빈칸 채우기</option>
-                        <option value="order-matching">순서 맞추기</option>
-                        <option value="free-drop">자유 보드</option>
-                    </select>
-
-                    <select
-                        className="dashboard-select"
-                        value={filterSchoolLevel}
-                        onChange={(e) => {
-                            setFilterSchoolLevel(e.target.value);
-                            setFilterGrade('all');
+            {/* ── 탭 네비게이션 ── */}
+            <div style={{
+                display: 'flex', gap: '0.25rem', margin: '0 0 0',
+                borderBottom: '2px solid #F0EEE9', padding: '0 0.25rem'
+            }}>
+                {[
+                    { key: 'problems', label: '내 보관함', icon: <BookOpen size={16} />, count: problems.length },
+                    { key: 'history', label: '수업 기록', icon: <BarChart2 size={16} />, count: sessions.length },
+                ].map(tab => (
+                    <button
+                        key={tab.key}
+                        onClick={() => setActiveTab(tab.key)}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '0.5rem',
+                            padding: '0.75rem 1.25rem',
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            fontWeight: activeTab === tab.key ? 800 : 500,
+                            color: activeTab === tab.key ? 'var(--color-brand-brown, #5C4033)' : '#94a3b8',
+                            borderBottom: activeTab === tab.key ? '3px solid var(--color-brand-brown, #5C4033)' : '3px solid transparent',
+                            marginBottom: '-2px', fontSize: '0.95rem', transition: 'all 0.15s'
                         }}
                     >
-                        {SCHOOL_LEVELS.map(l => (
-                            <option key={l.value} value={l.value}>{l.label}</option>
-                        ))}
-                    </select>
-
-                    <select
-                        className="dashboard-select"
-                        value={filterGrade}
-                        onChange={(e) => setFilterGrade(e.target.value)}
-                        disabled={filterSchoolLevel === 'all'}
-                    >
-                        <option value="all">모든 학년</option>
-                        {filterSchoolLevel !== 'all' && GRADES_MAP[filterSchoolLevel]?.map(g => (
-                            <option key={g} value={g}>{g}학년</option>
-                        ))}
-                    </select>
-                </div>
+                        {tab.icon} {tab.label}
+                        <span style={{
+                            background: activeTab === tab.key ? 'var(--color-brand-brown, #5C4033)' : '#e2e8f0',
+                            color: activeTab === tab.key ? 'white' : '#64748b',
+                            borderRadius: '999px', padding: '1px 8px',
+                            fontSize: '0.75rem', fontWeight: 700
+                        }}>{tab.count}</span>
+                    </button>
+                ))}
             </div>
 
-            <main className="problems-grid">
-                {filteredProblems.length === 0 ? (
-                    <div className="empty-state">
-                        <Search size={48} className="empty-icon" />
-                        <h3>등록된 문제가 없습니다.</h3>
-                        <p>'새 문제 만들기' 버튼을 눌러 첫 문제를 제작해보세요!</p>
-                    </div>
-                ) : (
-                    filteredProblems.map(problem => (
-                        <div key={problem.id} className="problem-card-refined">
-                            <div className="card-top">
-                                <span className={`type-badge ${problem.type}`}>
-                                    {getTypeIcon(problem.type)} {getTypeText(problem.type)}
-                                </span>
-                                <div className="card-actions-fixed">
-                                    <button
-                                        className="btn-icon-subtle"
-                                        onClick={() => handlePreview(problem)}
-                                        title="학생 화면 미리보기"
-                                    >
-                                        <Eye size={18} />
-                                    </button>
-                                    <button
-                                        className="btn-icon-subtle"
-                                        onClick={() => {
-                                            if (problem.type === 'lesson') {
-                                                alert('수업 꾸러미 수정은 아직 지원되지 않습니다.');
-                                                return;
-                                            }
-                                            const routeType = problem.type === 'free-drop' ? 'free-dnd' : problem.type;
-                                            navigate(`/${routeType}/${problem.id}`);
-                                        }}
-                                        title="수정"
-                                    >
-                                        <Edit2 size={18} />
-                                    </button>
-                                    <button
-                                        className="btn-icon-subtle danger"
-                                        onClick={() => handleDelete(problem.id)}
-                                        title="문제 삭제"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="card-body-centered">
-                                <h3 className="problem-title"><LatexRenderer text={problem.title} /></h3>
-                                <div className="card-metadata-row">
-                                    {problem.subject && <span className="meta-badge subject">{SUBJECTS_MAP[problem.subject] || problem.subject}</span>}
-                                    {problem.schoolLevel && <span className="meta-badge level">
-                                        {SCHOOL_LEVELS.find(l => l.value === problem.schoolLevel)?.label || problem.schoolLevel}
-                                    </span>}
-                                    {problem.grade && <span className="meta-badge grade">{problem.grade}학년</span>}
-                                </div>
-                                <p className="problem-author">제작: {nickname}</p>
-                            </div>
-
-                            <div className="card-footer-refined">
-                                <button
-                                    className="btn-action start"
-                                    onClick={() => {
-                                        if (problem.type === 'lesson') {
-                                            navigate(`/teacher/lesson-monitor/${problem.id}`);
-                                        } else {
-                                            navigate(`/teacher/monitor/${problem.id}`);
-                                        }
-                                    }}
-                                >
-                                    실시간 모니터링
-                                    <span className={`live-count-badge-inline ${(roomStatus[problem.id]?.count > 0) ? 'active' : 'empty'}`}>
-                                        ({roomStatus[problem.id]?.count || 0})
-                                    </span>
-                                </button>
-                                <div className="pin-badge-compact" onClick={() => copyPin(problem.pinNumber)} title="클릭하여 PIN 복사">
-                                    <span className="pin-label">PIN:</span>
-                                    <span className="pin-value">{problem.pinNumber}</span>
-                                </div>
-                            </div>
+            {/* ── 보관함 탭 ── */}
+            {activeTab === 'problems' && (
+                <>
+                    <div className="dashboard-controls">
+                        <div className="search-bar">
+                            <Search size={20} />
+                            <input
+                                type="text"
+                                placeholder="문제 제목으로 검색..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
                         </div>
-                    ))
-                )}
-            </main>
+                        <div className="filter-group">
+                            <select className="dashboard-select" value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+                                <option value="all">모든 유형</option>
+                                <option value="fill-blanks">빈칸 채우기</option>
+                                <option value="order-matching">순서 맞추기</option>
+                                <option value="free-drop">자유 보드</option>
+                            </select>
+                            <select className="dashboard-select" value={filterSchoolLevel} onChange={(e) => { setFilterSchoolLevel(e.target.value); setFilterGrade('all'); }}>
+                                {SCHOOL_LEVELS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+                            </select>
+                            <select className="dashboard-select" value={filterGrade} onChange={(e) => setFilterGrade(e.target.value)} disabled={filterSchoolLevel === 'all'}>
+                                <option value="all">모든 학년</option>
+                                {filterSchoolLevel !== 'all' && GRADES_MAP[filterSchoolLevel]?.map(g => <option key={g} value={g}>{g}학년</option>)}
+                            </select>
+                        </div>
+                    </div>
+
+                    <main className="problems-grid">
+                        {filteredProblems.length === 0 ? (
+                            <div className="empty-state">
+                                <Search size={48} className="empty-icon" />
+                                <h3>등록된 문제가 없습니다.</h3>
+                                <p>'새 문제 만들기' 버튼을 눌러 첫 문제를 제작해보세요!</p>
+                            </div>
+                        ) : (
+                            filteredProblems.map(problem => (
+                                <div key={problem.id} className="problem-card-refined">
+                                    <div className="card-top">
+                                        <span className={`type-badge ${problem.type}`}>
+                                            {getTypeIcon(problem.type)} {getTypeText(problem.type)}
+                                        </span>
+                                        <div className="card-actions-fixed">
+                                            <button className="btn-icon-subtle" onClick={() => handlePreview(problem)} title="학생 화면 미리보기"><Eye size={18} /></button>
+                                            <button className="btn-icon-subtle" onClick={() => {
+                                                if (problem.type === 'lesson') { alert('수업 꾸러미 수정은 아직 지원되지 않습니다.'); return; }
+                                                const routeType = problem.type === 'free-drop' ? 'free-dnd' : problem.type;
+                                                navigate(`/${routeType}/${problem.id}`);
+                                            }} title="수정"><Edit2 size={18} /></button>
+                                            <button className="btn-icon-subtle danger" onClick={() => handleDelete(problem.id)} title="문제 삭제"><Trash2 size={18} /></button>
+                                        </div>
+                                    </div>
+                                    <div className="card-body-centered">
+                                        <h3 className="problem-title"><LatexRenderer text={problem.title} /></h3>
+                                        <div className="card-metadata-row">
+                                            {problem.subject && <span className="meta-badge subject">{SUBJECTS_MAP[problem.subject] || problem.subject}</span>}
+                                            {problem.schoolLevel && <span className="meta-badge level">{SCHOOL_LEVELS.find(l => l.value === problem.schoolLevel)?.label || problem.schoolLevel}</span>}
+                                            {problem.grade && <span className="meta-badge grade">{problem.grade}학년</span>}
+                                        </div>
+                                        <p className="problem-author">제작: {nickname}</p>
+                                    </div>
+                                    <div className="card-footer-refined">
+                                        <button className="btn-action start" onClick={() => {
+                                            if (problem.type === 'lesson') navigate(`/teacher/lesson-monitor/${problem.id}`);
+                                            else navigate(`/teacher/monitor/${problem.id}`);
+                                        }}>
+                                            실시간 모니터링
+                                            <span className={`live-count-badge-inline ${(roomStatus[problem.id]?.count > 0) ? 'active' : 'empty'}`}>
+                                                ({roomStatus[problem.id]?.count || 0})
+                                            </span>
+                                        </button>
+                                        <div className="pin-badge-compact" onClick={() => copyPin(problem.pinNumber)} title="클릭하여 PIN 복사">
+                                            <span className="pin-label">PIN:</span>
+                                            <span className="pin-value">{problem.pinNumber}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </main>
+                </>
+            )}
+
+            {/* ── 수업 기록 탭 ── */}
+            {activeTab === 'history' && (
+                <div style={{ marginTop: '1.5rem' }}>
+                    {sessionsLoading ? (
+                        <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                            <Loader2 size={32} className="animate-spin" style={{ marginBottom: '0.5rem' }} />
+                            <p>불러오는 중...</p>
+                        </div>
+                    ) : sessions.length === 0 ? (
+                        <div style={{
+                            textAlign: 'center', padding: '4rem 2rem',
+                            background: 'white', borderRadius: '20px', border: '2px dashed #F0EEE9'
+                        }}>
+                            <BarChart2 size={48} color="#e2e8f0" style={{ marginBottom: '1rem' }} />
+                            <h3 style={{ color: '#94a3b8', margin: '0 0 0.5rem' }}>저장된 수업 기록이 없습니다</h3>
+                            <p style={{ color: '#cbd5e1', margin: 0, fontSize: '0.9rem' }}>
+                                수업 모니터 화면에서 "수업 저장" 버튼을 눌러 기록을 남겨보세요.
+                            </p>
+                        </div>
+                    ) : (
+                        <div style={{ background: 'white', borderRadius: '20px', border: '2px solid #F0EEE9', overflow: 'hidden' }}>
+                            {/* 테이블 헤더 */}
+                            <div style={{
+                                display: 'grid', gridTemplateColumns: '2.5fr 100px 110px 180px 40px',
+                                padding: '0.75rem 1.5rem', background: '#fafaf9',
+                                borderBottom: '1px solid #F0EEE9',
+                                fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8',
+                                textTransform: 'uppercase', letterSpacing: '0.05em'
+                            }}>
+                                <span>수업 제목</span>
+                                <span style={{ textAlign: 'center' }}>참여 학생</span>
+                                <span style={{ textAlign: 'center' }}>평균 정답률</span>
+                                <span style={{ textAlign: 'center' }}>날짜</span>
+                                <span />
+                            </div>
+
+                            {sessions.map((session, idx) => {
+                                const acc = session.overallAccuracy;
+                                const ts = session.createdAt;
+                                const dateStr = ts
+                                    ? (ts.toDate ? ts.toDate() : new Date(ts.seconds * 1000))
+                                        .toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                    : '—';
+                                const typeColors = {
+                                    'lesson': '#3b82f6', 'fill-blanks': '#6366f1',
+                                    'order-matching': '#f59e0b', 'free-drop': '#10b981'
+                                };
+                                const color = typeColors[session.type] || '#6366f1';
+
+                                return (
+                                    <div
+                                        key={session.id}
+                                        onClick={() => navigate(`/teacher/history/${session.id}`)}
+                                        style={{
+                                            display: 'grid', gridTemplateColumns: '2.5fr 100px 110px 180px 40px',
+                                            padding: '1rem 1.5rem', cursor: 'pointer', alignItems: 'center',
+                                            borderBottom: idx < sessions.length - 1 ? '1px solid #f8f5f2' : 'none',
+                                            transition: 'background 0.12s'
+                                        }}
+                                        onMouseEnter={e => e.currentTarget.style.background = '#fafaf9'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                    >
+                                        {/* 제목 */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <div style={{
+                                                width: '8px', height: '8px', borderRadius: '50%',
+                                                background: color, flexShrink: 0
+                                            }} />
+                                            <div>
+                                                <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.95rem' }}>
+                                                    {session.title}
+                                                </div>
+                                                <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '1px' }}>
+                                                    {session.type === 'lesson' ? '수업 꾸러미' : session.type}
+                                                    {session.slideCount ? ` · ${session.slideCount}슬라이드` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* 참여 학생 */}
+                                        <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', color: '#64748b', fontWeight: 600, fontSize: '0.9rem' }}>
+                                            <Users size={14} color="#94a3b8" />
+                                            {session.studentCount || 0}명
+                                        </div>
+
+                                        {/* 정답률 */}
+                                        <div style={{ textAlign: 'center' }}>
+                                            {acc !== null && acc !== undefined ? (
+                                                <span style={{
+                                                    background: acc >= 80 ? '#f0fdf4' : acc >= 50 ? '#fffbeb' : '#fef2f2',
+                                                    color: acc >= 80 ? '#16a34a' : acc >= 50 ? '#d97706' : '#dc2626',
+                                                    padding: '3px 10px', borderRadius: '999px',
+                                                    fontWeight: 700, fontSize: '0.85rem'
+                                                }}>{acc}%</span>
+                                            ) : (
+                                                <span style={{ color: '#e2e8f0', fontSize: '0.8rem' }}>—</span>
+                                            )}
+                                        </div>
+
+                                        {/* 날짜 */}
+                                        <div style={{ textAlign: 'center', fontSize: '0.8rem', color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
+                                            <Calendar size={12} />
+                                            {dateStr}
+                                        </div>
+
+                                        {/* 화살표 */}
+                                        <div style={{ display: 'flex', justifyContent: 'center', color: '#cbd5e1' }}>
+                                            <ChevronRight size={16} />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
 
             <StudentPreviewModal
                 isOpen={isPreviewOpen}
