@@ -14,6 +14,7 @@ import MultipleChoiceStudent from './MultipleChoiceStudent';
 import ShortAnswerStudent from './ShortAnswerStudent';
 import WhiteboardStudent from './WhiteboardStudent';
 import PollStudent from './PollStudent';
+import VideoPlayerWithQuiz from './VideoPlayerWithQuiz';
 
 const extractYoutubeId = (url) => {
     if (!url) return null;
@@ -230,6 +231,9 @@ const LessonStudentMode = () => {
                 // 교사가 실시간으로 바꾼 모드 우선, 없으면 슬라이드 저장값
                 const effectiveMode = liveVideoModes[currentStepIndex] ?? (currentProblemData.videoMode || 'class');
                 const isClassMode = effectiveMode === 'class';
+                const trimStart = currentProblemData.trimStart ?? 0;
+                const trimEnd = currentProblemData.trimEnd ?? null;
+                const quizPoints = currentProblemData.quizPoints || [];
                 return (
                     <div style={{ display: 'flex', flexDirection: 'column', padding: '2rem', gap: '1rem' }}>
                         {currentProblemData.title && (
@@ -244,15 +248,21 @@ const LessonStudentMode = () => {
                                 <p style={{ color: '#9ca3af', fontSize: '1rem', textAlign: 'center' }}>교사가 수업 화면으로 영상을 재생합니다.</p>
                             </div>
                         ) : videoId ? (
-                            <div style={{ borderRadius: '12px', overflow: 'hidden', aspectRatio: '16/9' }}>
-                                <iframe
-                                    src={`https://www.youtube.com/embed/${videoId}`}
-                                    title="YouTube video"
-                                    style={{ width: '100%', height: '100%', border: 'none' }}
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                />
-                            </div>
+                            <VideoPlayerWithQuiz
+                                key={`${videoId}-${currentStepIndex}`}
+                                videoId={videoId}
+                                trimStart={trimStart}
+                                trimEnd={trimEnd}
+                                quizPoints={quizPoints}
+                                onQuizAnswer={(quizId, answer, isCorrect) => {
+                                    socketWrapper?.emit('submitLessonAnswer', {
+                                        answer: `[퀴즈:${quizId}] ${answer}`,
+                                        isQuizAnswer: true,
+                                        quizId,
+                                        isCorrect,
+                                    });
+                                }}
+                            />
                         ) : (
                             <p style={{ color: '#94a3b8', textAlign: 'center' }}>동영상이 없습니다.</p>
                         )}
