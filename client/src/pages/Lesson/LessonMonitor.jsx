@@ -315,7 +315,7 @@ const LessonMonitor = () => {
                             fontWeight: 700, fontSize: '0.85rem'
                         }}
                     >
-                        <Save size={16} /> {saving ? '저장 중...' : '수업 저장'}
+                        <Save size={16} /> {saving ? '저장 중...' : '수업 기록 저장'}
                     </button>
                     <button
                         onClick={() => setShowStats(true)}

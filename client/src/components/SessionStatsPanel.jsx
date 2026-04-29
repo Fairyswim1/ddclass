@@ -58,13 +58,33 @@ function evaluateAnswer(problem, answer) {
 }
 
 // ─────────────────────────────────────────────
-// 생기부 문구 자동 생성 (실제 문제 내용 기반)
+// 문제 유형 → 자연어 서술 헬퍼
+// ─────────────────────────────────────────────
+const TYPE_VERBAL = {
+  'fill-blanks':      { activity: '빈칸 채우기 문제',   doing: '빈칸을 채우는' },
+  'order-matching':   { activity: '순서 맞추기 문제',   doing: '순서를 배열하는' },
+  'multiple-choice':  { activity: '객관식 문제',        doing: '선택지를 고르는' },
+  'short-answer':     { activity: '주관식 문제',        doing: '답을 서술하는' },
+};
+
+// 정답률 → 수행 수준 서술어
+function perfPhrase(pct) {
+  if (pct === 100) return '모두 정확히 해결함';
+  if (pct >= 80)   return '대부분 정확히 이해함';
+  if (pct >= 60)   return '기본적인 이해를 보였으나 일부 오답이 있음';
+  if (pct >= 40)   return '절반 정도를 이해한 것으로 나타남';
+  if (pct >= 20)   return '핵심 개념 파악에 어려움을 보임';
+  return '개념 이해가 충분히 이루어지지 않아 추가 지도가 필요함';
+}
+
+// ─────────────────────────────────────────────
+// 생기부 문구 자동 생성 (문제별 구체 묘사)
 // ─────────────────────────────────────────────
 function generateRecord(name, overallAccuracy, avgSubmitCount, problems, slideResults) {
-  // 평가 가능한 슬라이드 + 결과 페어
+  // 평가 가능 슬라이드 + 결과 페어
   const objectivePairs = problems
     .map((p, i) => ({ problem: p, result: slideResults?.[i] }))
-    .filter(pair => pair.result?.hasObjective);
+    .filter(pair => pair.result?.hasObjective && pair.result?.answered);
 
   if (objectivePairs.length === 0) {
     const titles = problems.map(p => p.title).filter(Boolean).slice(0, 3);
@@ -72,47 +92,57 @@ function generateRecord(name, overallAccuracy, avgSubmitCount, problems, slideRe
     return `${name} 학생은 ${contentRef} 학습 활동에 성실히 참여하였으며, 적극적인 태도로 수업에 임함.`;
   }
 
-  // 잘한 슬라이드 / 어려웠던 슬라이드 분류
-  const strongPairs = objectivePairs.filter(pair => pair.result.percentage >= 80 && pair.result.answered);
-  const weakPairs   = objectivePairs.filter(pair => pair.result.percentage < 50  && pair.result.answered);
+  // 문제별 구체 묘사 (최대 3개)
+  const descParts = objectivePairs.slice(0, 3).map(({ problem, result }) => {
+    const title = problem.title ? `'${problem.title}'` : null;
+    const verbal = TYPE_VERBAL[problem.type];
+    const activity = verbal ? verbal.activity : '문제';
+    const perf = perfPhrase(result.percentage);
 
-  const strongTitles = strongPairs.map(pair => pair.problem.title).filter(Boolean).slice(0, 2);
-  const weakTitles   = weakPairs.map(pair => pair.problem.title).filter(Boolean).slice(0, 2);
-  const allTitles    = objectivePairs.map(pair => pair.problem.title).filter(Boolean).slice(0, 3);
-
-  const qt = (t) => `'${t}'`;
-
-  let base = '';
-  if (overallAccuracy >= 85) {
-    if (strongTitles.length > 0) {
-      base = `${name} 학생은 ${strongTitles.map(qt).join(', ')} 등의 내용을 정확히 이해하고 있으며, 높은 수준의 논리적 분석력과 문제 해결 능력을 보임.`;
+    if (title) {
+      // 예: '광합성' 내용의 빈칸 채우기 문제에서 대부분 정확히 이해함
+      return `${title} 내용의 ${activity}에서 ${perf}`;
     } else {
-      base = `${name} 학생은 ${allTitles.length > 0 ? allTitles.map(qt).join(', ') + ' 등' : '제시된 학습 내용'} 전반에 대한 이해도가 높고, 핵심 개념을 정확히 파악하여 적용하는 능력이 우수함.`;
+      return `${activity}에서 ${perf}`;
     }
-  } else if (overallAccuracy >= 60) {
-    const strongRef = strongTitles.length > 0 ? `${strongTitles.map(qt).join(', ')} 부분은 잘 이해하고 있으나, ` : '';
-    const weakRef   = weakTitles.length > 0
-      ? `${weakTitles.map(qt).join(', ')} 관련 개념의 추가 학습이 필요함.`
-      : '일부 개념에 대한 심화 학습이 요구됨.';
-    base = `${name} 학생은 학습의 기본 흐름을 이해하고 있으며, ${strongRef}${weakRef}`;
-  } else if (overallAccuracy >= 30) {
-    const weakRef = weakTitles.length > 0
-      ? `${weakTitles.map(qt).join(', ')} 관련 핵심 개념`
-      : (allTitles.length > 0 ? `${allTitles.map(qt).join(', ')} 등의 핵심 개념` : '핵심 개념');
-    base = `${name} 학생은 ${weakRef}에 대한 반복 학습이 요구되며, 교사의 피드백을 바탕으로 오개념 교정이 이루어진다면 충분한 발전 가능성이 있음.`;
+  });
+
+  // 앞부분: 문제별 설명 나열
+  let base = `${name} 학생은 `;
+  if (descParts.length === 1) {
+    base += descParts[0] + '.';
+  } else if (descParts.length === 2) {
+    base += `${descParts[0]}. 또한 ${descParts[1]}.`;
   } else {
-    const ref = allTitles.length > 0 ? `${allTitles.map(qt).join(', ')} 등` : '해당 학습 내용';
-    base = `${name} 학생은 ${ref}의 기초 개념부터 단계적으로 접근할 필요가 있으며, 개별 맞춤형 보충 학습을 통한 학습 결손 보완이 필요함.`;
+    base += `${descParts[0]}. ${descParts[1]}. 아울러 ${descParts[2]}.`;
   }
 
+  // 뒷부분: 종합 평가
+  let summary = '';
+  if (overallAccuracy >= 85) {
+    summary = ' 전반적으로 학습 내용을 충실히 습득하여 높은 성취를 보임.';
+  } else if (overallAccuracy >= 60) {
+    const weakPairs = objectivePairs.filter(p => p.result.percentage < 50);
+    if (weakPairs.length > 0 && weakPairs[0].problem.title) {
+      summary = ` '${weakPairs[0].problem.title}' 관련 개념에 대한 추가 학습을 통해 더욱 성장할 수 있을 것으로 기대됨.`;
+    } else {
+      summary = ' 지속적인 연습을 통해 충분한 성장 가능성이 있음.';
+    }
+  } else if (overallAccuracy >= 30) {
+    summary = ' 핵심 개념에 대한 반복 학습과 교사의 개별 피드백을 통해 오개념 교정이 이루어진다면 발전이 기대됨.';
+  } else {
+    summary = ' 기초 개념부터 단계적으로 접근하는 개별 맞춤 지도가 효과적일 것으로 판단됨.';
+  }
+
+  // 학습 태도 (시도 횟수 기반)
   let effort = '';
   if (avgSubmitCount >= 6) {
-    effort = ' 반복적인 시도를 통해 끈기 있게 문제를 해결하려는 학습 태도가 인상적임.';
+    effort = ' 반복적인 시도를 통해 끈기 있게 문제를 해결하려는 태도가 돋보임.';
   } else if (avgSubmitCount <= 2 && overallAccuracy >= 70) {
-    effort = ' 문제를 빠르고 정확하게 판단하는 효율적인 학습 능력을 보임.';
+    effort = ' 빠르고 정확한 판단력으로 효율적인 학습 능력을 보임.';
   }
 
-  return base + effort;
+  return base + summary + effort;
 }
 
 // ─────────────────────────────────────────────
