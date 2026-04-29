@@ -129,13 +129,20 @@ const TeacherDashboard = () => {
         if (!currentUser) return;
         try {
             setSessionsLoading(true);
+            // orderBy를 제거하고 클라이언트에서 정렬 (복합 인덱스 불필요)
             const q = query(
                 collection(db, 'sessions'),
-                where('teacherId', '==', currentUser.uid),
-                orderBy('createdAt', 'desc')
+                where('teacherId', '==', currentUser.uid)
             );
             const snap = await getDocs(q);
-            setSessions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            // createdAt 기준 최신순 정렬
+            list.sort((a, b) => {
+                const ta = a.createdAt?.seconds ?? 0;
+                const tb = b.createdAt?.seconds ?? 0;
+                return tb - ta;
+            });
+            setSessions(list);
         } catch (e) {
             console.error('세션 불러오기 오류:', e);
         } finally {
@@ -444,7 +451,7 @@ const TeacherDashboard = () => {
                 ].map(tab => (
                     <button
                         key={tab.key}
-                        onClick={() => setActiveTab(tab.key)}
+                        onClick={() => { setActiveTab(tab.key); if (tab.key === 'history') fetchSessions(); }}
                         style={{
                             display: 'flex', alignItems: 'center', gap: '0.5rem',
                             padding: '0.75rem 1.25rem',

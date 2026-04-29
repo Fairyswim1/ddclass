@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { X, Copy, Check, BarChart2, TrendingUp, Users, Award } from 'lucide-react';
+import { X, Copy, Check, BarChart2, TrendingUp, Users, Award, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 // ─────────────────────────────────────────────
 // 문제 유형별 정답 평가
@@ -57,29 +58,58 @@ function evaluateAnswer(problem, answer) {
 }
 
 // ─────────────────────────────────────────────
-// 생기부 문구 자동 생성
+// 생기부 문구 자동 생성 (실제 문제 내용 기반)
 // ─────────────────────────────────────────────
-function generateRecord(name, overallAccuracy, avgSubmitCount, objectiveSlideCount) {
-  if (objectiveSlideCount === 0) {
-    return `${name} 학생은 수업 활동에 성실히 참여하였으며, 다양한 학습 과제에 적극적으로 임하는 태도를 보임.`;
+function generateRecord(name, overallAccuracy, avgSubmitCount, problems, slideResults) {
+  // 평가 가능한 슬라이드 + 결과 페어
+  const objectivePairs = problems
+    .map((p, i) => ({ problem: p, result: slideResults?.[i] }))
+    .filter(pair => pair.result?.hasObjective);
+
+  if (objectivePairs.length === 0) {
+    const titles = problems.map(p => p.title).filter(Boolean).slice(0, 3);
+    const contentRef = titles.length > 0 ? `'${titles.join(', ')}' 등의` : '다양한';
+    return `${name} 학생은 ${contentRef} 학습 활동에 성실히 참여하였으며, 적극적인 태도로 수업에 임함.`;
   }
 
-  let base;
+  // 잘한 슬라이드 / 어려웠던 슬라이드 분류
+  const strongPairs = objectivePairs.filter(pair => pair.result.percentage >= 80 && pair.result.answered);
+  const weakPairs   = objectivePairs.filter(pair => pair.result.percentage < 50  && pair.result.answered);
+
+  const strongTitles = strongPairs.map(pair => pair.problem.title).filter(Boolean).slice(0, 2);
+  const weakTitles   = weakPairs.map(pair => pair.problem.title).filter(Boolean).slice(0, 2);
+  const allTitles    = objectivePairs.map(pair => pair.problem.title).filter(Boolean).slice(0, 3);
+
+  const qt = (t) => `'${t}'`;
+
+  let base = '';
   if (overallAccuracy >= 85) {
-    base = `${name} 학생은 학습 내용에 대한 이해도가 높으며, 핵심 개념을 정확하게 파악하고 적용하는 능력이 우수함. 제시된 문제를 논리적으로 분석하여 높은 정확도로 해결함.`;
+    if (strongTitles.length > 0) {
+      base = `${name} 학생은 ${strongTitles.map(qt).join(', ')} 등의 내용을 정확히 이해하고 있으며, 높은 수준의 논리적 분석력과 문제 해결 능력을 보임.`;
+    } else {
+      base = `${name} 학생은 ${allTitles.length > 0 ? allTitles.map(qt).join(', ') + ' 등' : '제시된 학습 내용'} 전반에 대한 이해도가 높고, 핵심 개념을 정확히 파악하여 적용하는 능력이 우수함.`;
+    }
   } else if (overallAccuracy >= 60) {
-    base = `${name} 학생은 학습의 기본적인 흐름을 이해하고 있으나, 일부 개념에 대한 심화 학습이 필요한 것으로 관찰됨. 지속적인 연습을 통해 성장 가능성이 충분히 있음.`;
+    const strongRef = strongTitles.length > 0 ? `${strongTitles.map(qt).join(', ')} 부분은 잘 이해하고 있으나, ` : '';
+    const weakRef   = weakTitles.length > 0
+      ? `${weakTitles.map(qt).join(', ')} 관련 개념의 추가 학습이 필요함.`
+      : '일부 개념에 대한 심화 학습이 요구됨.';
+    base = `${name} 학생은 학습의 기본 흐름을 이해하고 있으며, ${strongRef}${weakRef}`;
   } else if (overallAccuracy >= 30) {
-    base = `${name} 학생은 학습 목표 달성을 위해 핵심 개념에 대한 반복 학습이 요구되며, 교사의 피드백을 바탕으로 오개념 교정이 이루어진다면 발전이 기대됨.`;
+    const weakRef = weakTitles.length > 0
+      ? `${weakTitles.map(qt).join(', ')} 관련 핵심 개념`
+      : (allTitles.length > 0 ? `${allTitles.map(qt).join(', ')} 등의 핵심 개념` : '핵심 개념');
+    base = `${name} 학생은 ${weakRef}에 대한 반복 학습이 요구되며, 교사의 피드백을 바탕으로 오개념 교정이 이루어진다면 충분한 발전 가능성이 있음.`;
   } else {
-    base = `${name} 학생은 기초 개념 이해부터 단계적으로 접근할 필요가 있으며, 개별 맞춤형 보충 학습을 통해 학습 결손을 보완하는 것이 효과적일 것으로 판단됨.`;
+    const ref = allTitles.length > 0 ? `${allTitles.map(qt).join(', ')} 등` : '해당 학습 내용';
+    base = `${name} 학생은 ${ref}의 기초 개념부터 단계적으로 접근할 필요가 있으며, 개별 맞춤형 보충 학습을 통한 학습 결손 보완이 필요함.`;
   }
 
   let effort = '';
-  if (avgSubmitCount >= 8) {
-    effort = ' 반복적인 시도와 수정 과정을 통해 끈기 있게 문제를 해결하려는 학습 태도가 인상적임.';
+  if (avgSubmitCount >= 6) {
+    effort = ' 반복적인 시도를 통해 끈기 있게 문제를 해결하려는 학습 태도가 인상적임.';
   } else if (avgSubmitCount <= 2 && overallAccuracy >= 70) {
-    effort = ' 문제 상황을 빠르게 파악하고 효율적으로 판단하는 능력을 보임.';
+    effort = ' 문제를 빠르고 정확하게 판단하는 효율적인 학습 능력을 보임.';
   }
 
   return base + effort;
@@ -146,7 +176,7 @@ const SessionStatsPanel = ({ mode = 'lesson', students = [], problems = [], titl
         ? Math.round(submitCounts.reduce((a, b) => a + b, 0) / submitCounts.length)
         : 0;
 
-      const record = generateRecord(student.name, overallAccuracy ?? 0, avgSubmitCount, objectiveProblems.length);
+      const record = generateRecord(student.name, overallAccuracy ?? 0, avgSubmitCount, problems, slideResults);
 
       return { ...student, slideResults, overallAccuracy, avgSubmitCount, record };
     });
@@ -179,6 +209,48 @@ const SessionStatsPanel = ({ mode = 'lesson', students = [], problems = [], titl
       setCopiedAll(true);
       setTimeout(() => setCopiedAll(false), 2000);
     });
+  };
+
+  const handleExcelDownload = () => {
+    // 헤더 행
+    const slideHeaders = problems.map((p, i) => `${i + 1}.${p?.title || '슬라이드'} (${SLIDE_TYPE_LABEL[p?.type] || p?.type || '?'})`);
+    const headers = ['학생 이름', ...slideHeaders, '전체 정답률', '평균 시도 횟수', '생기부 문구'];
+
+    // 학생 데이터 행
+    const rows = studentStats.map(student => {
+      const slideVals = student.slideResults.map(r => {
+        if (!r.hasObjective) return r.answered ? '참여' : '미응답';
+        if (!r.answered) return '미응답';
+        return `${r.percentage}% (${r.correct}/${r.total}, ${r.submitCount}회)`;
+      });
+      return [
+        student.name,
+        ...slideVals,
+        student.overallAccuracy !== null ? `${student.overallAccuracy}%` : '—',
+        student.avgSubmitCount > 0 ? `${student.avgSubmitCount}회` : '—',
+        student.record,
+      ];
+    });
+
+    // 슬라이드 평균 행
+    const slideAvgRow = [
+      '슬라이드 평균',
+      ...slideAvgAccuracy.map(avg => avg !== null ? `${avg}%` : '—'),
+      '', '', '',
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows, [], slideAvgRow]);
+
+    // 열 너비 조정
+    ws['!cols'] = [
+      { wch: 14 },
+      ...problems.map(() => ({ wch: 22 })),
+      { wch: 12 }, { wch: 14 }, { wch: 60 },
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '수업 통계');
+    XLSX.writeFile(wb, `${title || '수업'}_통계.xlsx`);
   };
 
   const SLIDE_TYPE_LABEL = {
@@ -221,6 +293,17 @@ const SessionStatsPanel = ({ mode = 'lesson', students = [], problems = [], titl
             </div>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <button
+              onClick={handleExcelDownload}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                padding: '0.5rem 1rem', background: '#16a34a',
+                color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer',
+                fontSize: '0.82rem', fontWeight: 600
+              }}
+            >
+              <Download size={14} /> 엑셀 저장
+            </button>
             <button
               onClick={handleCopyAll}
               style={{
