@@ -5,6 +5,7 @@ import { ArrowLeft, Users, Layout, Send, Volume2 } from 'lucide-react';
 import './FreeMonitor.css';
 import { resolveApiUrl } from '../../utils/url';
 import LatexRenderer from '../../components/LatexRenderer';
+import { getPresetBackgroundStyle } from '../../utils/whiteboardPresets';
 
 const FreeMonitor = () => {
     const { id } = useParams();
@@ -172,18 +173,26 @@ const FreeMonitor = () => {
                                 overflow: 'hidden'
                             }}
                         >
-                            <img
-                                src={problem?.backgroundUrl}
-                                alt="thumb"
-                                style={{
-                                    display: 'block',
-                                    maxWidth: '100%',
-                                    maxHeight: '100%',
-                                    pointerEvents: 'none',
-                                    transform: `scale(${problem?.bgScale || 1})`,
-                                    transformOrigin: 'center'
-                                }}
-                            />
+                            {problem?.backgroundUrl ? (
+                                <img
+                                    src={problem.backgroundUrl}
+                                    alt="thumb"
+                                    style={{
+                                        display: 'block',
+                                        maxWidth: '100%',
+                                        maxHeight: '100%',
+                                        pointerEvents: 'none',
+                                        transform: `scale(${problem?.bgScale || 1})`,
+                                        transformOrigin: 'center'
+                                    }}
+                                />
+                            ) : (
+                                <div style={{
+                                    width: '100%',
+                                    aspectRatio: `${problem?.aspectRatio || 16 / 9}`,
+                                    ...getPresetBackgroundStyle(problem?.backgroundType || 'blank')
+                                }} />
+                            )}
                             <div
                                 className="thumb-canvas"
                                 style={{
@@ -263,19 +272,28 @@ const FreeMonitor = () => {
                                     overflow: 'hidden'
                                 }}
                             >
-                                <img
-                                    src={resolveApiUrl(problem?.backgroundUrl)}
-                                    alt="detail"
-                                    style={{
-                                        display: 'block',
-                                        maxWidth: '100%',
-                                        maxHeight: '100%',
-                                        pointerEvents: 'none',
-                                        transform: `scale(${problem?.bgScale || 1})`,
-                                        transformOrigin: 'center',
-                                        transition: 'transform 0.3s ease'
-                                    }}
-                                />
+                                {problem?.backgroundUrl ? (
+                                    <img
+                                        src={resolveApiUrl(problem.backgroundUrl)}
+                                        alt="detail"
+                                        style={{
+                                            display: 'block',
+                                            maxWidth: '100%',
+                                            maxHeight: '100%',
+                                            pointerEvents: 'none',
+                                            transform: `scale(${problem?.bgScale || 1})`,
+                                            transformOrigin: 'center',
+                                            transition: 'transform 0.3s ease'
+                                        }}
+                                    />
+                                ) : (
+                                    <div style={{
+                                        width: '100%',
+                                        minWidth: 300,
+                                        aspectRatio: `${problem?.aspectRatio || 16 / 9}`,
+                                        ...getPresetBackgroundStyle(problem?.backgroundType || 'blank')
+                                    }} />
+                                )}
                                 <div
                                     className="detail-canvas"
                                     ref={detailCanvasRef}

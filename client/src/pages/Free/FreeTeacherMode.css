@@ -960,3 +960,26 @@
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
+
+/* 배경 프리셋 패널 (자유 보드 교사 모드) */
+.free-bg-preset-panel {
+    width: 100%;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.free-bg-preset-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 0.75rem;
+}
+
+.free-bg-preset-divider {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin: 0.75rem 0 0;
+}

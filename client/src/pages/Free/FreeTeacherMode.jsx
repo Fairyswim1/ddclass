@@ -11,6 +11,7 @@ import './FreeTeacherMode.css';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
 import LatexRenderer from '../../components/LatexRenderer';
 import { resolveApiUrl } from '../../utils/url';
+import { WHITEBOARD_PRESETS, getPresetBackgroundStyle } from '../../utils/whiteboardPresets';
 
 // Set worker for PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -20,6 +21,7 @@ const FreeTeacherMode = () => {
     const [title, setTitle] = useState('');
     const [step, setStep] = useState('input'); // input, monitor
     const [backgroundUrl, setBackgroundUrl] = useState('');
+    const [backgroundType, setBackgroundType] = useState('blank');
     const [items, setItems] = useState([]); // { id, content, type, width, fontSize }
     const [isPublic, setIsPublic] = useState(false);
     const { currentUser, nickname } = useAuth();
@@ -59,6 +61,7 @@ const FreeTeacherMode = () => {
                 const data = docSnap.data();
                 setTitle(data.title);
                 setBackgroundUrl(data.backgroundUrl || '');
+                setBackgroundType(data.backgroundType || 'blank');
                 setItems(data.items || []);
                 setAspectRatio(data.aspectRatio || 16 / 9);
                 setIsPublic(data.isPublic || false);
@@ -275,8 +278,12 @@ const FreeTeacherMode = () => {
         setItems(items.filter(i => i.id !== id));
     };
     const handleSave = async () => {
-        if (!title || !backgroundUrl) {
-            alert('제목과 배경 이미지를 설정해주세요.');
+        if (!title || (!backgroundUrl && backgroundType === 'blank' && items.length === 0)) {
+            alert('제목을 입력하고 배경이나 카드를 하나 이상 설정해주세요.');
+            return;
+        }
+        if (!title) {
+            alert('제목을 입력해주세요.');
             return;
         }
         if (!subject) {
@@ -307,6 +314,7 @@ const FreeTeacherMode = () => {
                 pinNumber,
                 title,
                 backgroundUrl,
+                backgroundType,
                 items: items.map(i => ({ ...i, isPlaced: false, x: 0, y: 0 })), // 학생용 초기 상태
                 aspectRatio,
                 baseWidth: 1000,
@@ -561,20 +569,66 @@ const FreeTeacherMode = () => {
                             {/* Center: Workspace (Background Only) */}
                             <section className="teacher-workspace">
                                 <section className="center-preview-area">
-                                    {!backgroundUrl ? (
-                                        <div
-                                            className={`center-upload-zone ${isDraggingOver ? 'dragging' : ''}`}
-                                            onClick={() => fileInputRef.current.click()}
-                                            onDragOver={handleDragOver}
-                                            onDragLeave={handleDragLeave}
-                                            onDrop={handleDrop}
-                                        >
-                                            <div className="upload-icon-circle">
-                                                <Upload size={48} color="#E6B400" />
+                                    {!backgroundUrl && backgroundType === 'blank' ? (
+                                        <div style={{ width: '100%' }}>
+                                            {/* 배경 프리셋 선택 */}
+                                            <div className="free-bg-preset-panel">
+                                                <div className="free-bg-preset-title">📋 배경 스타일 선택</div>
+                                                <div className="wb-preset-grid">
+                                                    {WHITEBOARD_PRESETS.map((preset) => {
+                                                        if (preset.id === 'custom') return null;
+                                                        const isActive = backgroundType === preset.id && !backgroundUrl;
+                                                        return (
+                                                            <button
+                                                                key={preset.id}
+                                                                type="button"
+                                                                className={`wb-preset-btn ${isActive ? 'active' : ''}`}
+                                                                onClick={() => setBackgroundType(preset.id)}
+                                                            >
+                                                                <div className="wb-preset-thumb" style={getPresetBackgroundStyle(preset.id)} />
+                                                                <span className="wb-preset-label">{preset.emoji} {preset.label}</span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                                <div className="free-bg-preset-divider">— 또는 이미지 직접 업로드 —</div>
                                             </div>
-                                            <h3>배경 이미지 업로드</h3>
-                                            <p>클릭하거나 이미지를 여기로 드래그하세요</p>
-                                            <span className="upload-hint">JPG, PNG, PDF 지원 (PDF는 1페이지만)</span>
+                                            {/* 이미지 업로드 존 */}
+                                            <div
+                                                className={`center-upload-zone ${isDraggingOver ? 'dragging' : ''}`}
+                                                onClick={() => fileInputRef.current.click()}
+                                                onDragOver={handleDragOver}
+                                                onDragLeave={handleDragLeave}
+                                                onDrop={handleDrop}
+                                                style={{ marginTop: '0.75rem' }}
+                                            >
+                                                <div className="upload-icon-circle">
+                                                    <Upload size={36} color="#E6B400" />
+                                                </div>
+                                                <h3>배경 이미지 업로드</h3>
+                                                <p>클릭하거나 이미지를 여기로 드래그하세요</p>
+                                                <span className="upload-hint">JPG, PNG, PDF 지원 (PDF는 1페이지만)</span>
+                                            </div>
+                                        </div>
+                                    ) : !backgroundUrl ? (
+                                        /* 프리셋 선택된 상태 - 배경 미리보기 */
+                                        <div className="canvas-wrapper" style={{ position: 'relative' }}>
+                                            <div
+                                                style={{
+                                                    width: '100%',
+                                                    aspectRatio: `${aspectRatio}`,
+                                                    minHeight: 300,
+                                                    ...getPresetBackgroundStyle(backgroundType)
+                                                }}
+                                            />
+                                            <div className="canvas-overlay-tools">
+                                                <button
+                                                    className="btn-change-bg-prominent"
+                                                    onClick={() => { setBackgroundType('blank'); setBackgroundUrl(''); }}
+                                                >
+                                                    <ImageIcon size={18} /> 배경 다시 선택하기
+                                                </button>
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="canvas-wrapper">
@@ -616,7 +670,7 @@ const FreeTeacherMode = () => {
                                                     <span className="zoom-value">{Math.round(bgScale * 100)}%</span>
                                                     <button className="btn-zoom-reset" onClick={() => setBgScale(1)}>리셋</button>
                                                 </div>
-                                                <button className="btn-change-bg-prominent" onClick={() => { setBackgroundUrl(''); setBgScale(1); }}>
+                                                <button className="btn-change-bg-prominent" onClick={() => { setBackgroundUrl(''); setBackgroundType('blank'); setBgScale(1); }}>
                                                     <ImageIcon size={18} /> 배경 다른 사진으로 변경하기
                                                 </button>
                                             </div>

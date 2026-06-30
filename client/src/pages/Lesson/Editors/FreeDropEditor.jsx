@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Upload, Trash2, Plus, Type, Image as ImageIcon, Loader2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { resolveApiUrl } from '../../../utils/url';
+import { WHITEBOARD_PRESETS, getPresetBackgroundStyle } from '../../../utils/whiteboardPresets';
 
 const FONT_SIZES = { S: 14, M: 22, L: 32 };
 
@@ -13,7 +14,13 @@ const FreeDropEditor = ({ slide, onChange }) => {
 
     const items = slide.items || [];
     const backgroundUrl = slide.backgroundUrl || '';
+    const backgroundType = slide.backgroundType || 'blank';
     const allowReuse = slide.allowReuse || false;
+
+    const handleSelectPreset = (id) => {
+        if (id === 'custom') return;
+        onChange({ backgroundType: id, backgroundUrl: null });
+    };
 
     const upload = async (file) => {
         const formData = new FormData();
@@ -31,7 +38,7 @@ const FreeDropEditor = ({ slide, onChange }) => {
         setUploading(true);
         try {
             const url = await upload(file);
-            onChange({ backgroundUrl: url });
+            onChange({ backgroundType: 'custom', backgroundUrl: url });
         } catch (err) {
             alert('배경 이미지 업로드 실패: ' + err.message);
         } finally {
@@ -102,21 +109,42 @@ const FreeDropEditor = ({ slide, onChange }) => {
                 />
             </div>
 
-            {/* 배경 이미지 */}
+            {/* 배경 선택 */}
             <div className="editor-group">
-                <label>배경 이미지</label>
-                <div className="free-bg-upload">
+                <label>배경 선택</label>
+                <p className="help-text">기본 배경 중 하나를 선택하거나, 직접 이미지를 업로드하세요.</p>
+
+                <div className="wb-preset-grid">
+                    {WHITEBOARD_PRESETS.map((preset) => {
+                        if (preset.id === 'custom') return null;
+                        const isActive = backgroundType === preset.id && !backgroundUrl;
+                        return (
+                            <button
+                                key={preset.id}
+                                type="button"
+                                className={`wb-preset-btn ${isActive ? 'active' : ''}`}
+                                onClick={() => handleSelectPreset(preset.id)}
+                            >
+                                <div className="wb-preset-thumb" style={getPresetBackgroundStyle(preset.id)} />
+                                <span className="wb-preset-label">{preset.emoji} {preset.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <div className="wb-custom-upload-section">
+                    <div className="wb-custom-upload-label">🖼️ 직접 이미지 업로드</div>
                     {backgroundUrl ? (
                         <div className="free-bg-preview">
-                            <img src={resolveApiUrl(backgroundUrl)} alt="배경 미리보기" />
-                            <button className="free-bg-remove" onClick={() => onChange({ backgroundUrl: null })}>
-                                <Trash2 size={14} /> 배경 제거
+                            <img src={resolveApiUrl(backgroundUrl)} alt="배경 미리보기" style={{ maxHeight: 120 }} />
+                            <button className="free-bg-remove" onClick={() => onChange({ backgroundType: 'blank', backgroundUrl: null })}>
+                                <Trash2 size={14} /> 이미지 제거
                             </button>
                         </div>
                     ) : (
-                        <label className="free-bg-drop">
-                            {uploading ? <Loader2 size={24} className="animate-spin" /> : <Upload size={24} />}
-                            <span>클릭하거나 이미지를 끌어다 놓으세요</span>
+                        <label className={`free-bg-drop wb-custom-drop ${backgroundType === 'custom' ? 'active' : ''}`}>
+                            {uploading ? <Loader2 size={20} className="animate-spin" /> : <Upload size={20} />}
+                            <span>클릭하여 이미지 업로드</span>
                             <input type="file" accept="image/*" onChange={handleBgUpload} style={{ display: 'none' }} />
                         </label>
                     )}

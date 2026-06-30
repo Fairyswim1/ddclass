@@ -6,6 +6,7 @@ import './FreeStudentMode.css';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { resolveApiUrl } from '../../utils/url';
+import { getPresetBackgroundStyle } from '../../utils/whiteboardPresets';
 
 const FreeStudentMode = ({ lessonProblemData = null, lessonRoomId = null, lessonNickname = null, lessonSocket = null }) => {
     const location = useLocation();
@@ -333,19 +334,31 @@ const FreeStudentMode = ({ lessonProblemData = null, lessonRoomId = null, lesson
                             boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
                         }}
                     >
-                        <img
-                            src={resolveApiUrl(problem.backgroundUrl)}
-                            alt="background"
-                            style={{
-                                display: 'block',
-                                maxWidth: '100%',
-                                maxHeight: '100%',
-                                pointerEvents: 'none',
-                                transform: `scale(${problem.bgScale || 1})`,
-                                transformOrigin: 'center',
-                                transition: 'transform 0.3s ease'
-                            }}
-                        />
+                        {problem.backgroundUrl ? (
+                            <img
+                                src={resolveApiUrl(problem.backgroundUrl)}
+                                alt="background"
+                                style={{
+                                    display: 'block',
+                                    maxWidth: '100%',
+                                    maxHeight: '100%',
+                                    pointerEvents: 'none',
+                                    transform: `scale(${problem.bgScale || 1})`,
+                                    transformOrigin: 'center',
+                                    transition: 'transform 0.3s ease'
+                                }}
+                            />
+                        ) : (
+                            <div
+                                style={{
+                                    width: '100%',
+                                    minWidth: 400,
+                                    minHeight: 300,
+                                    aspectRatio: `${problem.aspectRatio || 16 / 9}`,
+                                    ...getPresetBackgroundStyle(problem.backgroundType || 'blank')
+                                }}
+                            />
+                        )}
                         <div
                             className="student-master-canvas"
                             ref={canvasRef}
