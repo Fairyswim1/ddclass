@@ -1,23 +1,24 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { User, ArrowRight, Play } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Play } from 'lucide-react';
 import './StudentLogin.css';
-import { db } from '../firebase';
 import { resolveApiUrl } from '../utils/url';
 
 const StudentLogin = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const autoJoinAttempted = useRef(false);
     const [pin, setPin] = useState('');
     const [nickname, setNickname] = useState('');
 
-    const handleJoin = async () => {
-        if (!pin || !nickname) {
+    const performJoin = async (targetPin, targetNickname) => {
+        if (!targetPin || !targetNickname) {
             alert('PIN 번호와 닉네임을 모두 입력해주세요.');
             return;
         }
 
         try {
-            const response = await fetch(resolveApiUrl(`/api/find-problem/${pin}`));
+            const response = await fetch(resolveApiUrl(`/api/find-problem/${targetPin}`));
             const data = await response.json();
 
             if (data.success) {
@@ -25,19 +26,19 @@ const StudentLogin = () => {
 
                 if (problemType === 'lesson') {
                     navigate('/student/lesson', {
-                        state: { pin, nickname, autoJoin: true, lessonId: data.id }
+                        state: { pin: targetPin, nickname: targetNickname, autoJoin: true, lessonId: data.id }
                     });
                 } else if (problemType === 'order-matching') {
                     navigate('/student/order-matching', {
-                        state: { pin, nickname, autoJoin: true }
+                        state: { pin: targetPin, nickname: targetNickname, autoJoin: true }
                     });
                 } else if (problemType === 'free-drop') {
                     navigate('/student/free-dnd', {
-                        state: { pin, nickname, autoJoin: true }
+                        state: { pin: targetPin, nickname: targetNickname, autoJoin: true }
                     });
                 } else {
                     navigate('/student/fill-blanks', {
-                        state: { pin, nickname, autoJoin: true }
+                        state: { pin: targetPin, nickname: targetNickname, autoJoin: true }
                     });
                 }
             } else {
@@ -48,6 +49,27 @@ const StudentLogin = () => {
             alert('데이터 조회 중 오류가 발생했습니다: ' + error.message);
         }
     };
+
+    useEffect(() => {
+        const urlPin = searchParams.get('pin')?.trim() || '';
+        const urlNickname = searchParams.get('nickname')?.trim() || '학생';
+        const autoJoin = ['1', 'true', 'yes'].includes((searchParams.get('autoJoin') || '').toLowerCase());
+
+        if (urlPin) {
+            setPin(urlPin);
+        }
+
+        if (urlNickname) {
+            setNickname(urlNickname);
+        }
+
+        if (autoJoin && urlPin && urlNickname && !autoJoinAttempted.current) {
+            autoJoinAttempted.current = true;
+            performJoin(urlPin, urlNickname);
+        }
+    }, [searchParams]);
+
+    const handleJoin = () => performJoin(pin, nickname);
 
     return (
         <div className="student-login-container">
