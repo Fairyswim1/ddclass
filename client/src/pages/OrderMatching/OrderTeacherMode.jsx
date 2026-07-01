@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Save, Check, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -8,6 +8,7 @@ import './OrderTeacherMode.css';
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
+import ImageToLatexButton from '../../components/ImageToLatex/ImageToLatexButton';
 
 const OrderTeacherMode = () => {
     const navigate = useNavigate();
@@ -23,6 +24,8 @@ const OrderTeacherMode = () => {
     const [grade, setGrade] = useState('');
     const { id } = useParams();
     const [prevPin, setPrevPin] = useState('');
+    const titleRef = useRef(null);
+    const stepRefs = useRef([]);
 
     // 로그인 체크
     useEffect(() => {
@@ -214,8 +217,17 @@ const OrderTeacherMode = () => {
                             <div className="teacher-card fade-in">
                                 <div className="form-section">
                                     <div className="input-group">
-                                        <label>문제 제목</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                                            <label>문제 제목</label>
+                                            <ImageToLatexButton
+                                                targetRef={titleRef}
+                                                value={title}
+                                                onChange={setTitle}
+                                                small
+                                            />
+                                        </div>
                                         <input
+                                            ref={titleRef}
                                             type="text"
                                             className="styled-input"
                                             placeholder="문제 제목을 입력하세요"
@@ -289,8 +301,17 @@ const OrderTeacherMode = () => {
                                                     </button>
                                                 </div>
                                             </div>
+                                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.35rem' }}>
+                                                <ImageToLatexButton
+                                                    small
+                                                    getTargetElement={() => stepRefs.current[index]}
+                                                    value={text}
+                                                    onChange={(v) => handleStepChange(index, v)}
+                                                />
+                                            </div>
                                             <input
                                                 type="text"
+                                                ref={(el) => { stepRefs.current[index] = el; }}
                                                 className="styled-input-compact"
                                                 placeholder={`단계 ${index + 1}의 내용을 입력하세요`}
                                                 value={text}

@@ -8,6 +8,7 @@ import './TeacherMode.css';
 import ProblemMonitor from './ProblemMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
+import ImageToLatexButton from '../../components/ImageToLatex/ImageToLatexButton';
 
 const TeacherMode = () => {
     const navigate = useNavigate();
@@ -26,6 +27,8 @@ const TeacherMode = () => {
     const { id } = useParams();
     const [prevPin, setPrevPin] = useState('');
     const textRef = useRef(null);
+    const titleRef = useRef(null);
+    const inputTextRef = useRef(null);
 
     // 로그인 체크
     useEffect(() => {
@@ -323,8 +326,17 @@ const TeacherMode = () => {
                         <div className="teacher-card fade-in">
                             <div className="form-section">
                                 <div className="input-group">
-                                    <label>문제 제목</label>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                                        <label>문제 제목</label>
+                                        <ImageToLatexButton
+                                            targetRef={titleRef}
+                                            value={title}
+                                            onChange={setTitle}
+                                            small
+                                        />
+                                    </div>
                                     <input
+                                        ref={titleRef}
                                         type="text"
                                         className="styled-input"
                                         placeholder=""
@@ -351,8 +363,17 @@ const TeacherMode = () => {
                                     setGrade={setGrade}
                                 />
                                 <div className="input-group">
-                                    <label>본문 내용</label>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                                        <label>본문 내용</label>
+                                        <ImageToLatexButton
+                                            targetRef={inputTextRef}
+                                            value={inputText}
+                                            onChange={setInputText}
+                                            small
+                                        />
+                                    </div>
                                     <textarea
+                                        ref={inputTextRef}
                                         className="styled-textarea"
                                         placeholder={"여기에 문제로 낼 지문을 입력하거나 붙여넣으세요."}
                                         value={inputText}

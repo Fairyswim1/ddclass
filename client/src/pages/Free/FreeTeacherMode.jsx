@@ -10,6 +10,7 @@ import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import './FreeTeacherMode.css';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
 import LatexRenderer from '../../components/LatexRenderer';
+import ImageToLatexButton from '../../components/ImageToLatex/ImageToLatexButton';
 import { resolveApiUrl } from '../../utils/url';
 import { WHITEBOARD_PRESETS, getPresetBackgroundStyle } from '../../utils/whiteboardPresets';
 
@@ -81,6 +82,8 @@ const FreeTeacherMode = () => {
     const fileInputRef = useRef(null);
     const itemImageInputRef = useRef(null);
     const canvasRef = useRef(null);
+    const titleRef = useRef(null);
+    const inputTextRef = useRef(null);
 
     const handleFileUpload = async (file) => {
         if (!file) return;
@@ -405,8 +408,17 @@ const FreeTeacherMode = () => {
                             <aside className="tool-sidebar">
                                 <div className="sidebar-content">
                                     <div className="form-group">
-                                        <label>문제 제목</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.35rem' }}>
+                                            <label>문제 제목</label>
+                                            <ImageToLatexButton
+                                                targetRef={titleRef}
+                                                value={title}
+                                                onChange={setTitle}
+                                                small
+                                            />
+                                        </div>
                                         <input
+                                            ref={titleRef}
                                             type="text"
                                             placeholder="제목을 입력하세요"
                                             value={title}
@@ -438,9 +450,18 @@ const FreeTeacherMode = () => {
 
                                     <div className="card-add-container">
                                         <div className="card-type-section text-type">
-                                            <div className="section-label"><Type size={16} /> 텍스트 카드</div>
+                                            <div className="section-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                <span><Type size={16} /> 텍스트 카드</span>
+                                                <ImageToLatexButton
+                                                    small
+                                                    targetRef={inputTextRef}
+                                                    value={inputText}
+                                                    onChange={setInputText}
+                                                />
+                                            </div>
                                             <div className="input-with-button">
                                                 <input
+                                                    ref={inputTextRef}
                                                     type="text"
                                                     placeholder="내용을 입력하세요..."
                                                     value={inputText}

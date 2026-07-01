@@ -1,4 +1,6 @@
 // Last Redeploy Trigger: 2026-04-27 09:31 (PACING LOCK FIX - FORCE REDEPLOY)
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -49,6 +51,17 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB 제한
   },
 });
+
+const ocrUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB — image-to-latex
+  },
+});
+
+const { callOpenAiImageToLatex } = require('../services/imageToLatex');
+
+const OCR_ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
 
 // CORS 설정
 const corsOptions = {
@@ -350,6 +363,50 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
       success: false,
       message: '업로드 중 서버 오류 발생',
       debug: error.message
+    });
+  }
+});
+
+// -----------------------------------------------------
+// Feature: 이미지 → LaTeX (OpenAI Vision via Responses API)
+// TODO: rate limit per teacher/IP if usage grows
+// -----------------------------------------------------
+app.post('/api/image-to-latex', ocrUpload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: '파일이 없습니다.' });
+    }
+
+    if (!OCR_ALLOWED_MIME.includes(req.file.mimetype)) {
+      return res.status(400).json({
+        success: false,
+        error: 'png, jpg, jpeg, webp 형식만 지원합니다.',
+      });
+    }
+
+    if (req.file.size > 5 * 1024 * 1024) {
+      return res.status(400).json({
+        success: false,
+        error: '파일 크기는 5MB 이하여야 합니다.',
+      });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(503).json({
+        success: false,
+        error: 'OpenAI API가 설정되지 않았습니다. 서버 관리자에게 문의하세요.',
+      });
+    }
+
+    const base64 = req.file.buffer.toString('base64');
+    const dataUrl = `data:${req.file.mimetype};base64,${base64}`;
+    const result = await callOpenAiImageToLatex(dataUrl, req.file.mimetype);
+    res.json(result);
+  } catch (error) {
+    console.error('[IMAGE-TO-LATEX] Error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message || '변환에 실패했습니다.',
     });
   }
 });

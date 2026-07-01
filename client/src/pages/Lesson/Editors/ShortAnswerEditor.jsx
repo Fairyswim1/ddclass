@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Sigma, ImageIcon, X, Loader2 } from 'lucide-react';
 import LatexRenderer from '../../../components/LatexRenderer';
 import LatexKeyboard from '../../../components/LatexKeyboard';
+import ImageToLatexButton from '../../../components/ImageToLatex/ImageToLatexButton';
 import { resolveApiUrl } from '../../../utils/url';
 
 const ShortAnswerEditor = ({ slide, onChange }) => {
@@ -78,6 +79,11 @@ const ShortAnswerEditor = ({ slide, onChange }) => {
                         {questionImgUploading ? <Loader2 size={14} className="animate-spin" /> : <ImageIcon size={14} />}
                         {' '}이미지
                     </button>
+                    <ImageToLatexButton
+                        targetRef={questionRef}
+                        value={question}
+                        onChange={(v) => onChange({ question: v })}
+                    />
                     <input
                         type="file" accept="image/*" style={{ display: 'none' }}
                         ref={questionImgRef}
