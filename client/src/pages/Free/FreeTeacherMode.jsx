@@ -22,26 +22,18 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 const IMAGE_SIZE_MAP = { S: 15, M: 30, L: 50, XL: 80 };
 
-const CanvasImagePreviewLayer = ({ items }) => {
-    const imageItems = items.filter((item) => item.type === 'image');
-    if (imageItems.length === 0) return null;
+const CanvasImagePreviewLayer = ({ item }) => {
+    if (!item || item.type !== 'image') return null;
 
     return (
         <div className="canvas-preview-layer">
-            {imageItems.map((item, idx) => (
-                <div
-                    key={item.id}
-                    className="canvas-preview-item"
-                    style={{
-                        width: `${item.width}%`,
-                        left: `${8 + (idx * 7) % 55}%`,
-                        top: `${15 + (idx * 12) % 45}%`,
-                    }}
-                >
-                    <img src={resolveApiUrl(item.imageUrl)} alt="preview" draggable="false" />
-                    <span className="preview-size-badge">{item.width}%</span>
-                </div>
-            ))}
+            <div
+                className="canvas-preview-item canvas-preview-item--solo"
+                style={{ width: `${item.width}%` }}
+            >
+                <img src={resolveApiUrl(item.imageUrl)} alt="preview" draggable="false" />
+                <span className="preview-size-badge">{item.width}%</span>
+            </div>
         </div>
     );
 };
@@ -60,6 +52,7 @@ const FreeTeacherMode = () => {
     const [inputText, setInputText] = useState('');
     const [fontSizeScale, setFontSizeScale] = useState('M'); // S, M, L
     const [imageSizeScale, setImageSizeScale] = useState('M');
+    const [selectedImageItemId, setSelectedImageItemId] = useState(null);
     const [aspectRatio, setAspectRatio] = useState(16 / 9);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -317,7 +310,18 @@ const FreeTeacherMode = () => {
 
     const handleDeleteItem = (id) => {
         setItems(items.filter(i => i.id !== id));
+        if (selectedImageItemId === id) {
+            setSelectedImageItemId(null);
+        }
     };
+
+    const handleSelectImageItem = (id) => {
+        setSelectedImageItemId((prev) => (prev === id ? null : id));
+    };
+
+    const selectedImageItem = items.find(
+        (item) => item.id === selectedImageItemId && item.type === 'image'
+    );
     const handleSave = async () => {
         const hasBackground = Boolean(backgroundUrl) || backgroundType !== 'blank';
         if (!title || (!hasBackground && items.length === 0)) {
@@ -500,7 +504,7 @@ const FreeTeacherMode = () => {
                                             <button className="btn-sidebar-primary-large" onClick={() => itemImageInputRef.current.click()}>
                                                 <Upload size={18} /> 이미지 업로드 (다중 선택 가능)
                                             </button>
-                                            <p className="image-upload-hint">기본 크기 {IMAGE_SIZE_MAP[imageSizeScale]}% · 추가 후 캔버스에서 미리보기</p>
+                                            <p className="image-upload-hint">기본 크기 {IMAGE_SIZE_MAP[imageSizeScale]}% · 목록에서 카드를 클릭하면 캔버스 미리보기</p>
                                             <input type="file" ref={itemImageInputRef} hidden onChange={handleAddImage} accept="image/*" multiple />
                                         </div>
                                     </div>
@@ -544,8 +548,19 @@ const FreeTeacherMode = () => {
                                                     <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
                                                 </div>
                                             ) : (
-                                                /* 이미지 카드: 썸네일 + S/M/L/XL 버튼 + 슬라이더 */
-                                                <div className="tray-image-card">
+                                                <div
+                                                    className={`tray-image-card ${selectedImageItemId === item.id ? 'is-selected' : ''}`}
+                                                    onClick={() => handleSelectImageItem(item.id)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' || e.key === ' ') {
+                                                            e.preventDefault();
+                                                            handleSelectImageItem(item.id);
+                                                        }
+                                                    }}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    title="클릭하여 캔버스 크기 미리보기"
+                                                >
                                                     <div
                                                         className="tray-image-thumb"
                                                         style={{ width: `${Math.min(100, Math.max(45, item.width * 2.2))}%` }}
@@ -553,7 +568,7 @@ const FreeTeacherMode = () => {
                                                         <img src={resolveApiUrl(item.imageUrl)} alt="item" />
                                                         <div className="tray-image-size-label">{item.width}%</div>
                                                     </div>
-                                                    <div className="tray-image-controls">
+                                                    <div className="tray-image-controls" onClick={(e) => e.stopPropagation()}>
                                                         <div className="image-size-buttons">
                                                             {['S', 'M', 'L', 'XL'].map(s => (
                                                                 <button
@@ -563,9 +578,15 @@ const FreeTeacherMode = () => {
                                                                 >{s}</button>
                                                             ))}
                                                         </div>
-                                                        <button className="btn-delete-mini" onClick={() => handleDeleteItem(item.id)}>×</button>
+                                                        <button
+                                                            className="btn-delete-mini"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteItem(item.id);
+                                                            }}
+                                                        >×</button>
                                                     </div>
-                                                    <div className="image-slider-row">
+                                                    <div className="image-slider-row" onClick={(e) => e.stopPropagation()}>
                                                         <input
                                                             type="range"
                                                             min="5"
@@ -651,7 +672,7 @@ const FreeTeacherMode = () => {
                                                 aspectRatio={aspectRatio}
                                                 minHeight={300}
                                             />
-                                            <CanvasImagePreviewLayer items={items} />
+                                            <CanvasImagePreviewLayer item={selectedImageItem} />
                                             {backgroundType === 'table' && tableConfigOpen && (
                                                 <div className="table-bg-config-overlay">
                                                     <TableBackgroundConfig
@@ -687,7 +708,7 @@ const FreeTeacherMode = () => {
                                                 className="canvas-bg-img"
                                                 style={{ transform: `scale(${bgScale})` }}
                                             />
-                                            <CanvasImagePreviewLayer items={items} />
+                                            <CanvasImagePreviewLayer item={selectedImageItem} />
                                             <div className="canvas-overlay-tools">
                                                 <div className="zoom-control-panel">
                                                     <span className="zoom-label">배경 확대/축소</span>
