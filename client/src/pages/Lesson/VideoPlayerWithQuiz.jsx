@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { CheckCircle, Send } from 'lucide-react';
 
 // ─────────────────────────────────────────────
@@ -10,7 +10,7 @@ let ytApiCallbacks = [];
 function loadYouTubeAPI(cb) {
     if (ytApiLoaded && window.YT && window.YT.Player) { cb(); return; }
     ytApiCallbacks.push(cb);
-    if (ytApiCallbacks.length > 1) return; // 이미 로딩 중
+    if (ytApiCallbacks.length > 1) return;
     const tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
     document.head.appendChild(tag);
@@ -21,9 +21,6 @@ function loadYouTubeAPI(cb) {
     };
 }
 
-// ─────────────────────────────────────────────
-// QuizOverlay — 퀴즈 오버레이 UI
-// ─────────────────────────────────────────────
 const QuizOverlay = ({ quiz, onSubmit, submitted }) => {
     const [mcSelected, setMcSelected] = useState(null);
     const [saText, setSaText] = useState('');
@@ -49,7 +46,6 @@ const QuizOverlay = ({ quiz, onSubmit, submitted }) => {
                 width: '100%', maxWidth: '520px',
                 boxShadow: '0 25px 60px rgba(0,0,0,0.4)'
             }}>
-                {/* 상단 배지 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
                     <span style={{ background: '#f59e0b', color: 'white', borderRadius: '999px', padding: '3px 12px', fontSize: '0.75rem', fontWeight: 800 }}>
                         ⏸ 영상 중 퀴즈
@@ -59,7 +55,6 @@ const QuizOverlay = ({ quiz, onSubmit, submitted }) => {
                     </span>
                 </div>
 
-                {/* 질문 */}
                 <p style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginBottom: '1.25rem', lineHeight: 1.4 }}>
                     {quiz.question || '(질문 없음)'}
                 </p>
@@ -75,7 +70,6 @@ const QuizOverlay = ({ quiz, onSubmit, submitted }) => {
                         </p>
                     </div>
                 ) : quiz.type === 'multiple-choice' ? (
-                    /* 객관식 보기 */
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.25rem' }}>
                         {(quiz.options || []).map((opt, i) => (
                             <button
@@ -113,7 +107,6 @@ const QuizOverlay = ({ quiz, onSubmit, submitted }) => {
                         </button>
                     </div>
                 ) : (
-                    /* 주관식 입력 */
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                         <textarea
                             value={saText}
@@ -146,101 +139,149 @@ const QuizOverlay = ({ quiz, onSubmit, submitted }) => {
     );
 };
 
-// ─────────────────────────────────────────────
-// VideoPlayerWithQuiz
-// props:
-//   videoId: string
-//   trimStart: number (초, 기본 0)
-//   trimEnd: number | null
-//   quizPoints: [{ id, timeSeconds, type, question, options, answerIndex, answer }]
-//   onQuizAnswer: (quizId, answer, isCorrect) => void  (학습 데이터 전달용)
-// ─────────────────────────────────────────────
 const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoints = [], onQuizAnswer }) => {
-    const containerRef = useRef(null);
     const playerRef = useRef(null);
     const pollRef = useRef(null);
     const shownQuizzesRef = useRef(new Set());
     const lastKnownTimeRef = useRef(trimStart);
+    const pausedForQuizTimeRef = useRef(null);
+    const isResumingRef = useRef(false);
+    const startPollRef = useRef(() => {});
+    const resumePlaybackRef = useRef(() => {});
+
+    const trimStartRef = useRef(trimStart);
+    const trimEndRef = useRef(trimEnd);
+    trimStartRef.current = trimStart;
+    trimEndRef.current = trimEnd;
 
     const [activeQuiz, setActiveQuiz] = useState(null);
     const [submitted, setSubmitted] = useState(false);
 
-    // 퀴즈 정렬 (시간순)
-    const sortedQuizzes = [...quizPoints].sort((a, b) => a.timeSeconds - b.timeSeconds);
+    const sortedQuizzes = useMemo(
+        () => [...quizPoints].sort((a, b) => a.timeSeconds - b.timeSeconds),
+        [quizPoints]
+    );
+    const sortedQuizzesRef = useRef(sortedQuizzes);
+    sortedQuizzesRef.current = sortedQuizzes;
+
+    const stopPoll = useCallback(() => {
+        if (pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+        }
+    }, []);
 
     const startPoll = useCallback(() => {
         if (pollRef.current) return;
         pollRef.current = setInterval(() => {
-            if (!playerRef.current) return;
+            const player = playerRef.current;
+            if (!player?.getPlayerState) return;
+
             try {
-                const state = playerRef.current.getPlayerState?.();
-                if (state !== 1) return;
-                const currentTime = playerRef.current.getCurrentTime?.() ?? 0;
+                const state = player.getPlayerState();
+                if (state !== window.YT.PlayerState.PLAYING) return;
+
+                const currentTime = player.getCurrentTime?.() ?? 0;
+                const trimStartVal = trimStartRef.current;
+                const trimEndVal = trimEndRef.current;
 
                 if (Number.isFinite(currentTime) && currentTime > 0) {
                     lastKnownTimeRef.current = currentTime;
                 }
 
-                if (trimStart > 0 && currentTime < trimStart - 0.25) {
-                    if (lastKnownTimeRef.current >= trimStart) {
-                        playerRef.current.seekTo?.(lastKnownTimeRef.current, true);
-                        return;
-                    }
-                    playerRef.current.seekTo?.(trimStart, true);
-                    lastKnownTimeRef.current = trimStart;
+                if (!isResumingRef.current && trimStartVal > 0 && currentTime < trimStartVal - 0.25) {
+                    const fallback = Math.max(trimStartVal, lastKnownTimeRef.current, pausedForQuizTimeRef.current ?? 0);
+                    player.seekTo?.(fallback >= trimStartVal ? fallback : trimStartVal, true);
                     return;
                 }
 
-                if (trimEnd !== null && currentTime >= trimEnd - 0.15) {
-                    playerRef.current.pauseVideo?.();
-                    playerRef.current.seekTo?.(trimEnd, true);
-                    lastKnownTimeRef.current = trimEnd;
-                    clearInterval(pollRef.current);
-                    pollRef.current = null;
+                if (trimEndVal !== null && currentTime >= trimEndVal - 0.15) {
+                    player.pauseVideo?.();
+                    player.seekTo?.(trimEndVal, true);
+                    lastKnownTimeRef.current = trimEndVal;
+                    stopPoll();
                     return;
                 }
 
-                for (const quiz of sortedQuizzes) {
+                for (const quiz of sortedQuizzesRef.current) {
                     if (!shownQuizzesRef.current.has(quiz.id) && currentTime >= quiz.timeSeconds) {
+                        pausedForQuizTimeRef.current = currentTime;
                         lastKnownTimeRef.current = currentTime;
-                        playerRef.current.pauseVideo?.();
+                        player.pauseVideo?.();
                         shownQuizzesRef.current.add(quiz.id);
                         setActiveQuiz(quiz);
                         setSubmitted(false);
-                        clearInterval(pollRef.current);
-                        pollRef.current = null;
+                        stopPoll();
                         return;
                     }
                 }
             } catch (_) { /* player not ready */ }
         }, 250);
-    }, [sortedQuizzes, trimEnd, trimStart]);
+    }, [stopPoll]);
 
     const resumePlayback = useCallback(() => {
-        const resumeAt = Math.max(trimStart, lastKnownTimeRef.current || trimStart);
+        const player = playerRef.current;
+        if (!player) return;
+
+        const trimStartVal = trimStartRef.current;
+        const resumeAt = Math.max(
+            trimStartVal,
+            pausedForQuizTimeRef.current ?? lastKnownTimeRef.current ?? trimStartVal
+        );
+
+        isResumingRef.current = true;
+        stopPoll();
+
         try {
-            playerRef.current?.seekTo?.(resumeAt, true);
+            player.seekTo(resumeAt, true);
+        } catch (_) { /* ignore */ }
+
+        const tryPlay = (attempt = 0) => {
+            try {
+                player.playVideo?.();
+            } catch (_) { /* ignore */ }
+
+            if (attempt >= 6) {
+                isResumingRef.current = false;
+                pausedForQuizTimeRef.current = null;
+                startPollRef.current();
+                return;
+            }
+
             setTimeout(() => {
-                playerRef.current?.playVideo?.();
-                startPoll();
-            }, 150);
-        } catch (_) {
-            try { playerRef.current?.playVideo?.(); } catch (_) {}
-            startPoll();
-        }
-    }, [trimStart, startPoll]);
+                const state = player.getPlayerState?.();
+                if (state === window.YT.PlayerState.PLAYING) {
+                    isResumingRef.current = false;
+                    pausedForQuizTimeRef.current = null;
+                    lastKnownTimeRef.current = resumeAt;
+                    startPollRef.current();
+                    return;
+                }
+                tryPlay(attempt + 1);
+            }, 200);
+        };
+
+        setTimeout(() => tryPlay(0), 120);
+    }, [stopPoll]);
+
+    startPollRef.current = startPoll;
+    resumePlaybackRef.current = resumePlayback;
 
     useEffect(() => {
+        shownQuizzesRef.current = new Set();
+        pausedForQuizTimeRef.current = null;
         lastKnownTimeRef.current = trimStart;
-    }, [videoId, trimStart]);
+        isResumingRef.current = false;
+    }, [videoId, trimStart, trimEnd]);
 
     useEffect(() => {
         if (!videoId) return;
 
         loadYouTubeAPI(() => {
             const elementId = `yt-player-${videoId}`;
+
             if (playerRef.current) {
-                playerRef.current.destroy?.();
+                try { playerRef.current.destroy?.(); } catch (_) { /* ignore */ }
                 playerRef.current = null;
             }
 
@@ -261,15 +302,12 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
                     },
                     onStateChange: (event) => {
                         if (event.data === window.YT.PlayerState.PLAYING) {
-                            startPoll();
+                            startPollRef.current();
                         } else if (
                             event.data === window.YT.PlayerState.PAUSED ||
                             event.data === window.YT.PlayerState.ENDED
                         ) {
-                            if (pollRef.current) {
-                                clearInterval(pollRef.current);
-                                pollRef.current = null;
-                            }
+                            stopPoll();
                         }
                     }
                 }
@@ -277,17 +315,16 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
         });
 
         return () => {
-            if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-            playerRef.current?.destroy?.();
+            stopPoll();
+            try { playerRef.current?.destroy?.(); } catch (_) { /* ignore */ }
             playerRef.current = null;
         };
-    }, [videoId, trimStart, trimEnd, startPoll]);
+    }, [videoId, trimStart, trimEnd, stopPoll]);
 
     const handleQuizSubmit = (answer) => {
         if (!activeQuiz) return;
 
         let isCorrect = false;
-
         if (activeQuiz.type === 'multiple-choice') {
             isCorrect = answer === activeQuiz.answerIndex;
         } else {
@@ -301,19 +338,13 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
         setTimeout(() => {
             setActiveQuiz(null);
             setSubmitted(false);
-            resumePlayback();
-        }, 2000);
+            resumePlaybackRef.current();
+        }, 1500);
     };
 
     return (
-        <div
-            ref={containerRef}
-            style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}
-        >
-            {/* YouTube 플레이어 삽입 대상 div */}
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
             <div id={`yt-player-${videoId}`} style={{ width: '100%', height: '100%' }} />
-
-            {/* 퀴즈 오버레이 */}
             {activeQuiz && (
                 <QuizOverlay
                     quiz={activeQuiz}
