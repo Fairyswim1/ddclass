@@ -8,6 +8,12 @@ import * as XLSX from 'xlsx';
 import { db } from '../firebase';
 import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
+import {
+    buildStudentRecordPayloadFromStats,
+    fetchStudentRecords,
+    generateRecordFallback,
+    mergeAiRecords,
+} from '../utils/studentRecord';
 
 // ─────────────────────────────────────────────
 // 정답 평가 (SessionStatsPanel과 동일 로직)
@@ -69,22 +75,6 @@ function evaluateAnswer(problem, answer) {
 }
 
 // ─────────────────────────────────────────────
-// 생기부 문구 생성
-// ─────────────────────────────────────────────
-function generateRecord(name, accuracy, avgAttempts, objectiveCount) {
-    if (objectiveCount === 0) return `${name} 학생은 수업 활동에 성실히 참여하였음.`;
-    let base;
-    if (accuracy >= 85) base = `${name} 학생은 학습 내용에 대한 이해도가 높으며, 핵심 개념을 정확하게 파악하고 적용하는 능력이 우수함.`;
-    else if (accuracy >= 60) base = `${name} 학생은 학습의 기본적인 흐름을 이해하고 있으나, 일부 개념에 대한 심화 학습이 필요한 것으로 관찰됨.`;
-    else if (accuracy >= 30) base = `${name} 학생은 학습 목표 달성을 위해 핵심 개념에 대한 반복 학습이 요구되며, 교사의 피드백을 통한 오개념 교정이 기대됨.`;
-    else base = `${name} 학생은 기초 개념 이해부터 단계적으로 접근할 필요가 있으며, 개별 맞춤형 보충 학습이 효과적일 것으로 판단됨.`;
-    let effort = '';
-    if (avgAttempts >= 8) effort = ' 반복적인 시도와 수정을 통해 끈기 있게 문제를 해결하려는 학습 태도가 인상적임.';
-    else if (avgAttempts <= 2 && accuracy >= 70) effort = ' 문제 상황을 빠르게 파악하고 효율적으로 판단하는 능력을 보임.';
-    return base + effort;
-}
-
-// ─────────────────────────────────────────────
 // SVG 도넛 차트
 // ─────────────────────────────────────────────
 function DonutChart({ percentage, correct, total }) {
@@ -140,6 +130,8 @@ const SessionDetail = () => {
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [copied, setCopied] = useState(null);
+    const [recordsLoading, setRecordsLoading] = useState(false);
+    const [aiRecords, setAiRecords] = useState(null);
 
     useEffect(() => {
         if (!currentUser) { navigate('/teacher/login'); return; }
@@ -164,7 +156,7 @@ const SessionDetail = () => {
     };
 
     // 학생별 통계 계산
-    const studentStats = useMemo(() => {
+    const baseStudentStats = useMemo(() => {
         if (!session) return [];
         const { students = [], problems = [], type } = session;
 
@@ -182,25 +174,67 @@ const SessionDetail = () => {
             const objectiveResults = slideResults.filter(r => r.hasObjective);
             const totalCorrect = objectiveResults.reduce((a, r) => a + r.correct, 0);
             const totalPossible = objectiveResults.reduce((a, r) => a + r.total, 0);
-            const accuracy = totalPossible > 0 ? Math.round((totalCorrect / totalPossible) * 100) : null;
+            const overallAccuracy = totalPossible > 0 ? Math.round((totalCorrect / totalPossible) * 100) : null;
             const totalIncorrect = totalPossible - totalCorrect;
 
             const submitCounts = slideResults.map(r => r.submitCount).filter(c => c > 0);
-            const avgAttempts = submitCounts.length > 0
+            const avgSubmitCount = submitCounts.length > 0
                 ? Math.round(submitCounts.reduce((a, b) => a + b, 0) / submitCounts.length)
                 : 0;
 
-            const objectiveCount = problems.filter(p =>
-                ['fill-blanks', 'order-matching', 'multiple-choice', 'short-answer'].includes(p?.type)
-            ).length;
+            const record = generateRecordFallback(
+                student.name,
+                overallAccuracy ?? 0,
+                avgSubmitCount,
+                problems,
+                slideResults
+            );
 
             return {
-                ...student, slideResults, accuracy, totalCorrect,
-                totalIncorrect, totalPossible, avgAttempts,
-                record: generateRecord(student.name, accuracy ?? 0, avgAttempts, objectiveCount)
+                ...student, slideResults, accuracy: overallAccuracy, totalCorrect,
+                totalIncorrect, totalPossible, avgAttempts: avgSubmitCount, avgSubmitCount,
+                overallAccuracy, record,
             };
         }).sort((a, b) => (b.accuracy ?? -1) - (a.accuracy ?? -1));
     }, [session]);
+
+    useEffect(() => {
+        if (!session || baseStudentStats.length === 0) return;
+
+        let cancelled = false;
+        setRecordsLoading(true);
+        setAiRecords(null);
+
+        const payload = buildStudentRecordPayloadFromStats({
+            lessonTitle: session.title,
+            studentStats: baseStudentStats,
+            problems: session.problems || [],
+        });
+
+        fetchStudentRecords(payload)
+            .then((data) => {
+                if (!cancelled) setAiRecords(data.records || []);
+            })
+            .catch(() => {
+                if (!cancelled) setAiRecords([]);
+            })
+            .finally(() => {
+                if (!cancelled) setRecordsLoading(false);
+            });
+
+        return () => { cancelled = true; };
+    }, [session, baseStudentStats]);
+
+    const studentStats = useMemo(() => {
+        if (!aiRecords) return baseStudentStats;
+        const merged = mergeAiRecords(
+            baseStudentStats,
+            aiRecords,
+            session?.problems || [],
+            generateRecordFallback
+        );
+        return merged.sort((a, b) => (b.accuracy ?? -1) - (a.accuracy ?? -1));
+    }, [baseStudentStats, aiRecords, session]);
 
     // 전체 집계
     const totals = useMemo(() => {
@@ -469,7 +503,9 @@ const SessionDetail = () => {
                                     padding: '0.6rem 0.75rem',
                                     marginTop: '0.1rem'
                                 }}>
-                                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', whiteSpace: 'nowrap', paddingTop: '1px' }}>생기부</span>
+                                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', whiteSpace: 'nowrap', paddingTop: '1px' }}>
+                                        생기부{recordsLoading ? ' (생성 중...)' : ''}
+                                    </span>
                                     <p style={{
                                         margin: 0, fontSize: '0.82rem', color: '#334155',
                                         lineHeight: 1.6, flex: 1

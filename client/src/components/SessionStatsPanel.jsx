@@ -1,6 +1,12 @@
-import React, { useMemo, useState } from 'react';
-import { X, Copy, Check, BarChart2, TrendingUp, Users, Award, Download } from 'lucide-react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { X, Copy, Check, BarChart2, TrendingUp, Users, Award, Download, Loader2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import {
+  buildStudentRecordPayloadFromStats,
+  fetchStudentRecords,
+  generateRecordFallback,
+  mergeAiRecords,
+} from '../utils/studentRecord';
 
 // ─────────────────────────────────────────────
 // 문제 유형별 정답 평가
@@ -68,94 +74,6 @@ function evaluateAnswer(problem, answer) {
 }
 
 // ─────────────────────────────────────────────
-// 문제 유형 → 자연어 서술 헬퍼
-// ─────────────────────────────────────────────
-const TYPE_VERBAL = {
-  'fill-blanks':      { activity: '빈칸 채우기 문제',   doing: '빈칸을 채우는' },
-  'order-matching':   { activity: '순서 맞추기 문제',   doing: '순서를 배열하는' },
-  'multiple-choice':  { activity: '객관식 문제',        doing: '선택지를 고르는' },
-  'short-answer':     { activity: '주관식 문제',        doing: '답을 서술하는' },
-};
-
-// 정답률 → 수행 수준 서술어
-function perfPhrase(pct) {
-  if (pct === 100) return '모두 정확히 해결함';
-  if (pct >= 80)   return '대부분 정확히 이해함';
-  if (pct >= 60)   return '기본적인 이해를 보였으나 일부 오답이 있음';
-  if (pct >= 40)   return '절반 정도를 이해한 것으로 나타남';
-  if (pct >= 20)   return '핵심 개념 파악에 어려움을 보임';
-  return '개념 이해가 충분히 이루어지지 않아 추가 지도가 필요함';
-}
-
-// ─────────────────────────────────────────────
-// 생기부 문구 자동 생성 (문제별 구체 묘사)
-// ─────────────────────────────────────────────
-function generateRecord(name, overallAccuracy, avgSubmitCount, problems, slideResults) {
-  // 평가 가능 슬라이드 + 결과 페어
-  const objectivePairs = problems
-    .map((p, i) => ({ problem: p, result: slideResults?.[i] }))
-    .filter(pair => pair.result?.hasObjective && pair.result?.answered);
-
-  if (objectivePairs.length === 0) {
-    const titles = problems.map(p => p.title).filter(Boolean).slice(0, 3);
-    const contentRef = titles.length > 0 ? `'${titles.join(', ')}' 등의` : '다양한';
-    return `${name} 학생은 ${contentRef} 학습 활동에 성실히 참여하였으며, 적극적인 태도로 수업에 임함.`;
-  }
-
-  // 문제별 구체 묘사 (최대 3개)
-  const descParts = objectivePairs.slice(0, 3).map(({ problem, result }) => {
-    const title = problem.title ? `'${problem.title}'` : null;
-    const verbal = TYPE_VERBAL[problem.type];
-    const activity = verbal ? verbal.activity : '문제';
-    const perf = perfPhrase(result.percentage);
-
-    if (title) {
-      // 예: '광합성' 내용의 빈칸 채우기 문제에서 대부분 정확히 이해함
-      return `${title} 내용의 ${activity}에서 ${perf}`;
-    } else {
-      return `${activity}에서 ${perf}`;
-    }
-  });
-
-  // 앞부분: 문제별 설명 나열
-  let base = `${name} 학생은 `;
-  if (descParts.length === 1) {
-    base += descParts[0] + '.';
-  } else if (descParts.length === 2) {
-    base += `${descParts[0]}. 또한 ${descParts[1]}.`;
-  } else {
-    base += `${descParts[0]}. ${descParts[1]}. 아울러 ${descParts[2]}.`;
-  }
-
-  // 뒷부분: 종합 평가
-  let summary = '';
-  if (overallAccuracy >= 85) {
-    summary = ' 전반적으로 학습 내용을 충실히 습득하여 높은 성취를 보임.';
-  } else if (overallAccuracy >= 60) {
-    const weakPairs = objectivePairs.filter(p => p.result.percentage < 50);
-    if (weakPairs.length > 0 && weakPairs[0].problem.title) {
-      summary = ` '${weakPairs[0].problem.title}' 관련 개념에 대한 추가 학습을 통해 더욱 성장할 수 있을 것으로 기대됨.`;
-    } else {
-      summary = ' 지속적인 연습을 통해 충분한 성장 가능성이 있음.';
-    }
-  } else if (overallAccuracy >= 30) {
-    summary = ' 핵심 개념에 대한 반복 학습과 교사의 개별 피드백을 통해 오개념 교정이 이루어진다면 발전이 기대됨.';
-  } else {
-    summary = ' 기초 개념부터 단계적으로 접근하는 개별 맞춤 지도가 효과적일 것으로 판단됨.';
-  }
-
-  // 학습 태도 (시도 횟수 기반)
-  let effort = '';
-  if (avgSubmitCount >= 6) {
-    effort = ' 반복적인 시도를 통해 끈기 있게 문제를 해결하려는 태도가 돋보임.';
-  } else if (avgSubmitCount <= 2 && overallAccuracy >= 70) {
-    effort = ' 빠르고 정확한 판단력으로 효율적인 학습 능력을 보임.';
-  }
-
-  return base + summary + effort;
-}
-
-// ─────────────────────────────────────────────
 // 색상 헬퍼
 // ─────────────────────────────────────────────
 function accuracyColor(pct) {
@@ -182,6 +100,8 @@ function accuracyBg(pct) {
 const SessionStatsPanel = ({ mode = 'lesson', students = [], problems = [], title = '수업', onClose }) => {
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [copiedAll, setCopiedAll] = useState(false);
+  const [recordsLoading, setRecordsLoading] = useState(true);
+  const [aiRecords, setAiRecords] = useState(null);
 
   // 정답 판별 대상 슬라이드 (객관식/주관식/빈칸/순서만 포함)
   const objectiveProblems = useMemo(() =>
@@ -189,8 +109,8 @@ const SessionStatsPanel = ({ mode = 'lesson', students = [], problems = [], titl
     [problems]
   );
 
-  // 학생별 통계 계산
-  const studentStats = useMemo(() => {
+  // 학생별 통계 계산 (생기부 문구 제외)
+  const baseStudentStats = useMemo(() => {
     return students.map(student => {
       // 슬라이드별 결과
       const slideResults = problems.map((prob, idx) => {
@@ -216,11 +136,48 @@ const SessionStatsPanel = ({ mode = 'lesson', students = [], problems = [], titl
         ? Math.round(submitCounts.reduce((a, b) => a + b, 0) / submitCounts.length)
         : 0;
 
-      const record = generateRecord(student.name, overallAccuracy ?? 0, avgSubmitCount, problems, slideResults);
+      const record = generateRecordFallback(student.name, overallAccuracy ?? 0, avgSubmitCount, problems, slideResults);
 
       return { ...student, slideResults, overallAccuracy, avgSubmitCount, record };
     });
   }, [students, problems, mode, objectiveProblems]);
+
+  // AI 생기부 문구 생성
+  useEffect(() => {
+    let cancelled = false;
+    setRecordsLoading(true);
+    setAiRecords(null);
+
+    const payload = buildStudentRecordPayloadFromStats({
+      lessonTitle: title,
+      studentStats: baseStudentStats,
+      problems,
+    });
+
+    fetchStudentRecords(payload)
+      .then((data) => {
+        if (cancelled) return;
+        setAiRecords(data.records || []);
+      })
+      .catch(() => {
+        if (!cancelled) setAiRecords([]);
+      })
+      .finally(() => {
+        if (!cancelled) setRecordsLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [baseStudentStats, problems, title]);
+
+  const studentStats = useMemo(() => {
+    if (!aiRecords) return baseStudentStats;
+    return mergeAiRecords(
+      baseStudentStats,
+      aiRecords,
+      problems,
+      generateRecordFallback
+    );
+  }, [baseStudentStats, aiRecords, problems]);
 
   // 슬라이드별 평균 정확도
   const slideAvgAccuracy = useMemo(() => {
@@ -330,6 +287,11 @@ const SessionStatsPanel = ({ mode = 'lesson', students = [], problems = [], titl
                 수업 세션 통계
               </h2>
               <p style={{ color: '#64748b', fontSize: '0.8rem', margin: 0 }}>{title}</p>
+              {recordsLoading && (
+                <span style={{ color: '#818cf8', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.2rem' }}>
+                  <Loader2 size={12} className="animate-spin" /> 생기부 문구 생성 중...
+                </span>
+              )}
             </div>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -561,7 +523,7 @@ const SessionStatsPanel = ({ mode = 'lesson', students = [], problems = [], titl
           padding: '0.75rem 1.5rem', borderTop: '1px solid #1e293b',
           color: '#475569', fontSize: '0.75rem', flexShrink: 0
         }}>
-          * 정답률은 현재 제출된 최종 답안 기준 | 시도 횟수는 학생이 답안을 변경한 횟수 | 생기부 문구는 AI 초안으로 교사가 검토 후 사용 권장
+          * 정답률은 현재 제출된 최종 답안 기준 | 시도 횟수는 학생이 답안을 변경한 횟수 | 생기부 문구는 문제 내용과 수행 결과를 바탕으로 AI가 생성하며, 교사가 검토 후 사용 권장
         </div>
       </div>
     </div>

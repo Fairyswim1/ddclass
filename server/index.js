@@ -60,6 +60,7 @@ const ocrUpload = multer({
 });
 
 const { callOpenAiImageToLatex } = require('./services/imageToLatex');
+const { generateStudentRecords } = require('./services/generateStudentRecords');
 
 const OCR_ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
 
@@ -407,6 +408,33 @@ app.post('/api/image-to-latex', ocrUpload.single('file'), async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message || '변환에 실패했습니다.',
+    });
+  }
+});
+
+// 생기부 문구 AI 생성
+app.post('/api/generate-student-records', async (req, res) => {
+  try {
+    const { lessonTitle, students } = req.body;
+
+    if (!Array.isArray(students) || students.length === 0) {
+      return res.status(400).json({ success: false, error: '학생 데이터가 없습니다.' });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(503).json({
+        success: false,
+        error: 'OpenAI API가 설정되지 않았습니다. 서버 관리자에게 문의하세요.',
+      });
+    }
+
+    const result = await generateStudentRecords({ lessonTitle, students });
+    res.json(result);
+  } catch (error) {
+    console.error('[STUDENT-RECORDS] Error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message || '생기부 문구 생성에 실패했습니다.',
     });
   }
 });

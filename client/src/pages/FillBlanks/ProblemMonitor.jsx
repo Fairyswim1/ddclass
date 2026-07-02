@@ -195,8 +195,16 @@ const ProblemMonitor = ({ problemData, parentSocket = null, parentStudents = nul
                 problems: [{
                     id: problemData?.id, type: problemData?.type,
                     title: problemData?.title || '',
+                    originalText: problemData?.originalText || null,
+                    question: problemData?.question || null,
                     blanks: problemData?.blanks || null,
                     steps: problemData?.steps || null,
+                    options: problemData?.options || null,
+                    answerIndices: problemData?.answerIndices || null,
+                    answerIndex: problemData?.answerIndex || null,
+                    answer: problemData?.answer || null,
+                    quizPoints: problemData?.quizPoints || null,
+                    items: problemData?.items || null,
                 }],
                 students: students.map(s => ({
                     name: s.name,
