@@ -59,7 +59,7 @@ const ocrUpload = multer({
   },
 });
 
-const { callOpenAiImageToLatex } = require('../services/imageToLatex');
+const { callOpenAiImageToLatex } = require('./services/imageToLatex');
 
 const OCR_ALLOWED_MIME = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
 
@@ -110,7 +110,7 @@ app.use((req, res, next) => {
 // -----------------------------------------------------
 // [DIAGNOSTIC] 서버 상태 및 실시간 모니터링 상태 조회
 // -----------------------------------------------------
-app.get('/api/health', (req, res) => res.json({ success: true, version: '1.0.4-PACING', timestamp: new Date() }));
+app.get('/api/health', (req, res) => res.json({ success: true, version: '1.0.5-IMAGE-OCR', timestamp: new Date() }));
 
 // [DEBUG] 특정 수업의 현재 서버 side maxAllowedStep 조회
 app.get('/api/debug/lesson-state/:lessonId', (req, res) => {
