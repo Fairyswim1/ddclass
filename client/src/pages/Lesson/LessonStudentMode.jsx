@@ -249,7 +249,7 @@ const LessonStudentMode = () => {
                             </div>
                         ) : videoId ? (
                             <VideoPlayerWithQuiz
-                                key={`${videoId}-${currentStepIndex}`}
+                                key={`${videoId}-${trimStart}-${trimEnd ?? 'full'}-${currentStepIndex}`}
                                 videoId={videoId}
                                 trimStart={trimStart}
                                 trimEnd={trimEnd}

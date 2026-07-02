@@ -147,13 +147,13 @@
 
 .video-trim-track-wrap {
     position: relative;
-    padding: 1.35rem 0 0.35rem;
+    padding: 0.85rem 0 0.35rem;
 }
 
 .video-trim-track {
     position: relative;
-    height: 10px;
-    background: #cbd5e1;
+    height: 6px;
+    background: #dbe3ee;
     border-radius: 999px;
     cursor: pointer;
 }
@@ -162,27 +162,80 @@
     position: absolute;
     top: 0;
     height: 100%;
-    background: #6366f1;
+    background: linear-gradient(90deg, #818cf8, #6366f1);
     border-radius: 999px;
+    pointer-events: none;
 }
 
 .video-trim-handle {
     position: absolute;
     top: 50%;
-    width: 16px;
-    height: 16px;
-    margin-top: -8px;
-    margin-left: -8px;
+    width: 12px;
+    height: 12px;
+    margin-top: -6px;
+    margin-left: -6px;
     border-radius: 50%;
-    background: white;
-    border: 3px solid #6366f1;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    background: #6366f1;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(79, 70, 229, 0.35);
     cursor: grab;
     z-index: 2;
+    transform: none;
+    padding: 0;
+    min-width: 12px;
+    min-height: 12px;
+}
+
+.video-trim-handle:hover {
+    transform: scale(1.12);
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.45);
 }
 
 .video-trim-handle:active {
     cursor: grabbing;
+    transform: scale(1.05);
+}
+
+.video-trim-manual-row {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-top: 0.75rem;
+}
+
+.video-trim-time-input {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.video-trim-time-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.video-trim-time-fields {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.video-trim-time-fields span {
+    color: #64748b;
+    font-weight: 700;
+}
+
+.video-trim-time-field {
+    width: 48px;
+    padding: 0.35rem 0.45rem;
+    text-align: center;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    outline: none;
+    font-family: inherit;
 }
 
 .video-trim-labels {

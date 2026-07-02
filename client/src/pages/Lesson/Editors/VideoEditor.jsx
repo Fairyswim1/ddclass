@@ -56,6 +56,36 @@ const labelStyle = {
     margin: '0 0 0.3rem',
 };
 
+const TimeInput = ({ label, value, onChange }) => {
+    const { m, s } = toMS(value ?? 0);
+    return (
+        <div className="video-trim-time-input">
+            <span className="video-trim-time-label">{label}</span>
+            <div className="video-trim-time-fields">
+                <input
+                    type="number"
+                    min="0"
+                    max="999"
+                    value={m}
+                    onChange={(e) => onChange(fromMS(e.target.value, s))}
+                    className="video-trim-time-field"
+                    placeholder="분"
+                />
+                <span>:</span>
+                <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={s}
+                    onChange={(e) => onChange(fromMS(m, e.target.value))}
+                    className="video-trim-time-field"
+                    placeholder="초"
+                />
+            </div>
+        </div>
+    );
+};
+
 const VideoTrimBar = ({ duration, trimStart, trimEnd, onChange }) => {
     const trackRef = useRef(null);
     const dragRef = useRef(null);
@@ -131,25 +161,43 @@ const VideoTrimBar = ({ duration, trimStart, trimEnd, onChange }) => {
                         className="video-trim-selected"
                         style={{ left: `${startPct}%`, width: `${Math.max(endPct - startPct, 0)}%` }}
                     />
-                    <button
-                        type="button"
-                        className="video-trim-handle"
+                    <div
+                        className="video-trim-handle video-trim-handle-start"
                         style={{ left: `${startPct}%` }}
                         onMouseDown={(event) => beginDrag('start', event)}
+                        role="slider"
                         aria-label="시작 지점"
+                        tabIndex={0}
                     />
-                    <button
-                        type="button"
-                        className="video-trim-handle"
+                    <div
+                        className="video-trim-handle video-trim-handle-end"
                         style={{ left: `${endPct}%` }}
                         onMouseDown={(event) => beginDrag('end', event)}
+                        role="slider"
                         aria-label="종료 지점"
+                        tabIndex={0}
                     />
                 </div>
                 <div className="video-trim-labels">
                     <span>0:00</span>
                     <span>{duration ? fmtSec(duration) : '길이 불러오는 중...'}</span>
                 </div>
+            </div>
+
+            <div className="video-trim-manual-row">
+                <TimeInput
+                    label="시작 (분:초)"
+                    value={trimStart}
+                    onChange={(v) => onChange({ trimStart: v, trimEnd })}
+                />
+                <TimeInput
+                    label="종료 (분:초)"
+                    value={trimEnd ?? duration ?? 0}
+                    onChange={(v) => {
+                        const max = duration || v;
+                        onChange({ trimStart, trimEnd: v >= max ? null : v });
+                    }}
+                />
             </div>
 
             <div className="video-trim-actions">
@@ -163,7 +211,7 @@ const VideoTrimBar = ({ duration, trimStart, trimEnd, onChange }) => {
                     </button>
                 )}
             </div>
-            <p className="video-trim-hint">영상 아래 막대의 핸들을 드래그해 재생 구간을 설정하세요.</p>
+            <p className="video-trim-hint">막대 드래그 또는 아래 시간 입력으로 구간을 설정할 수 있습니다.</p>
         </div>
     );
 };

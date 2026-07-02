@@ -11,6 +11,7 @@ import MultipleChoiceMonitor from './MultipleChoiceMonitor';
 import ShortAnswerMonitor from './ShortAnswerMonitor';
 import WhiteboardMonitor from './WhiteboardMonitor';
 import PollMonitor from './PollMonitor';
+import VideoPlayerWithQuiz from './VideoPlayerWithQuiz';
 import LatexRenderer from '../../components/LatexRenderer';
 import SessionStatsPanel from '../../components/SessionStatsPanel';
 import './LessonMonitor.css';
@@ -516,7 +517,13 @@ const LessonMonitor = () => {
                                             </div>
                                             {videoId
                                                 ? <div style={{ aspectRatio: '16/9', borderRadius: '8px', overflow: 'hidden' }}>
-                                                    <iframe src={`https://www.youtube.com/embed/${videoId}`} title="YouTube" style={{ width: '100%', height: '100%', border: 'none' }} allowFullScreen />
+                                                    <VideoPlayerWithQuiz
+                                                        key={`${videoId}-${currentProblem.trimStart ?? 0}-${currentProblem.trimEnd ?? 'full'}`}
+                                                        videoId={videoId}
+                                                        trimStart={currentProblem.trimStart ?? 0}
+                                                        trimEnd={currentProblem.trimEnd ?? null}
+                                                        quizPoints={currentProblem.quizPoints || []}
+                                                    />
                                                   </div>
                                                 : <p style={{ color: '#94a3b8', textAlign: 'center' }}>동영상이 없습니다.</p>}
                                         </div>

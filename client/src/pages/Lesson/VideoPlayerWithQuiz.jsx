@@ -187,19 +187,22 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
             if (!playerRef.current) return;
             try {
                 const state = playerRef.current.getPlayerState?.();
-                // 재생 중(1)일 때만 체크
                 if (state !== 1) return;
                 const currentTime = playerRef.current.getCurrentTime?.() ?? 0;
 
-                // trimEnd 체크: 지정된 종료 시각 도달 시 정지
-                if (trimEnd !== null && currentTime >= trimEnd) {
+                if (trimStart > 0 && currentTime < trimStart - 0.25) {
+                    playerRef.current.seekTo?.(trimStart, true);
+                    return;
+                }
+
+                if (trimEnd !== null && currentTime >= trimEnd - 0.15) {
                     playerRef.current.pauseVideo?.();
+                    playerRef.current.seekTo?.(trimEnd, true);
                     clearInterval(pollRef.current);
                     pollRef.current = null;
                     return;
                 }
 
-                // 퀴즈 트리거 체크
                 for (const quiz of sortedQuizzes) {
                     if (!shownQuizzesRef.current.has(quiz.id) && currentTime >= quiz.timeSeconds) {
                         playerRef.current.pauseVideo?.();
@@ -213,8 +216,8 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
                     }
                 }
             } catch (_) { /* player not ready */ }
-        }, 400);
-    }, [sortedQuizzes, trimEnd]);
+        }, 250);
+    }, [sortedQuizzes, trimEnd, trimStart]);
 
     useEffect(() => {
         if (!videoId) return;
@@ -230,12 +233,16 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
                 videoId,
                 playerVars: {
                     start: Math.floor(trimStart),
-                    ...(trimEnd !== null ? { end: Math.floor(trimEnd) } : {}),
                     rel: 0,
                     modestbranding: 1,
                     enablejsapi: 1,
                 },
                 events: {
+                    onReady: (event) => {
+                        if (trimStart > 0) {
+                            event.target.seekTo(trimStart, true);
+                        }
+                    },
                     onStateChange: (event) => {
                         if (event.data === window.YT.PlayerState.PLAYING) {
                             startPoll();
