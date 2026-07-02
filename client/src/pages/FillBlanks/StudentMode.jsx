@@ -119,6 +119,7 @@ const StudentMode = ({ lessonProblemData = null, lessonRoomId = null, lessonNick
         setDraggedWord(word);
         setSourceBlankId(sourceId); // 어디서부터 드래그를 시작했는지 (보관함이면 null)
         e.dataTransfer.effectAllowed = 'copyMove';
+        e.dataTransfer.setData('text/plain', word);
     };
 
     const handleDragOver = (e) => {

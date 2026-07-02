@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import LatexRenderer from '../../../components/LatexRenderer';
 import LatexSelectableText from '../../../components/LatexSelectableText';
+import { hasBlankOverlap, resolveBlankSelection } from '../../../utils/blankTextSelection';
 
 const FillBlanksEditor = ({ slide, updateSlide }) => {
     // We expect blanks to be an array of: { id, startOffset, endOffset, word }
@@ -15,72 +16,16 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
 
     const handleMouseUp = () => {
         const selection = window.getSelection();
-        if (!selection || selection.isCollapsed) return;
+        if (!selection || !textRef.current) return;
 
-        const range = selection.getRangeAt(0);
-        // Ensure selection is within our text container
-        if (!textRef.current || !textRef.current.contains(range.commonAncestorContainer)) return;
+        const resolved = resolveBlankSelection(textRef.current, originalText, selection);
+        if (!resolved) return;
 
-        // 고도화된 오프셋 계산 로직 (TeacherMode와 동기화)
-        const getOffset = (container, offset) => {
-            let node = container;
-            let relativeOffset = offset;
-            
-            while (node && node.parentNode !== textRef.current && node !== textRef.current) {
-                let sib = node.previousSibling;
-                while (sib) {
-                    relativeOffset += (sib.textContent || '').length;
-                    sib = sib.previousSibling;
-                }
-                node = node.parentNode;
-            }
-            
-            if (node && node.dataset && node.dataset.offset !== undefined) {
-                return parseInt(node.dataset.offset, 10) + relativeOffset;
-            }
-            
-            if (node === textRef.current) {
-                let total = 0;
-                for (let i = 0; i < offset; i++) {
-                   const child = textRef.current.childNodes[i];
-                   if (child.dataset?.length) {
-                       total += parseInt(child.dataset.length, 10);
-                   } else if (child.dataset?.offset !== undefined && i + 1 < offset) {
-                       const nextNode = textRef.current.childNodes[i+1];
-                       if (nextNode.dataset?.offset !== undefined) {
-                           total = parseInt(nextNode.dataset.offset, 10);
-                           continue;
-                       }
-                       total += (child.textContent || '').length;
-                   } else {
-                       total += (child.textContent || '').length;
-                   }
-                }
-                return total;
-            }
+        const { startOffset, endOffset, selectedText } = resolved;
 
-            return relativeOffset;
-        };
-
-        const startOffset = getOffset(range.startContainer, range.startOffset);
-        const endOffset = getOffset(range.endContainer, range.endOffset);
-
-        let selectedText = selection.toString();
-        // Sanitize selection
-        selectedText = selectedText.trim();
-
-        if (!selectedText) return;
-
-        // Check for overlaps with existing blanks
-        const hasOverlap = blanks.some(b =>
-            (startOffset >= b.startOffset && startOffset < b.endOffset) ||
-            (endOffset > b.startOffset && endOffset <= b.endOffset) ||
-            (startOffset <= b.startOffset && endOffset >= b.endOffset)
-        );
-
-        if (hasOverlap) {
+        if (hasBlankOverlap(blanks, startOffset, endOffset)) {
             selection.removeAllRanges();
-            return; // Ignore overlapping selections
+            return;
         }
 
         const newBlank = {
@@ -92,7 +37,7 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
 
         const newBlanks = [...blanks, newBlank].sort((a, b) => a.startOffset - b.startOffset);
         updateSlide(slide.id, { blanks: newBlanks });
-        selection.removeAllRanges(); // clear selection after creating blank
+        selection.removeAllRanges();
     };
 
     const removeBlank = (id) => {
@@ -183,7 +128,7 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
             {originalText && (
                 <div className="editor-group" style={{ marginTop: '1.5rem' }}>
                     <label style={{ fontWeight: 'bold', color: '#3b82f6', marginBottom: '0.5rem', display: 'block' }}>
-                        👉 빈칸 만들기: 아래 텍스트에서 빈칸으로 만들 부분을 마우스로 드래그(선택)하세요.
+                        👉 빈칸 만들기: 텍스트는 드래그로 선택하고, LaTeX 수식은 클릭하면 전체 수식이 빈칸으로 지정됩니다.
                     </label>
                     <div
                         className="words-selector-container"

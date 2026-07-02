@@ -254,6 +254,11 @@
     box-shadow: none;
 }
 
+.word-card .katex,
+.blank-slot.filled .katex {
+    pointer-events: none;
+}
+
 .empty-bank-message {
     width: 100%;
     text-align: center;

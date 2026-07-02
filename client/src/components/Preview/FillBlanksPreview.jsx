@@ -20,6 +20,7 @@ const FillBlanksPreview = ({ problem }) => {
         setDraggedWord(word);
         setSourceBlankId(sourceId);
         e.dataTransfer.effectAllowed = 'copyMove';
+        e.dataTransfer.setData('text/plain', word);
     };
 
     const handleDragOver = (e) => {

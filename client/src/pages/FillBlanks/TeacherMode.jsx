@@ -11,6 +11,7 @@ import LatexSelectableText from '../../components/LatexSelectableText';
 import LatexPreviewHint from '../../components/LatexPreviewHint';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
 import DidiTipLatexOcrButton from '../../components/ImageToLatex/DidiTipLatexOcrButton';
+import { hasBlankOverlap, resolveBlankSelection } from '../../utils/blankTextSelection';
 
 const TeacherMode = () => {
     const navigate = useNavigate();
@@ -93,75 +94,14 @@ const TeacherMode = () => {
 
     const handleMouseUp = () => {
         const selection = window.getSelection();
-        if (!selection || selection.isCollapsed) return;
+        if (!selection || !textRef.current) return;
 
-        const range = selection.getRangeAt(0);
-        if (!textRef.current || !textRef.current.contains(range.commonAncestorContainer)) return;
+        const resolved = resolveBlankSelection(textRef.current, inputText, selection);
+        if (!resolved) return;
 
-        // Find the base offset from the parent span's data-offset
-        // 고도화된 오프셋 계산 로직
-        const getOffset = (container, offset) => {
-            let node = container;
-            let relativeOffset = offset;
-            
-            // 1. root(textRef)로부터 직접적인 자식 노드를 찾을 때까지 거슬러 올라가며 내부 오프셋 계산
-            while (node && node.parentNode !== textRef.current && node !== textRef.current) {
-                let sib = node.previousSibling;
-                while (sib) {
-                    relativeOffset += (sib.textContent || '').length;
-                    sib = sib.previousSibling;
-                }
-                node = node.parentNode;
-            }
-            
-            // 2. root의 자식 노드(span 등)를 찾았다면 해당 노드의 기반 오프셋(data-offset)을 더함
-            if (node && node.dataset && node.dataset.offset !== undefined) {
-                return parseInt(node.dataset.offset, 10) + relativeOffset;
-            }
-            
-            // 3. 만약 container가 root 그 자체라면 (브라우저가 root의 자식 인덱스로 offset을 줄 수 있음)
-            if (node === textRef.current) {
-                let total = 0;
-                for (let i = 0; i < offset; i++) {
-                   const child = textRef.current.childNodes[i];
-                   if (child.dataset?.length) {
-                       total += parseInt(child.dataset.length, 10);
-                   } else if (child.dataset?.offset !== undefined && i + 1 < offset) {
-                       const nextNode = textRef.current.childNodes[i+1];
-                       if (nextNode.dataset?.offset !== undefined) {
-                           total = parseInt(nextNode.dataset.offset, 10);
-                           continue;
-                       }
-                       total += (child.textContent || '').length;
-                   } else {
-                       total += (child.textContent || '').length;
-                   }
-                }
-                return total;
-            }
+        const { startOffset, endOffset, selectedText } = resolved;
 
-            return relativeOffset;
-        };
-
-        const startOffset = getOffset(range.startContainer, range.startOffset);
-        const endOffset = getOffset(range.endContainer, range.endOffset);
-
-        // Source of truth: slice from the original inputText using the calculated offsets
-        let selectedText = inputText.slice(startOffset, endOffset);
-
-        // Sanitize selection (remove leading/trailing whitespace/control characters)
-        selectedText = selectedText.trim();
-
-        if (!selectedText) return;
-
-        // Check for overlaps
-        const hasOverlap = blanks.some(b =>
-            (startOffset >= b.startOffset && startOffset < b.endOffset) ||
-            (endOffset > b.startOffset && endOffset <= b.endOffset) ||
-            (startOffset <= b.startOffset && endOffset >= b.endOffset)
-        );
-
-        if (hasOverlap) {
+        if (hasBlankOverlap(blanks, startOffset, endOffset)) {
             selection.removeAllRanges();
             return;
         }
@@ -377,7 +317,7 @@ const TeacherMode = () => {
                         <div className="teacher-card fade-in">
                             <div className="card-header">
                                 <h3>빈칸을 선택해주세요</h3>
-                                <p>👉 본문에서 <strong>빈칸으로 만들 부분을 마우스로 드래그</strong>하여 선택하세요.</p>
+                                <p>👉 본문에서 <strong>빈칸으로 만들 부분을 드래그</strong>하거나, <strong>수식은 클릭</strong>하세요.</p>
 
                             </div>
 

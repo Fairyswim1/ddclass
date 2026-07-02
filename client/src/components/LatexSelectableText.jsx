@@ -14,15 +14,21 @@ const LatexSelectableText = ({ text, baseOffset = 0, keyPrefix = 'seg' }) => {
 
   return (
     <>
-      {splitIntoLatexSegments(text).map((seg) => (
+      {splitIntoLatexSegments(text).map((seg) => {
+        const isLatex = /^\$|\\\[|\\\(|\\begin/.test(seg.text.trim());
+        return (
         <span
           key={`${keyPrefix}-${baseOffset + seg.startOffset}`}
           data-offset={baseOffset + seg.startOffset}
           data-length={seg.length}
+          data-is-latex={isLatex ? 'true' : 'false'}
+          className={isLatex ? 'latex-selectable-segment' : undefined}
+          title={isLatex ? '수식을 클릭하면 빈칸으로 지정됩니다' : undefined}
         >
           <LatexRenderer text={seg.text} />
         </span>
-      ))}
+      );
+      })}
     </>
   );
 };
