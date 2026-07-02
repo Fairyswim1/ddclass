@@ -7,6 +7,7 @@ import { collection, doc, setDoc, getDoc, serverTimestamp } from 'firebase/fires
 import './TeacherMode.css';
 import ProblemMonitor from './ProblemMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
+import LatexSelectableText from '../../components/LatexSelectableText';
 import LatexPreviewHint from '../../components/LatexPreviewHint';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
 import DidiTipLatexOcrButton from '../../components/ImageToLatex/DidiTipLatexOcrButton';
@@ -182,7 +183,10 @@ const TeacherMode = () => {
 
     const renderInteractiveText = () => {
         if (!inputText) return null;
-        if (blanks.length === 0) return inputText;
+
+        if (blanks.length === 0) {
+            return <LatexSelectableText text={inputText} keyPrefix="text-full" />;
+        }
 
         const elements = [];
         let currentIndex = 0;
@@ -191,9 +195,12 @@ const TeacherMode = () => {
             if (blank.startOffset > currentIndex) {
                 const textPart = inputText.slice(currentIndex, blank.startOffset);
                 elements.push(
-                    <span key={`text-${currentIndex}`} data-offset={currentIndex} data-length={textPart.length}>
-                        {textPart}
-                    </span>
+                    <LatexSelectableText
+                        key={`text-${currentIndex}`}
+                        text={textPart}
+                        baseOffset={currentIndex}
+                        keyPrefix={`text-${currentIndex}`}
+                    />
                 );
             }
             elements.push(
@@ -214,7 +221,12 @@ const TeacherMode = () => {
         if (currentIndex < inputText.length) {
             const textPart = inputText.slice(currentIndex);
             elements.push(
-                <span key={`text-end`} data-offset={currentIndex} data-length={textPart.length}>{textPart}</span>
+                <LatexSelectableText
+                    key="text-end"
+                    text={textPart}
+                    baseOffset={currentIndex}
+                    keyPrefix="text-end"
+                />
             );
         }
 

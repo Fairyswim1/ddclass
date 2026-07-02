@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import LatexRenderer from '../../../components/LatexRenderer';
+import LatexSelectableText from '../../../components/LatexSelectableText';
 
 const FillBlanksEditor = ({ slide, updateSlide }) => {
     // We expect blanks to be an array of: { id, startOffset, endOffset, word }
@@ -102,22 +103,26 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
     // Render the text with interactive blank highlights
     const renderInteractiveText = () => {
         if (!originalText) return null;
-        if (blanks.length === 0) return originalText;
+
+        if (blanks.length === 0) {
+            return <LatexSelectableText text={originalText} keyPrefix="text-full" />;
+        }
 
         const elements = [];
         let currentIndex = 0;
 
         blanks.forEach(blank => {
-            // Text before blank
             if (blank.startOffset > currentIndex) {
                 const textPart = originalText.slice(currentIndex, blank.startOffset);
                 elements.push(
-                    <span key={`text-${currentIndex}`} data-offset={currentIndex} data-length={textPart.length}>
-                        {textPart}
-                    </span>
+                    <LatexSelectableText
+                        key={`text-${currentIndex}`}
+                        text={textPart}
+                        baseOffset={currentIndex}
+                        keyPrefix={`text-${currentIndex}`}
+                    />
                 );
             }
-            // Blank element
             elements.push(
                 <span
                     key={`blank-${blank.id}`}
@@ -128,7 +133,7 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
                     style={{
                         cursor: 'pointer',
                         margin: '0 2px',
-                        backgroundColor: '#ffce44', // Matching TeacherMode yellow
+                        backgroundColor: '#ffce44',
                         color: '#4e342e',
                         border: '2px solid #E6B400',
                         padding: '4px 10px',
@@ -145,13 +150,15 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
             currentIndex = blank.endOffset;
         });
 
-        // Remaining text
         if (currentIndex < originalText.length) {
             const textPart = originalText.slice(currentIndex);
             elements.push(
-                <span key={`text-${currentIndex}`} data-offset={currentIndex} data-length={textPart.length}>
-                    {textPart}
-                </span>
+                <LatexSelectableText
+                    key="text-end"
+                    text={textPart}
+                    baseOffset={currentIndex}
+                    keyPrefix="text-end"
+                />
             );
         }
 

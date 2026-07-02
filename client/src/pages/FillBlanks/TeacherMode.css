@@ -282,6 +282,14 @@
     min-height: 300px;
 }
 
+.word-editor-refined .katex-display {
+    margin: 0.75rem 0;
+}
+
+.words-selector-container .katex-display {
+    margin: 0.75rem 0;
+}
+
 .word-break {
     width: 100%;
     height: 0;
