@@ -613,6 +613,27 @@
     font-size: 0.72rem;
 }
 
+.lesson-builder-tip-box {
+    margin-top: 1rem;
+    padding: 0.85rem;
+    background: #f0f9ff;
+    border-radius: 12px;
+    border: 1px solid #bae6fd;
+}
+
+.lesson-builder-tip-box h5 {
+    margin: 0 0 0.35rem;
+    font-size: 0.85rem;
+    color: #0369a1;
+}
+
+.lesson-builder-tip-box p {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.45;
+}
+
 /* Short Answer / Poll / Common Editors */
 .sa-editor,
 .poll-editor {

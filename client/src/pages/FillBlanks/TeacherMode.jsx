@@ -7,8 +7,9 @@ import { collection, doc, setDoc, getDoc, serverTimestamp } from 'firebase/fires
 import './TeacherMode.css';
 import ProblemMonitor from './ProblemMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
+import LatexPreviewHint from '../../components/LatexPreviewHint';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
-import ImageToLatexButton from '../../components/ImageToLatex/ImageToLatexButton';
+import DidiTipLatexOcrButton from '../../components/ImageToLatex/DidiTipLatexOcrButton';
 
 const TeacherMode = () => {
     const navigate = useNavigate();
@@ -27,8 +28,6 @@ const TeacherMode = () => {
     const { id } = useParams();
     const [prevPin, setPrevPin] = useState('');
     const textRef = useRef(null);
-    const titleRef = useRef(null);
-    const inputTextRef = useRef(null);
 
     // 로그인 체크
     useEffect(() => {
@@ -326,33 +325,15 @@ const TeacherMode = () => {
                         <div className="teacher-card fade-in">
                             <div className="form-section">
                                 <div className="input-group">
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                                        <label>문제 제목</label>
-                                        <ImageToLatexButton
-                                            targetRef={titleRef}
-                                            value={title}
-                                            onChange={setTitle}
-                                            small
-                                        />
-                                    </div>
+                                    <label>문제 제목</label>
                                     <input
-                                        ref={titleRef}
                                         type="text"
                                         className="styled-input"
                                         placeholder=""
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
                                     />
-                                    {(title.includes('$') || title.includes('\\[')) && (
-                                        <div className="latex-preview-container" style={{ marginTop: '1rem', padding: '1rem', background: '#f0f9ff', borderRadius: '12px', border: '2px dashed #0ea5e9' }}>
-                                            <span style={{ fontSize: '0.85rem', color: '#0ea5e9', fontWeight: '800', display: 'block', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                                ✨ 실시간 수식 미리보기
-                                            </span>
-                                            <div style={{ fontSize: '1.25rem', color: '#1e293b', fontWeight: '600' }}>
-                                                <LatexRenderer text={title} />
-                                            </div>
-                                        </div>
-                                    )}
+                                    <LatexPreviewHint text={title} />
                                 </div>
                                 <SubjectGradeSelector
                                     subject={subject}
@@ -363,28 +344,15 @@ const TeacherMode = () => {
                                     setGrade={setGrade}
                                 />
                                 <div className="input-group">
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                                        <label>본문 내용</label>
-                                        <ImageToLatexButton
-                                            targetRef={inputTextRef}
-                                            value={inputText}
-                                            onChange={setInputText}
-                                            small
-                                        />
-                                    </div>
+                                    <label>본문 내용</label>
                                     <textarea
-                                        ref={inputTextRef}
                                         className="styled-textarea"
                                         placeholder={"여기에 문제로 낼 지문을 입력하거나 붙여넣으세요."}
                                         value={inputText}
                                         onChange={(e) => setInputText(e.target.value)}
                                         rows={12}
                                     />
-                                    {(inputText.includes('$') || inputText.includes('\\[')) && (
-                                        <div className="latex-hint">
-                                            💡 LaTeX 수식이 감지되었습니다. $ 기호나 \[, \( 기호 사이의 텍스트는 수식으로 변환됩니다.
-                                        </div>
-                                    )}
+                                    <LatexPreviewHint text={inputText} label="✨ 본문 수식 미리보기" />
                                 </div>
                                 <button className="btn-primary-large" onClick={handleAnalyzeText}>
                                     다음: 빈칸 만들기
@@ -527,6 +495,7 @@ const TeacherMode = () => {
                                     수학 선생님이라면 <strong>latex 수식</strong>을 사용해 수식을 입력해보세요! ($ 기호 사용)
                                 </li>
                             </ul>
+                            <DidiTipLatexOcrButton />
                         </div>
                     </div>
                 </aside>

@@ -1,12 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import LatexRenderer from '../../../components/LatexRenderer';
-import ImageToLatexButton from '../../../components/ImageToLatex/ImageToLatexButton';
 
 const FillBlanksEditor = ({ slide, updateSlide }) => {
     // We expect blanks to be an array of: { id, startOffset, endOffset, word }
     const { originalText = '', blanks = [], allowDuplicates = false } = slide;
     const textRef = useRef(null);
-    const textInputRef = useRef(null);
 
     const handleTextChange = (e) => {
         const newText = e.target.value;
@@ -165,14 +163,8 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
             <div className="editor-group">
                 <div className="editor-group-header">
                     <label>본문 텍스트 (줄바꿈이 그대로 유지됩니다)</label>
-                    <ImageToLatexButton
-                        targetRef={textInputRef}
-                        value={originalText}
-                        onChange={(v) => updateSlide(slide.id, { originalText: v, blanks: [] })}
-                    />
                 </div>
                 <textarea
-                    ref={textInputRef}
                     placeholder="여기에 전체 텍스트를 입력하세요. 줄바꿈을 하면 학생 화면에서도 그대로 줄바꿈이 적용됩니다."
                     value={originalText}
                     onChange={handleTextChange}

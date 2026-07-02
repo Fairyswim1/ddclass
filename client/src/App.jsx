@@ -19,6 +19,7 @@ import LessonMonitor from './pages/Lesson/LessonMonitor';
 import LessonStudentMode from './pages/Lesson/LessonStudentMode';
 import SessionHistory from './pages/SessionHistory';
 import SessionDetail from './pages/SessionDetail';
+import ImageToLatexPage from './pages/ImageToLatexPage';
 import './App.css';
 
 function App() {
@@ -66,6 +67,7 @@ function App() {
           <Route path="/teacher/lesson-monitor/:id" element={<LessonMonitor />} />
           <Route path="/teacher/history" element={<SessionHistory />} />
           <Route path="/teacher/history/:id" element={<SessionDetail />} />
+          <Route path="/teacher/image-to-latex" element={<ImageToLatexPage />} />
           <Route path="/monitor/:id" element={<MonitorPage />} />
         </Routes>
       </div>

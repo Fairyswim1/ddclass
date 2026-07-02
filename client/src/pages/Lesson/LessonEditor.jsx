@@ -7,6 +7,7 @@ import { ArrowLeft, Plus, Check, Trash2, Save, Layout, List, CheckSquare, Messag
 import { resolveApiUrl } from '../../utils/url';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import './LessonBuilder.css';
+import DidiTipLatexOcrButton from '../../components/ImageToLatex/DidiTipLatexOcrButton';
 
 import FillBlanksEditor from './Editors/FillBlanksEditor';
 import OrderMatchingEditor from './Editors/OrderMatchingEditor';
@@ -269,6 +270,12 @@ const LessonEditor = () => {
                                 ))}
                             </div>
                         )}
+                    </div>
+
+                    <div className="lesson-builder-tip-box">
+                        <h5>💡 디디의 꿀팁</h5>
+                        <p>수식 이미지가 있다면 LaTeX로 변환해 문제에 붙여넣을 수 있어요.</p>
+                        <DidiTipLatexOcrButton />
                     </div>
                 </aside>
 

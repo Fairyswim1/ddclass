@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Save, Check, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -6,9 +6,9 @@ import { db } from '../../firebase';
 import { collection, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import './OrderTeacherMode.css';
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
-import LatexRenderer from '../../components/LatexRenderer';
+import LatexPreviewHint from '../../components/LatexPreviewHint';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
-import ImageToLatexButton from '../../components/ImageToLatex/ImageToLatexButton';
+import DidiTipLatexOcrButton from '../../components/ImageToLatex/DidiTipLatexOcrButton';
 
 const OrderTeacherMode = () => {
     const navigate = useNavigate();
@@ -24,8 +24,6 @@ const OrderTeacherMode = () => {
     const [grade, setGrade] = useState('');
     const { id } = useParams();
     const [prevPin, setPrevPin] = useState('');
-    const titleRef = useRef(null);
-    const stepRefs = useRef([]);
 
     // 로그인 체크
     useEffect(() => {
@@ -217,33 +215,15 @@ const OrderTeacherMode = () => {
                             <div className="teacher-card fade-in">
                                 <div className="form-section">
                                     <div className="input-group">
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                                            <label>문제 제목</label>
-                                            <ImageToLatexButton
-                                                targetRef={titleRef}
-                                                value={title}
-                                                onChange={setTitle}
-                                                small
-                                            />
-                                        </div>
+                                        <label>문제 제목</label>
                                         <input
-                                            ref={titleRef}
                                             type="text"
                                             className="styled-input"
                                             placeholder="문제 제목을 입력하세요"
                                             value={title}
                                             onChange={(e) => setTitle(e.target.value)}
                                         />
-                                        {(title.includes('$') || title.includes('\\[')) && (
-                                            <div className="latex-preview-container" style={{ marginTop: '1rem', padding: '1rem', background: '#f0f9ff', borderRadius: '12px', border: '2px dashed #0ea5e9' }}>
-                                                <span style={{ fontSize: '0.85rem', color: '#0ea5e9', fontWeight: '800', display: 'block', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                                    ✨ 실시간 수식 미리보기
-                                                </span>
-                                                <div style={{ fontSize: '1.25rem', color: '#1e293b', fontWeight: '600' }}>
-                                                    <LatexRenderer text={title} />
-                                                </div>
-                                            </div>
-                                        )}
+                                        <LatexPreviewHint text={title} />
                                     </div>
 
                                     <SubjectGradeSelector
@@ -301,27 +281,14 @@ const OrderTeacherMode = () => {
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.35rem' }}>
-                                                <ImageToLatexButton
-                                                    small
-                                                    getTargetElement={() => stepRefs.current[index]}
-                                                    value={text}
-                                                    onChange={(v) => handleStepChange(index, v)}
-                                                />
-                                            </div>
                                             <input
                                                 type="text"
-                                                ref={(el) => { stepRefs.current[index] = el; }}
                                                 className="styled-input-compact"
                                                 placeholder={`단계 ${index + 1}의 내용을 입력하세요`}
                                                 value={text}
                                                 onChange={(e) => handleStepChange(index, e.target.value)}
                                             />
-                                            {(text.includes('$') || text.includes('\\[')) && (
-                                                <div className="step-latex-preview-refined">
-                                                    <LatexRenderer text={text} />
-                                                </div>
-                                            )}
+                                            <LatexPreviewHint text={text} compact />
                                         </div>
                                     ))}
 
@@ -413,6 +380,7 @@ const OrderTeacherMode = () => {
                         <div className="tip-box">
                             <h5>💡 디디의 꿀팁</h5>
                             <p>수학 선생님이라면 <strong>latex 수식</strong>을<br />사용해 수식을 입력해보세요!</p>
+                            <DidiTipLatexOcrButton />
                         </div>
                     </div>
                 </aside>

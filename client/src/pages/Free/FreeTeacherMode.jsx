@@ -9,8 +9,8 @@ import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import ProblemMonitor from '../FillBlanks/ProblemMonitor';
 import './FreeTeacherMode.css';
 import SubjectGradeSelector from '../../components/SubjectGradeSelector';
-import LatexRenderer from '../../components/LatexRenderer';
-import ImageToLatexButton from '../../components/ImageToLatex/ImageToLatexButton';
+import LatexPreviewHint from '../../components/LatexPreviewHint';
+import DidiTipLatexOcrButton from '../../components/ImageToLatex/DidiTipLatexOcrButton';
 import { resolveApiUrl } from '../../utils/url';
 import { WHITEBOARD_PRESETS, getPresetBackgroundStyle } from '../../utils/whiteboardPresets';
 
@@ -82,9 +82,6 @@ const FreeTeacherMode = () => {
     const fileInputRef = useRef(null);
     const itemImageInputRef = useRef(null);
     const canvasRef = useRef(null);
-    const titleRef = useRef(null);
-    const inputTextRef = useRef(null);
-
     const handleFileUpload = async (file) => {
         if (!file) return;
 
@@ -399,6 +396,7 @@ const FreeTeacherMode = () => {
                                 </div>
                                 <div className="tip-box-h">
                                     <p><strong>💡 꿀팁:</strong> PDF는 첫 페이지가 배경이 됩니다!</p>
+                                    <DidiTipLatexOcrButton />
                                 </div>
                             </div>
                         </div>
@@ -408,33 +406,15 @@ const FreeTeacherMode = () => {
                             <aside className="tool-sidebar">
                                 <div className="sidebar-content">
                                     <div className="form-group">
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.35rem' }}>
-                                            <label>문제 제목</label>
-                                            <ImageToLatexButton
-                                                targetRef={titleRef}
-                                                value={title}
-                                                onChange={setTitle}
-                                                small
-                                            />
-                                        </div>
+                                        <label>문제 제목</label>
                                         <input
-                                            ref={titleRef}
                                             type="text"
                                             placeholder="제목을 입력하세요"
                                             value={title}
                                             className="styled-input-mini"
                                             onChange={(e) => setTitle(e.target.value)}
                                         />
-                                        {(title.includes('$') || title.includes('\\[')) && (
-                                            <div className="latex-preview-container" style={{ marginTop: '1rem', padding: '1rem', background: '#f0f9ff', borderRadius: '12px', border: '1px solid #0ea5e9' }}>
-                                                <span style={{ fontSize: '0.8rem', color: '#0ea5e9', fontWeight: '800', display: 'block', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                                    ✨ 실시간 수식 미리보기
-                                                </span>
-                                                <div style={{ fontSize: '1rem', color: '#1e293b', fontWeight: '600' }}>
-                                                    <LatexRenderer text={title} />
-                                                </div>
-                                            </div>
-                                        )}
+                                        <LatexPreviewHint text={title} compact />
                                     </div>
 
                                     <SubjectGradeSelector
@@ -450,18 +430,11 @@ const FreeTeacherMode = () => {
 
                                     <div className="card-add-container">
                                         <div className="card-type-section text-type">
-                                            <div className="section-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div className="section-label">
                                                 <span><Type size={16} /> 텍스트 카드</span>
-                                                <ImageToLatexButton
-                                                    small
-                                                    targetRef={inputTextRef}
-                                                    value={inputText}
-                                                    onChange={setInputText}
-                                                />
                                             </div>
                                             <div className="input-with-button">
                                                 <input
-                                                    ref={inputTextRef}
                                                     type="text"
                                                     placeholder="내용을 입력하세요..."
                                                     value={inputText}
