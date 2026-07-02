@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Sigma, ImageIcon, X, Loader2 } from 'lucide-react';
 import LatexRenderer from '../../../components/LatexRenderer';
+import { hasLatexMarkup } from '../../../components/LatexPreviewHint';
 import LatexKeyboard from '../../../components/LatexKeyboard';
 import { resolveApiUrl } from '../../../utils/url';
 
@@ -94,7 +95,7 @@ const ShortAnswerEditor = ({ slide, onChange }) => {
                 {showLatex && (
                     <LatexKeyboard onInsert={handleInsertLatex} />
                 )}
-                {question && (question.includes('$') || question.includes('\\[')) && (
+                {question && hasLatexMarkup(question) && (
                     <div className="option-latex-preview">
                         <LatexRenderer text={question} />
                     </div>

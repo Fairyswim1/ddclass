@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, Send, X } from 'lucide-react';
+import LatexRenderer from '../../components/LatexRenderer';
 
 const ShortAnswerMonitor = ({ problemData, parentStudents, socket, lessonId }) => {
     const { question, answer: correctAnswer } = problemData;
@@ -39,12 +40,12 @@ const ShortAnswerMonitor = ({ problemData, parentStudents, socket, lessonId }) =
             )}
 
             <h3 className="text-xl font-bold mb-2 text-slate-800">
-                문제: {question}
+                문제: <LatexRenderer text={question} />
             </h3>
             {correctAnswer && (
                 <div className="text-sm bg-indigo-50 text-indigo-700 p-3 rounded-lg border border-indigo-100 mb-6 inline-block">
                     <span className="font-bold mr-2">모범 답안 (키워드):</span>
-                    {correctAnswer}
+                    <LatexRenderer text={correctAnswer} />
                 </div>
             )}
 

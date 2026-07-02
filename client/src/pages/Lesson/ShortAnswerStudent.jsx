@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Send } from 'lucide-react';
+import LatexRenderer from '../../components/LatexRenderer';
 import './LessonShared.css';
 
 const ShortAnswerStudent = ({ lessonProblemData, lessonRoomId, lessonNickname, lessonSocket }) => {
@@ -32,7 +33,7 @@ const ShortAnswerStudent = ({ lessonProblemData, lessonRoomId, lessonNickname, l
     return (
         <div className="student-container">
             <h2 className="question-card">
-                {question}
+                <LatexRenderer text={question} />
                 {questionImageUrl && (
                     <img
                         src={questionImageUrl}

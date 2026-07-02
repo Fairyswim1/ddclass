@@ -27,6 +27,7 @@ const FreeTeacherMode = () => {
     const [backgroundUrl, setBackgroundUrl] = useState('');
     const [backgroundType, setBackgroundType] = useState('blank');
     const [tableConfig, setTableConfig] = useState(DEFAULT_TABLE_CONFIG);
+    const [tableConfigOpen, setTableConfigOpen] = useState(true);
     const [items, setItems] = useState([]); // { id, content, type, width, fontSize }
     const [isPublic, setIsPublic] = useState(false);
     const { currentUser, nickname } = useAuth();
@@ -89,6 +90,7 @@ const FreeTeacherMode = () => {
         setBackgroundType(presetId);
         if (presetId === 'table') {
             setTableConfig((prev) => normalizeTableConfig(prev));
+            setTableConfigOpen(true);
         }
     };
 
@@ -626,13 +628,23 @@ const FreeTeacherMode = () => {
                                                 aspectRatio={aspectRatio}
                                                 minHeight={300}
                                             />
-                                            {backgroundType === 'table' && (
+                                            {backgroundType === 'table' && tableConfigOpen && (
                                                 <div className="table-bg-config-overlay">
                                                     <TableBackgroundConfig
                                                         config={tableConfig}
                                                         onChange={setTableConfig}
+                                                        onClose={() => setTableConfigOpen(false)}
                                                     />
                                                 </div>
+                                            )}
+                                            {backgroundType === 'table' && !tableConfigOpen && (
+                                                <button
+                                                    type="button"
+                                                    className="table-bg-config-reopen"
+                                                    onClick={() => setTableConfigOpen(true)}
+                                                >
+                                                    📊 표 설정
+                                                </button>
                                             )}
                                             <div className="canvas-overlay-tools">
                                                 <button

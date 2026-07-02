@@ -1,12 +1,10 @@
 import React, { useMemo } from 'react';
-import { normalizeTableConfig } from '../utils/tableBackground';
+import { getTableCellLabel, normalizeTableConfig } from '../utils/tableBackground';
 import './TableBackground.css';
 
 const TableBackground = ({ config, className = '' }) => {
-    const { rows, cols, headerRow, headerCol } = useMemo(
-        () => normalizeTableConfig(config),
-        [config]
-    );
+    const normalized = useMemo(() => normalizeTableConfig(config), [config]);
+    const { rows, cols, headerRow, headerCol, rowWeights, colWeights } = normalized;
 
     const cells = [];
     for (let row = 0; row < rows; row += 1) {
@@ -18,11 +16,14 @@ const TableBackground = ({ config, className = '' }) => {
             else if (isHeaderCol) classNames.push('is-header-col');
             else if (isHeaderRow) classNames.push('is-header-row');
 
+            const label = getTableCellLabel(row, col, normalized);
+
             cells.push(
-                <div
-                    key={`${row}-${col}`}
-                    className={classNames.join(' ')}
-                />
+                <div key={`${row}-${col}`} className={classNames.join(' ')}>
+                    {label ? (
+                        <span className="table-bg-cell-label">{label}</span>
+                    ) : null}
+                </div>
             );
         }
     }
@@ -31,8 +32,8 @@ const TableBackground = ({ config, className = '' }) => {
         <div
             className={`table-background ${className}`.trim()}
             style={{
-                gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                gridTemplateRows: `repeat(${rows}, 1fr)`,
+                gridTemplateColumns: colWeights.map((w) => `${w}fr`).join(' '),
+                gridTemplateRows: rowWeights.map((w) => `${w}fr`).join(' '),
             }}
             aria-hidden="true"
         >
