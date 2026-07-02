@@ -1,10 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Gowun+Dodum&display=swap');
 
 @tailwind components;
 @tailwind utilities;
 
 :root {
   --font-family: 'Gowun Dodum', sans-serif;
+  --font-logo: 'Fredoka', sans-serif;
   --line-height: 1.6;
   --font-weight: 400;
 
@@ -52,6 +53,12 @@
 /* 모든 폼 요소에 폰트 강제 상속 (브라우저 기본값 override) */
 input, textarea, select, button, a {
   font-family: inherit;
+}
+
+.logo-text-fixed {
+  font-family: var(--font-logo);
+  font-weight: 500;
+  letter-spacing: 0.03em;
 }
 
 /* 학생 메시지 토스트 애니메이션 */

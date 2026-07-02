@@ -31,27 +31,30 @@
 
 .logo-text-fixed {
     display: flex;
-    align-items: center;
-    font-family: 'Gowun Dodum', sans-serif;
+    align-items: baseline;
 }
 
 .logo-dd {
-    font-size: 2.2rem;
+    font-size: 2.4rem;
     color: var(--color-brand-brown);
-    font-weight: 800;
+    font-weight: 600;
+    line-height: 1;
 }
 
 .logo-full {
     color: var(--color-brand-orange);
-    font-size: 1.6rem;
-    margin-top: 6px;
-    padding: 0 2px;
+    font-size: 1.55rem;
+    font-weight: 500;
+    padding: 0 1px;
+    line-height: 1;
 }
 
 .logo-class {
-    margin-left: 8px;
-    font-size: 1.8rem;
+    margin-left: 6px;
+    font-size: 1.75rem;
+    font-weight: 600;
     color: var(--color-brand-brown);
+    line-height: 1;
 }
 
 .nav-btns {
@@ -367,7 +370,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    padding: 20px;
+    padding: 18px 20px;
     background: white;
     border: 2px solid #F0EEE9;
     border-radius: var(--radius-md);
@@ -396,19 +399,10 @@
 }
 
 .mode-info h4 {
-    font-size: 1.2rem;
-    margin-bottom: 6px;
+    font-size: 1.25rem;
+    margin-bottom: 0;
     word-break: keep-all;
     overflow-wrap: break-word;
-}
-
-.mode-info p {
-    font-size: 0.95rem;
-    color: #7A6A64;
-    line-height: 1.5;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    white-space: pre-wrap;
 }
 
 .mode-arrow {
@@ -442,13 +436,7 @@
     }
 
     .mode-info h4 {
-        font-size: 1rem;
-        word-break: keep-all;
-    }
-
-    .mode-info p {
-        font-size: 0.8rem;
-        line-height: 1.3;
+        font-size: 1.05rem;
         word-break: keep-all;
     }
 

@@ -181,8 +181,8 @@ const FillBlanksPreview = ({ problem }) => {
     };
 
     return (
-        <div className="fb-student-container" style={{ minHeight: 'auto', background: 'transparent' }}>
-            <main className="fb-game-content" style={{ padding: '1rem 0' }}>
+        <div className="fb-student-container preview-embed" style={{ background: 'transparent' }}>
+            <main className="fb-game-content">
                 <div className="problem-area">
                     <h2 className="problem-title"><LatexRenderer text={problem.title} /></h2>
                     <div className="text-display">

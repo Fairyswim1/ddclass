@@ -69,8 +69,8 @@ const OrderMatchingPreview = ({ problem }) => {
     };
 
     return (
-        <div className="om-student-container" style={{ minHeight: 'auto', background: 'transparent' }}>
-            <main className="om-game-content" style={{ padding: '1rem 0' }}>
+        <div className="om-student-container preview-embed" style={{ background: 'transparent' }}>
+            <main className="om-game-content">
                 <div className="header-area">
                     <h2 className="problem-title"><LatexRenderer text={problem.title} /></h2>
                     <p className="instruction">카드를 드래그하여 순서를 맞추세요.</p>

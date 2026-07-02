@@ -83,37 +83,33 @@ const LandingPage = () => {
 
     const services = [
         {
-            id: 'lesson-builder',
-            title: '수업 꾸러미 만들기',
-            description: '빈칸·순서맞추기·퀴즈·동영상·이미지를 한 번에!\n흐름 있는 한 수업을 뚝딱 설계하세요.',
-            icon: <Layers size={24} />,
-            color: 'var(--color-brand-purple)',
-            path: '/create-lesson',
-            highlight: true
-        },
-        {
             id: 'fill-blanks',
-            title: '주요 용어 & 빈칸 채우기',
-            description: '전 과목 핵심 용어 학습, 국어·영어 어휘력 향상 등\n다양한 수업의 핵심 활동으로 활용해보세요.',
+            title: '빈칸 채우기',
             icon: <Star size={24} fill="currentColor" />,
             color: 'var(--color-brand-yellow)',
             path: '/fill-blanks'
         },
         {
             id: 'order-matching',
-            title: '논리적인 순서 맞추기',
-            description: '영어 문장 완성, 역사의 시간 흐름, 수학적 증명 순서 등\n순서가 중요한 모든 학습에 적합합니다.',
+            title: '순서 맞추기',
             icon: <Sparkles size={24} fill="currentColor" />,
             color: 'var(--color-brand-green)',
             path: '/order-matching'
         },
         {
             id: 'free-dnd',
-            title: '창의적인 자유 보드',
-            description: '원하는 배경과 그림 위에 텍스트나 이미지를 마음껏 배치하며\n상상력을 자극하는 활동을 설계해보세요.',
+            title: '자유 보드',
             icon: <Layout size={24} fill="currentColor" />,
             color: 'var(--color-brand-blue)',
             path: '/free-dnd'
+        },
+        {
+            id: 'lesson-builder',
+            title: '수업 꾸러미 만들기',
+            icon: <Layers size={24} />,
+            color: 'var(--color-brand-purple)',
+            path: '/create-lesson',
+            highlight: true
         }
     ];
 
@@ -219,7 +215,6 @@ const LandingPage = () => {
                                     </div>
                                     <div className="mode-info">
                                         <h4>{service.title}</h4>
-                                        <p>{service.description}</p>
                                     </div>
                                     <div className="mode-arrow">
                                         <ArrowRight size={20} />

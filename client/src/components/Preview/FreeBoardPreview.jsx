@@ -69,7 +69,14 @@ const FreeBoardPreview = ({ problem }) => {
     const handleReturnToTray = (id) => setItems(items.map(item => item.id === id ? { ...item, isPlaced: false, x: 0, y: 0 } : item));
 
     return (
-        <div className="free-student-wrapper" style={{ height: '70vh', background: 'transparent' }} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onTouchMove={handleMouseMove} onTouchEnd={handleMouseUp}>
+        <div
+            className="free-student-wrapper preview-embed"
+            style={{ background: 'transparent' }}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onTouchMove={handleMouseMove}
+            onTouchEnd={handleMouseUp}
+        >
             <main className="student-main">
                 <section className="student-tray-area" style={{ width: '220px' }}>
                     <div className="tray-header"><Layout size={14} /> <span>카드 보관함</span></div>
