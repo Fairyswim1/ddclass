@@ -52,7 +52,7 @@ const StudentLogin = () => {
 
     useEffect(() => {
         const urlPin = searchParams.get('pin')?.trim() || '';
-        const urlNickname = searchParams.get('nickname')?.trim() || '학생';
+        const urlNickname = searchParams.get('nickname')?.trim() || '';
         const autoJoin = ['1', 'true', 'yes'].includes((searchParams.get('autoJoin') || '').toLowerCase());
 
         if (urlPin) {
