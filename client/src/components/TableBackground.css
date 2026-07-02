@@ -21,7 +21,6 @@
 }
 
 .table-bg-cell-label {
-    font-size: clamp(0.65rem, 1.4vw, 0.95rem);
     font-weight: 700;
     color: #7c2d12;
     text-align: center;
@@ -82,17 +81,43 @@
     justify-content: center;
     width: 1.75rem;
     height: 1.75rem;
+    padding: 0;
     border: none;
     border-radius: 999px;
     background: #f1f5f9;
-    color: #64748b;
+    color: #475569;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
     cursor: pointer;
     flex-shrink: 0;
+    box-shadow: none;
 }
 
 .table-bg-config-close:hover {
     background: #e2e8f0;
-    color: #334155;
+    color: #1e293b;
+    transform: none;
+    box-shadow: none;
+}
+
+.table-bg-config-font-size {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.table-bg-config-font-size input[type='range'] {
+    flex: 1;
+    accent-color: #E6B400;
+}
+
+.table-bg-config-font-size-value {
+    min-width: 2.75rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #64748b;
+    text-align: right;
 }
 
 .table-bg-config-section {

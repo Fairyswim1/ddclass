@@ -4,7 +4,7 @@ import './TableBackground.css';
 
 const TableBackground = ({ config, className = '' }) => {
     const normalized = useMemo(() => normalizeTableConfig(config), [config]);
-    const { rows, cols, headerRow, headerCol, rowWeights, colWeights } = normalized;
+    const { rows, cols, headerRow, headerCol, rowWeights, colWeights, labelFontSize } = normalized;
 
     const cells = [];
     for (let row = 0; row < rows; row += 1) {
@@ -21,7 +21,12 @@ const TableBackground = ({ config, className = '' }) => {
             cells.push(
                 <div key={`${row}-${col}`} className={classNames.join(' ')}>
                     {label ? (
-                        <span className="table-bg-cell-label">{label}</span>
+                        <span
+                            className="table-bg-cell-label"
+                            style={{ fontSize: `${labelFontSize}px` }}
+                        >
+                            {label}
+                        </span>
                     ) : null}
                 </div>
             );

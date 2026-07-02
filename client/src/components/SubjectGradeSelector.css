@@ -85,3 +85,28 @@
     display: none;
     /* 드롭다운으로 변경되었으므로 숨김 또는 제거 가능 */
 }
+
+.sg-selector--horizontal {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 0.65rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    flex: 1;
+    min-width: 0;
+}
+
+.sg-selector--horizontal .sg-group {
+    flex: 1;
+    min-width: 0;
+}
+
+.sg-selector--horizontal .sg-label {
+    font-size: 0.75rem;
+    margin-bottom: 0.15rem;
+}
+
+.sg-selector--horizontal .sg-select {
+    min-width: 0;
+}

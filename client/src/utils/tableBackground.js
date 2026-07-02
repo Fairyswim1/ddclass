@@ -7,6 +7,7 @@ export const DEFAULT_TABLE_CONFIG = {
     colWeights: [1, 1, 1, 1],
     colLabels: ['', '', '', ''],
     rowLabels: ['', ''],
+    labelFontSize: 14,
 };
 
 function ensureLength(arr, length, fill) {
@@ -42,7 +43,14 @@ export function normalizeTableConfig(config) {
         colWeights: normalizeWeights(config?.colWeights, safeCols),
         colLabels: normalizeLabels(config?.colLabels, safeCols),
         rowLabels: normalizeLabels(config?.rowLabels, safeRows),
+        labelFontSize: normalizeLabelFontSize(config?.labelFontSize),
     };
+}
+
+function normalizeLabelFontSize(value) {
+    const parsed = parseInt(value, 10);
+    if (!Number.isFinite(parsed)) return DEFAULT_TABLE_CONFIG.labelFontSize;
+    return Math.min(32, Math.max(10, parsed));
 }
 
 export function getTableCellLabel(row, col, config) {

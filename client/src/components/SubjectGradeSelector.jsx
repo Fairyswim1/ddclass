@@ -24,15 +24,50 @@ const GRADES_MAP = {
     high: [1, 2, 3],
 };
 
-const SubjectGradeSelector = ({ subject, setSubject, schoolLevel, setSchoolLevel, grade, setGrade }) => {
+const SubjectGradeSelector = ({ subject, setSubject, schoolLevel, setSchoolLevel, grade, setGrade, layout = 'vertical' }) => {
     const handleSchoolLevelChange = (level) => {
         setSchoolLevel(level);
-        setGrade(''); // 학교급 바뀌면 학년 초기화
+        setGrade('');
     };
+
+    const isHorizontal = layout === 'horizontal';
+
+    if (isHorizontal) {
+        return (
+            <div className="sg-selector sg-selector--horizontal">
+                <div className="sg-group">
+                    <label className="sg-label">과목 <span className="sg-required">*필수</span></label>
+                    <select className="sg-select" value={subject} onChange={(e) => setSubject(e.target.value)}>
+                        <option value="">과목 선택</option>
+                        {SUBJECTS.map(s => (
+                            <option key={s.value} value={s.value}>{s.label}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="sg-group">
+                    <label className="sg-label">학교급 <span className="sg-required">*필수</span></label>
+                    <select className="sg-select" value={schoolLevel} onChange={(e) => handleSchoolLevelChange(e.target.value)}>
+                        <option value="">학교급</option>
+                        {SCHOOL_LEVELS.map(l => (
+                            <option key={l.value} value={l.value}>{l.label}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="sg-group">
+                    <label className="sg-label">학년 <span className="sg-optional">선택</span></label>
+                    <select className="sg-select" value={grade} onChange={(e) => setGrade(e.target.value)} disabled={!schoolLevel}>
+                        <option value="">학년</option>
+                        {schoolLevel && GRADES_MAP[schoolLevel]?.map(g => (
+                            <option key={g} value={g}>{g}학년</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="sg-selector">
-            {/* 과목 선택 (필수) */}
             <div className="sg-group">
                 <label className="sg-label">과목 <span className="sg-required">*필수</span></label>
                 <select
@@ -48,7 +83,6 @@ const SubjectGradeSelector = ({ subject, setSubject, schoolLevel, setSchoolLevel
             </div>
 
             <div className="sg-row">
-                {/* 학교급 선택 (필수) */}
                 <div className="sg-group flex-1">
                     <label className="sg-label">학교급 <span className="sg-required">*필수</span></label>
                     <select
@@ -63,7 +97,6 @@ const SubjectGradeSelector = ({ subject, setSubject, schoolLevel, setSchoolLevel
                     </select>
                 </div>
 
-                {/* 학년 선택 (선택) */}
                 <div className="sg-group flex-1">
                     <label className="sg-label">학년 <span className="sg-optional">선택</span></label>
                     <select

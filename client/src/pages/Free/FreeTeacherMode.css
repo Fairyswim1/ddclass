@@ -86,7 +86,125 @@
     overflow: hidden;
 }
 
-/* --- Top Guide Bar (Horizontal) --- */
+/* --- Top Meta Bar (Title + Subject/Grade) --- */
+.free-top-meta-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    padding: 0.65rem 1.25rem;
+    background: white;
+    border-bottom: 2px solid #F0EEE9;
+    flex-shrink: 0;
+}
+
+.free-meta-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.free-meta-title {
+    flex: 1.4;
+    min-width: 180px;
+}
+
+.free-meta-field label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #8D7B75;
+}
+
+.free-meta-field .styled-input-mini {
+    padding: 0.5rem 0.65rem;
+    font-size: 0.9rem;
+}
+
+/* --- Compact Vertical Guide (inside workspace) --- */
+.workspace-with-guide {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.guide-sidebar-compact {
+    width: 168px;
+    flex-shrink: 0;
+    padding: 0.75rem 0.65rem;
+    background: #FFFDF5;
+    border-right: 1px solid #F0EEE9;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    overflow-y: auto;
+}
+
+.guide-compact-title {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #8D7B75;
+}
+
+.guide-steps-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.guide-step-item-v {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    padding: 0.45rem 0.5rem;
+    background: white;
+    border: 1px solid #F0E6D2;
+    border-radius: 10px;
+}
+
+.step-num-v {
+    width: 20px;
+    height: 20px;
+    background: #E6B400;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.guide-step-item-v p {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #5D4037;
+    line-height: 1.35;
+    word-break: keep-all;
+}
+
+.tip-box-compact {
+    background: #F0F9FF;
+    padding: 0.45rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #BAE6FD;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.tip-box-compact p {
+    font-size: 0.68rem;
+    color: #0369A1;
+    margin: 0;
+    line-height: 1.35;
+    word-break: keep-all;
+}
+
+/* --- Top Guide Bar (legacy, unused) --- */
 .top-guide-bar {
     background: #FFFDF5;
     border-bottom: 2px solid #F0EEE9;
@@ -176,6 +294,8 @@
     display: flex;
     flex-direction: column;
     z-index: 100;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .sidebar-header {
@@ -184,8 +304,7 @@
 
 .sidebar-content {
     flex: 1;
-    padding: 0 1.2rem 1.2rem;
-    /* Reduced top padding to move title up even more */
+    padding: 0.75rem 1.2rem 1.2rem;
     overflow-y: visible;
 }
 
@@ -235,8 +354,7 @@
     gap: 0.6rem;
     overflow-y: auto;
     padding-right: 0.5rem;
-    /* Space for scrollbar */
-    max-height: 400px;
+    min-height: 0;
 }
 
 .empty-tray-msg-small {
@@ -317,6 +435,13 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.teacher-workspace .center-preview-area {
+    flex: 1;
+    min-width: 0;
 }
 
 /* --- Center Preview Area --- */
@@ -894,6 +1019,39 @@
         height: auto;
         flex-direction: column;
         padding: 0.5rem;
+    }
+
+    .free-top-meta-bar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.65rem 1rem;
+    }
+
+    .free-meta-title {
+        flex: none;
+    }
+
+    .sg-selector--horizontal {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .workspace-with-guide {
+        flex-direction: column;
+    }
+
+    .guide-sidebar-compact {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #F0EEE9;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+
+    .guide-steps-vertical {
+        flex: 1;
+        min-width: 200px;
     }
 
     .top-guide-bar {

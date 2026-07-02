@@ -1,5 +1,4 @@
 import React from 'react';
-import { X } from 'lucide-react';
 import { normalizeTableConfig } from '../utils/tableBackground';
 import './TableBackground.css';
 
@@ -46,7 +45,7 @@ const TableBackgroundConfig = ({ config, onChange, onClose }) => {
                         title="설정 닫기"
                         aria-label="설정 닫기"
                     >
-                        <X size={16} />
+                        ×
                     </button>
                 )}
             </div>
@@ -91,6 +90,21 @@ const TableBackgroundConfig = ({ config, onChange, onClose }) => {
                     />
                     첫 열 헤더
                 </label>
+            </div>
+
+            <div className="table-bg-config-section">
+                <p className="table-bg-config-section-title">헤더 글씨 크기</p>
+                <div className="table-bg-config-font-size">
+                    <input
+                        type="range"
+                        min={10}
+                        max={32}
+                        step={1}
+                        value={normalized.labelFontSize}
+                        onChange={(e) => update({ labelFontSize: e.target.value })}
+                    />
+                    <span className="table-bg-config-font-size-value">{normalized.labelFontSize}px</span>
+                </div>
             </div>
 
             <div className="table-bg-config-section">

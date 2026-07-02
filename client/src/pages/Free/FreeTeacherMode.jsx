@@ -388,63 +388,34 @@ const FreeTeacherMode = () => {
             <main className="free-main-layout">
                 {step === 'input' ? (
                     <>
-                        {/* Top: Guide (Horizontal) */}
-                        <div className="top-guide-bar">
-                            <div className="guide-card-horizontal">
-                                <div className="guide-steps-horizontal">
-                                    <div className="guide-step-item-h active">
-                                        <div className="step-num-h">1</div>
-                                        <div className="step-info-h">
-                                            <p>배경 설정: 학습지나 이미지를 업로드하세요.</p>
-                                        </div>
-                                    </div>
-                                    <div className="guide-step-item-h active">
-                                        <div className="step-num-h">2</div>
-                                        <div className="step-info-h">
-                                            <p>카드 추가: 학생들이 움직일 텍스트/이미지를 만드세요.</p>
-                                        </div>
-                                    </div>
-                                    <div className="guide-step-item-h active">
-                                        <div className="step-num-h">3</div>
-                                        <div className="step-info-h">
-                                            <p>저장 & 공유: PIN 번호로 수업을 시작하세요!</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="tip-box-h">
-                                    <p><strong>💡 꿀팁:</strong> PDF는 첫 페이지가 배경이 됩니다!</p>
-                                    <DidiTipLatexOcrButton />
-                                </div>
+                        <div className="free-top-meta-bar">
+                            <div className="free-meta-field free-meta-title">
+                                <label htmlFor="free-problem-title">문제 제목</label>
+                                <input
+                                    id="free-problem-title"
+                                    type="text"
+                                    placeholder="제목을 입력하세요"
+                                    value={title}
+                                    className="styled-input-mini"
+                                    onChange={(e) => setTitle(e.target.value)}
+                                />
+                                <LatexPreviewHint text={title} compact />
                             </div>
+                            <SubjectGradeSelector
+                                layout="horizontal"
+                                subject={subject}
+                                setSubject={setSubject}
+                                schoolLevel={schoolLevel}
+                                setSchoolLevel={setSchoolLevel}
+                                grade={grade}
+                                setGrade={setGrade}
+                            />
                         </div>
 
                         <div className="workspace-container-flex">
                             {/* Left Sidebar: Tools & List */}
                             <aside className="tool-sidebar">
                                 <div className="sidebar-content">
-                                    <div className="form-group">
-                                        <label>문제 제목</label>
-                                        <input
-                                            type="text"
-                                            placeholder="제목을 입력하세요"
-                                            value={title}
-                                            className="styled-input-mini"
-                                            onChange={(e) => setTitle(e.target.value)}
-                                        />
-                                        <LatexPreviewHint text={title} compact />
-                                    </div>
-
-                                    <SubjectGradeSelector
-                                        subject={subject}
-                                        setSubject={setSubject}
-                                        schoolLevel={schoolLevel}
-                                        setSchoolLevel={setSchoolLevel}
-                                        grade={grade}
-                                        setGrade={setGrade}
-                                    />
-
-                                    <div className="divider"></div>
-
                                     <div className="card-add-container">
                                         <div className="card-type-section text-type">
                                             <div className="section-label">
@@ -579,6 +550,29 @@ const FreeTeacherMode = () => {
 
                             {/* Center: Workspace (Background Only) */}
                             <section className="teacher-workspace">
+                                <div className="workspace-with-guide">
+                                    <aside className="guide-sidebar-compact">
+                                        <p className="guide-compact-title">만드는 방법</p>
+                                        <div className="guide-steps-vertical">
+                                            <div className="guide-step-item-v">
+                                                <div className="step-num-v">1</div>
+                                                <p>배경 설정: 학습지나 이미지를 업로드하세요.</p>
+                                            </div>
+                                            <div className="guide-step-item-v">
+                                                <div className="step-num-v">2</div>
+                                                <p>카드 추가: 학생들이 움직일 텍스트/이미지를 만드세요.</p>
+                                            </div>
+                                            <div className="guide-step-item-v">
+                                                <div className="step-num-v">3</div>
+                                                <p>저장 & 공유: PIN 번호로 수업을 시작하세요!</p>
+                                            </div>
+                                        </div>
+                                        <div className="tip-box-compact">
+                                            <p><strong>💡 꿀팁:</strong> PDF는 첫 페이지가 배경이 됩니다!</p>
+                                            <DidiTipLatexOcrButton />
+                                        </div>
+                                    </aside>
+
                                 <section className={`center-preview-area${!backgroundUrl && backgroundType === 'blank' ? ' setup-mode' : ''}`}>
                                     {!backgroundUrl && backgroundType === 'blank' ? (
                                         <div className="free-bg-setup-stack">
@@ -703,6 +697,7 @@ const FreeTeacherMode = () => {
                                     )}
                                     <input type="file" ref={fileInputRef} hidden onChange={(e) => handleFileUpload(e.target.files[0])} accept="image/*,.pdf" />
                                 </section>
+                                </div>
                             </section>
                         </div>
                     </>
