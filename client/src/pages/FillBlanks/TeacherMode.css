@@ -294,10 +294,15 @@
     cursor: pointer;
     border-radius: 6px;
     transition: background-color 0.2s ease;
+    user-select: none;
 }
 
 .latex-selectable-segment:hover {
     background-color: rgba(79, 182, 255, 0.12);
+}
+
+.text-selectable-segment {
+    cursor: text;
 }
 
 .word-break {

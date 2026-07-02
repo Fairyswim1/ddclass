@@ -14,17 +14,17 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
         updateSlide(slide.id, { originalText: newText, blanks: [] });
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e) => {
         const selection = window.getSelection();
-        if (!selection || !textRef.current) return;
+        if (!textRef.current) return;
 
-        const resolved = resolveBlankSelection(textRef.current, originalText, selection);
+        const resolved = resolveBlankSelection(textRef.current, originalText, selection, e.target);
         if (!resolved) return;
 
         const { startOffset, endOffset, selectedText } = resolved;
 
         if (hasBlankOverlap(blanks, startOffset, endOffset)) {
-            selection.removeAllRanges();
+            selection?.removeAllRanges();
             return;
         }
 
@@ -37,7 +37,7 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
 
         const newBlanks = [...blanks, newBlank].sort((a, b) => a.startOffset - b.startOffset);
         updateSlide(slide.id, { blanks: newBlanks });
-        selection.removeAllRanges();
+        selection?.removeAllRanges();
     };
 
     const removeBlank = (id) => {
@@ -128,7 +128,7 @@ const FillBlanksEditor = ({ slide, updateSlide }) => {
             {originalText && (
                 <div className="editor-group" style={{ marginTop: '1.5rem' }}>
                     <label style={{ fontWeight: 'bold', color: '#3b82f6', marginBottom: '0.5rem', display: 'block' }}>
-                        👉 빈칸 만들기: 텍스트는 드래그로 선택하고, LaTeX 수식은 클릭하면 전체 수식이 빈칸으로 지정됩니다.
+                        👉 일반 텍스트는 드래그로 선택하고, LaTeX 수식은 클릭하면 해당 수식만 빈칸으로 지정됩니다.
                     </label>
                     <div
                         className="words-selector-container"

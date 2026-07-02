@@ -92,17 +92,17 @@ const TeacherMode = () => {
         setStep('create');
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e) => {
         const selection = window.getSelection();
-        if (!selection || !textRef.current) return;
+        if (!textRef.current) return;
 
-        const resolved = resolveBlankSelection(textRef.current, inputText, selection);
+        const resolved = resolveBlankSelection(textRef.current, inputText, selection, e.target);
         if (!resolved) return;
 
         const { startOffset, endOffset, selectedText } = resolved;
 
         if (hasBlankOverlap(blanks, startOffset, endOffset)) {
-            selection.removeAllRanges();
+            selection?.removeAllRanges();
             return;
         }
 
@@ -114,7 +114,7 @@ const TeacherMode = () => {
         };
 
         setBlanks([...blanks, newBlank].sort((a, b) => a.startOffset - b.startOffset));
-        selection.removeAllRanges();
+        selection?.removeAllRanges();
     };
 
     const removeBlank = (id) => {
@@ -317,7 +317,7 @@ const TeacherMode = () => {
                         <div className="teacher-card fade-in">
                             <div className="card-header">
                                 <h3>빈칸을 선택해주세요</h3>
-                                <p>👉 본문에서 <strong>빈칸으로 만들 부분을 드래그</strong>하거나, <strong>수식은 클릭</strong>하세요.</p>
+                                <p>👉 일반 텍스트는 <strong>드래그</strong>로, 수식은 <strong>클릭</strong>하면 해당 수식만 빈칸으로 지정됩니다.</p>
 
                             </div>
 

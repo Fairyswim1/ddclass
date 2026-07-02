@@ -1,12 +1,17 @@
 .public-library {
     width: 100%;
+    max-width: 100%;
     min-height: 100vh;
     background-color: var(--color-bg-light);
+    overflow-x: clip;
 }
 
 .library-layout {
     display: flex;
+    width: 100%;
+    max-width: 100%;
     min-height: 100vh;
+    overflow: hidden;
 }
 
 /* 1. Sidebar */
@@ -128,16 +133,21 @@
 
 /* 2. Main Content */
 .library-main {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     background-color: var(--color-bg-light);
+    overflow-x: hidden;
 }
 
 .main-header {
     padding: 2rem;
     background: white;
     border-bottom: 2px solid #F5F0E6;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .header-top {
@@ -145,12 +155,20 @@
     justify-content: space-between;
     align-items: flex-end;
     gap: 1rem;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.title-area {
+    min-width: 0;
+    flex: 1 1 220px;
 }
 
 .title-area h1 {
     font-size: 1.8rem;
     color: var(--color-brand-brown);
     margin-bottom: 0.2rem;
+    word-break: keep-all;
 }
 
 .selection-desc {
@@ -160,9 +178,12 @@
 
 .header-actions {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    min-width: 0;
+    flex: 1 1 320px;
 }
 
 .btn-back-dash {
@@ -192,7 +213,8 @@
     background: #F9F6F0;
     padding: 0.6rem 1rem;
     border-radius: 12px;
-    width: 280px;
+    width: min(280px, 100%);
+    flex: 1 1 200px;
     border: 2px solid transparent;
     transition: all 0.2s;
 }
@@ -216,14 +238,18 @@
 .library-grid-container {
     padding: 2rem;
     flex: 1;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .library-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.5rem;
-    max-width: 1800px;
-    /* Increased from 1400px */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    width: 100%;
+    max-width: 100%;
 }
 
 /* 4. Library Card (Refined) */
@@ -237,6 +263,8 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    min-width: 0;
+    width: 100%;
 }
 
 .library-card:hover {
@@ -289,10 +317,12 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .card-meta {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
     margin-bottom: 0.8rem;
 }
@@ -322,9 +352,20 @@
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    height: 3.1rem;
+    min-height: 3.1rem;
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.problem-title .latex-renderer,
+.problem-title .katex {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .card-stats {
@@ -457,9 +498,19 @@
 }
 
 /* Mobile Responsive */
+@media (max-width: 1200px) {
+    .library-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+}
+
 @media (max-width: 1024px) {
     .library-sidebar {
         width: 180px;
+    }
+
+    .library-grid-container {
+        padding: 1.5rem;
     }
 }
 
@@ -527,5 +578,10 @@
 
     .library-grid-container {
         padding: 1rem;
+    }
+
+    .library-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
 }

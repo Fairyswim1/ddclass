@@ -1,9 +1,25 @@
 import { splitIntoLatexSegments, LATEX_SEGMENT_REGEX } from './latexTextSegments';
 
-function isLatexSegmentText(text) {
+export function isLatexSegmentText(text) {
     if (!text?.trim()) return false;
     const match = text.match(new RegExp(`^${LATEX_SEGMENT_REGEX.source}$`));
     return Boolean(match);
+}
+
+function findLatexSegmentFromTarget(textRoot, target) {
+    let current = target;
+    while (current && current !== textRoot) {
+        if (current.dataset?.isLatex === 'true' && current.dataset?.offset !== undefined) {
+            const startOffset = parseInt(current.dataset.offset, 10);
+            const length = parseInt(current.dataset.length, 10);
+            return {
+                startOffset,
+                endOffset: startOffset + length,
+            };
+        }
+        current = current.parentNode;
+    }
+    return null;
 }
 
 function findOffsetSegment(root, node) {
@@ -13,7 +29,6 @@ function findOffsetSegment(root, node) {
             return {
                 startOffset: parseInt(current.dataset.offset, 10),
                 endOffset: parseInt(current.dataset.offset, 10) + parseInt(current.dataset.length, 10),
-                node: current,
             };
         }
         current = current.parentNode;
@@ -86,10 +101,23 @@ function expandRangeForLatex(startOffset, endOffset, sourceText) {
 
 /**
  * 빈칸 선택 UI에서 드래그/클릭 선택을 원문 오프셋으로 변환합니다.
- * LaTeX 수식은 렌더링 DOM과 원문 길이가 달라 전체 수식 단위로 스냅합니다.
+ * LaTeX 수식 클릭은 브라우저 selection 대신 data-offset을 우선 사용합니다.
  */
-export function resolveBlankSelection(textRoot, sourceText, selection) {
-    if (!textRoot || !sourceText || !selection) return null;
+export function resolveBlankSelection(textRoot, sourceText, selection, eventTarget = null) {
+    if (!textRoot || !sourceText) return null;
+
+    const latexClick = eventTarget ? findLatexSegmentFromTarget(textRoot, eventTarget) : null;
+    if (latexClick) {
+        const selectedText = sourceText.slice(latexClick.startOffset, latexClick.endOffset).trim();
+        if (!selectedText) return null;
+        return {
+            startOffset: latexClick.startOffset,
+            endOffset: latexClick.endOffset,
+            selectedText,
+        };
+    }
+
+    if (!selection) return null;
 
     const range = selection.getRangeAt(0);
     if (!textRoot.contains(range.commonAncestorContainer)) return null;
@@ -133,4 +161,36 @@ export function hasBlankOverlap(blanks, startOffset, endOffset) {
         || (endOffset > blank.startOffset && endOffset <= blank.endOffset)
         || (startOffset <= blank.startOffset && endOffset >= blank.endOffset)
     );
+}
+
+/**
+ * @returns {{ text: string, startOffset: number, length: number, isLatex: boolean }[]}
+ */
+export function buildSelectableSegments(text, baseOffset = 0) {
+    if (!text) return [];
+
+    return splitIntoLatexSegments(text).flatMap((segment) => {
+        if (isLatexSegmentText(segment.text)) {
+            return [{
+                text: segment.text,
+                startOffset: baseOffset + segment.startOffset,
+                length: segment.length,
+                isLatex: true,
+            }];
+        }
+
+        const parts = segment.text.split(/(\n)/).filter((part) => part.length > 0);
+        let localOffset = segment.startOffset;
+
+        return parts.map((part) => {
+            const item = {
+                text: part,
+                startOffset: baseOffset + localOffset,
+                length: part.length,
+                isLatex: false,
+            };
+            localOffset += part.length;
+            return item;
+        });
+    });
 }

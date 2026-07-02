@@ -562,9 +562,9 @@ const FreeTeacherMode = () => {
 
                             {/* Center: Workspace (Background Only) */}
                             <section className="teacher-workspace">
-                                <section className="center-preview-area">
+                                <section className={`center-preview-area${!backgroundUrl && backgroundType === 'blank' ? ' setup-mode' : ''}`}>
                                     {!backgroundUrl && backgroundType === 'blank' ? (
-                                        <div style={{ width: '100%' }}>
+                                        <div className="free-bg-setup-stack">
                                             {/* 배경 프리셋 선택 */}
                                             <div className="free-bg-preset-panel">
                                                 <div className="free-bg-preset-title">📋 배경 스타일 선택</div>
@@ -594,7 +594,6 @@ const FreeTeacherMode = () => {
                                                 onDragOver={handleDragOver}
                                                 onDragLeave={handleDragLeave}
                                                 onDrop={handleDrop}
-                                                style={{ marginTop: '0.75rem' }}
                                             >
                                                 <div className="upload-icon-circle">
                                                     <Upload size={36} color="#E6B400" />
