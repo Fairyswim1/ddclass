@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Upload, Trash2, Plus, Type, Image as ImageIcon, Loader2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { resolveApiUrl } from '../../../utils/url';
 import { WHITEBOARD_PRESETS, getPresetBackgroundStyle } from '../../../utils/whiteboardPresets';
+import { DEFAULT_TABLE_CONFIG, normalizeTableConfig } from '../../../utils/tableBackground';
+import TableBackgroundConfig from '../../../components/TableBackgroundConfig';
 
 const FONT_SIZES = { S: 14, M: 22, L: 32 };
 
@@ -15,11 +17,20 @@ const FreeDropEditor = ({ slide, onChange }) => {
     const items = slide.items || [];
     const backgroundUrl = slide.backgroundUrl || '';
     const backgroundType = slide.backgroundType || 'blank';
+    const tableConfig = slide.tableConfig || DEFAULT_TABLE_CONFIG;
     const allowReuse = slide.allowReuse || false;
 
     const handleSelectPreset = (id) => {
         if (id === 'custom') return;
-        onChange({ backgroundType: id, backgroundUrl: null });
+        if (id === 'table') {
+            onChange({
+                backgroundType: id,
+                backgroundUrl: null,
+                tableConfig: normalizeTableConfig(tableConfig),
+            });
+            return;
+        }
+        onChange({ backgroundType: id, backgroundUrl: null, tableConfig: null });
     };
 
     const upload = async (file) => {
@@ -38,7 +49,7 @@ const FreeDropEditor = ({ slide, onChange }) => {
         setUploading(true);
         try {
             const url = await upload(file);
-            onChange({ backgroundType: 'custom', backgroundUrl: url });
+            onChange({ backgroundType: 'custom', backgroundUrl: url, tableConfig: null });
         } catch (err) {
             alert('배경 이미지 업로드 실패: ' + err.message);
         } finally {
@@ -132,12 +143,19 @@ const FreeDropEditor = ({ slide, onChange }) => {
                     })}
                 </div>
 
+                {backgroundType === 'table' && !backgroundUrl && (
+                    <TableBackgroundConfig
+                        config={tableConfig}
+                        onChange={(next) => onChange({ tableConfig: normalizeTableConfig(next) })}
+                    />
+                )}
+
                 <div className="wb-custom-upload-section">
                     <div className="wb-custom-upload-label">🖼️ 직접 이미지 업로드</div>
                     {backgroundUrl ? (
                         <div className="free-bg-preview">
                             <img src={resolveApiUrl(backgroundUrl)} alt="배경 미리보기" style={{ maxHeight: 120 }} />
-                            <button className="free-bg-remove" onClick={() => onChange({ backgroundType: 'blank', backgroundUrl: null })}>
+                            <button className="free-bg-remove" onClick={() => onChange({ backgroundType: 'blank', backgroundUrl: null, tableConfig: null })}>
                                 <Trash2 size={14} /> 이미지 제거
                             </button>
                         </div>

@@ -385,12 +385,11 @@ const LessonMonitor = () => {
                                 
                                 {studentsHere.length > 0 && (
                                     <div className="card-students">
-                                        {studentsHere.slice(0, 3).map((s, i) => (
-                                            <div key={s.id} title={s.name} className="student-dot" style={{ zIndex: 10 + i }} />
+                                        {studentsHere.map((s) => (
+                                            <span key={s.id} className="student-name-chip" title={s.name}>
+                                                {s.name}
+                                            </span>
                                         ))}
-                                        {studentsHere.length > 3 && (
-                                            <div className="student-dot-more">+{studentsHere.length - 3}</div>
-                                        )}
                                     </div>
                                 )}
                             </div>

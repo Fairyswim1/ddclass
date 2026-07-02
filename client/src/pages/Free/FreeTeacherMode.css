@@ -1004,3 +1004,17 @@
     color: #94a3b8;
     margin: 0.75rem 0 0;
 }
+
+.table-bg-config-overlay {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 12;
+    width: min(280px, calc(100% - 2rem));
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+}
+
+.table-bg-config-overlay .table-bg-config {
+    margin-top: 0;
+}

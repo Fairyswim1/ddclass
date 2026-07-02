@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from 'lucide-react';
 import '../../pages/Free/FreeStudentMode.css';
 import { resolveApiUrl } from '../../utils/url';
+import FreeBoardCanvasBackground from '../FreeBoardCanvasBackground';
 
 const FreeBoardPreview = ({ problem }) => {
     const [items, setItems] = useState([]);
@@ -90,14 +91,14 @@ const FreeBoardPreview = ({ problem }) => {
                 </section>
                 <section className="student-canvas-workspace">
                     <div className="student-canvas-container" style={{ position: 'relative' }}>
-                        {problem.backgroundUrl ? (
-                            <img
-                                src={resolveApiUrl(problem.backgroundUrl)}
-                                alt="bg"
+                        {problem.backgroundUrl || problem.backgroundType === 'table' || (problem.backgroundType && problem.backgroundType !== 'blank') ? (
+                            <FreeBoardCanvasBackground
+                                backgroundUrl={problem.backgroundUrl}
+                                backgroundType={problem.backgroundType || 'blank'}
+                                tableConfig={problem.tableConfig}
+                                aspectRatio={problem.aspectRatio || 16 / 9}
+                                minHeight={500}
                                 style={{ display: 'block', maxWidth: '100%', maxHeight: '100%' }}
-                                onError={(e) => {
-                                    e.target.style.display = 'none';
-                                }}
                             />
                         ) : (
                             <div style={{

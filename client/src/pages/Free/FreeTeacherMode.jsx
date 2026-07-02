@@ -13,6 +13,9 @@ import LatexPreviewHint from '../../components/LatexPreviewHint';
 import DidiTipLatexOcrButton from '../../components/ImageToLatex/DidiTipLatexOcrButton';
 import { resolveApiUrl } from '../../utils/url';
 import { WHITEBOARD_PRESETS, getPresetBackgroundStyle } from '../../utils/whiteboardPresets';
+import { DEFAULT_TABLE_CONFIG, normalizeTableConfig } from '../../utils/tableBackground';
+import FreeBoardCanvasBackground from '../../components/FreeBoardCanvasBackground';
+import TableBackgroundConfig from '../../components/TableBackgroundConfig';
 
 // Set worker for PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -23,6 +26,7 @@ const FreeTeacherMode = () => {
     const [step, setStep] = useState('input'); // input, monitor
     const [backgroundUrl, setBackgroundUrl] = useState('');
     const [backgroundType, setBackgroundType] = useState('blank');
+    const [tableConfig, setTableConfig] = useState(DEFAULT_TABLE_CONFIG);
     const [items, setItems] = useState([]); // { id, content, type, width, fontSize }
     const [isPublic, setIsPublic] = useState(false);
     const { currentUser, nickname } = useAuth();
@@ -63,6 +67,7 @@ const FreeTeacherMode = () => {
                 setTitle(data.title);
                 setBackgroundUrl(data.backgroundUrl || '');
                 setBackgroundType(data.backgroundType || 'blank');
+                setTableConfig(normalizeTableConfig(data.tableConfig || DEFAULT_TABLE_CONFIG));
                 setItems(data.items || []);
                 setAspectRatio(data.aspectRatio || 16 / 9);
                 setIsPublic(data.isPublic || false);
@@ -76,6 +81,14 @@ const FreeTeacherMode = () => {
         } catch (error) {
             console.error("Error fetching problem for edit:", error);
             alert("문제 정보를 불러오는 중 오류가 발생했습니다.");
+        }
+    };
+
+    const handleSelectPreset = (presetId) => {
+        setBackgroundUrl('');
+        setBackgroundType(presetId);
+        if (presetId === 'table') {
+            setTableConfig((prev) => normalizeTableConfig(prev));
         }
     };
 
@@ -278,7 +291,8 @@ const FreeTeacherMode = () => {
         setItems(items.filter(i => i.id !== id));
     };
     const handleSave = async () => {
-        if (!title || (!backgroundUrl && backgroundType === 'blank' && items.length === 0)) {
+        const hasBackground = Boolean(backgroundUrl) || backgroundType !== 'blank';
+        if (!title || (!hasBackground && items.length === 0)) {
             alert('제목을 입력하고 배경이나 카드를 하나 이상 설정해주세요.');
             return;
         }
@@ -315,6 +329,7 @@ const FreeTeacherMode = () => {
                 title,
                 backgroundUrl,
                 backgroundType,
+                tableConfig: backgroundType === 'table' ? normalizeTableConfig(tableConfig) : null,
                 items: items.map(i => ({ ...i, isPlaced: false, x: 0, y: 0 })), // 학생용 초기 상태
                 aspectRatio,
                 baseWidth: 1000,
@@ -577,7 +592,7 @@ const FreeTeacherMode = () => {
                                                                 key={preset.id}
                                                                 type="button"
                                                                 className={`wb-preset-btn ${isActive ? 'active' : ''}`}
-                                                                onClick={() => setBackgroundType(preset.id)}
+                                                                onClick={() => handleSelectPreset(preset.id)}
                                                             >
                                                                 <div className="wb-preset-thumb" style={getPresetBackgroundStyle(preset.id)} />
                                                                 <span className="wb-preset-label">{preset.emoji} {preset.label}</span>
@@ -604,20 +619,25 @@ const FreeTeacherMode = () => {
                                             </div>
                                         </div>
                                     ) : !backgroundUrl ? (
-                                        /* 프리셋 선택된 상태 - 배경 미리보기 */
                                         <div className="canvas-wrapper" style={{ position: 'relative' }}>
-                                            <div
-                                                style={{
-                                                    width: '100%',
-                                                    aspectRatio: `${aspectRatio}`,
-                                                    minHeight: 300,
-                                                    ...getPresetBackgroundStyle(backgroundType)
-                                                }}
+                                            <FreeBoardCanvasBackground
+                                                backgroundType={backgroundType}
+                                                tableConfig={tableConfig}
+                                                aspectRatio={aspectRatio}
+                                                minHeight={300}
                                             />
+                                            {backgroundType === 'table' && (
+                                                <div className="table-bg-config-overlay">
+                                                    <TableBackgroundConfig
+                                                        config={tableConfig}
+                                                        onChange={setTableConfig}
+                                                    />
+                                                </div>
+                                            )}
                                             <div className="canvas-overlay-tools">
                                                 <button
                                                     className="btn-change-bg-prominent"
-                                                    onClick={() => { setBackgroundType('blank'); setBackgroundUrl(''); }}
+                                                    onClick={() => { setBackgroundType('blank'); setBackgroundUrl(''); setTableConfig(DEFAULT_TABLE_CONFIG); }}
                                                 >
                                                     <ImageIcon size={18} /> 배경 다시 선택하기
                                                 </button>

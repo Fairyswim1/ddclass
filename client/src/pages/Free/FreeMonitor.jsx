@@ -5,7 +5,7 @@ import { ArrowLeft, Users, Layout, Send, Volume2 } from 'lucide-react';
 import './FreeMonitor.css';
 import { resolveApiUrl } from '../../utils/url';
 import LatexRenderer from '../../components/LatexRenderer';
-import { getPresetBackgroundStyle } from '../../utils/whiteboardPresets';
+import FreeBoardCanvasBackground from '../../components/FreeBoardCanvasBackground';
 
 const FreeMonitor = () => {
     const { id } = useParams();
@@ -187,11 +187,12 @@ const FreeMonitor = () => {
                                     }}
                                 />
                             ) : (
-                                <div style={{
-                                    width: '100%',
-                                    aspectRatio: `${problem?.aspectRatio || 16 / 9}`,
-                                    ...getPresetBackgroundStyle(problem?.backgroundType || 'blank')
-                                }} />
+                                <FreeBoardCanvasBackground
+                                    backgroundType={problem?.backgroundType || 'blank'}
+                                    tableConfig={problem?.tableConfig}
+                                    aspectRatio={problem?.aspectRatio || 16 / 9}
+                                    style={{ width: '100%' }}
+                                />
                             )}
                             <div
                                 className="thumb-canvas"
@@ -287,12 +288,13 @@ const FreeMonitor = () => {
                                         }}
                                     />
                                 ) : (
-                                    <div style={{
-                                        width: '100%',
-                                        minWidth: 300,
-                                        aspectRatio: `${problem?.aspectRatio || 16 / 9}`,
-                                        ...getPresetBackgroundStyle(problem?.backgroundType || 'blank')
-                                    }} />
+                                    <FreeBoardCanvasBackground
+                                        backgroundType={problem?.backgroundType || 'blank'}
+                                        tableConfig={problem?.tableConfig}
+                                        aspectRatio={problem?.aspectRatio || 16 / 9}
+                                        minHeight={300}
+                                        style={{ width: '100%', minWidth: 300 }}
+                                    />
                                 )}
                                 <div
                                     className="detail-canvas"

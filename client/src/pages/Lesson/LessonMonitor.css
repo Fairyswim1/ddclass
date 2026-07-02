@@ -115,6 +115,7 @@
 .pacing-track {
     display: flex;
     gap: 0.8rem;
+    padding-bottom: 1.4rem;
 }
 
 .pacing-card {
@@ -199,42 +200,34 @@
 
 .card-students {
     position: absolute;
-    bottom: -12px;
+    bottom: -10px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 2px 4px;
-    border-radius: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+    max-width: 155px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 3px 5px;
+    border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     z-index: 5;
 }
 
-.student-dot {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #3B82F6;
-    border: 2px solid white;
-}
-
-.student-dot + .student-dot {
-    margin-left: -8px;
-}
-
-.student-dot-more {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #64748b;
-    color: white;
-    font-size: 9px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid white;
-    margin-left: -8px;
+.student-name-chip {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: #1e40af;
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
+    border-radius: 999px;
+    padding: 1px 6px;
+    max-width: 68px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.5;
 }
 
 .lesson-content-area {

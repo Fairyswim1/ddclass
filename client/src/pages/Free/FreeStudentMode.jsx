@@ -6,7 +6,7 @@ import './FreeStudentMode.css';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { resolveApiUrl } from '../../utils/url';
-import { getPresetBackgroundStyle } from '../../utils/whiteboardPresets';
+import FreeBoardCanvasBackground from '../../components/FreeBoardCanvasBackground';
 
 const FreeStudentMode = ({ lessonProblemData = null, lessonRoomId = null, lessonNickname = null, lessonSocket = null }) => {
     const location = useLocation();
@@ -349,13 +349,16 @@ const FreeStudentMode = ({ lessonProblemData = null, lessonRoomId = null, lesson
                                 }}
                             />
                         ) : (
-                            <div
+                            <FreeBoardCanvasBackground
+                                backgroundType={problem.backgroundType || 'blank'}
+                                tableConfig={problem.tableConfig}
+                                aspectRatio={problem.aspectRatio || 16 / 9}
+                                minHeight={300}
                                 style={{
-                                    width: '100%',
-                                    minWidth: 400,
-                                    minHeight: 300,
-                                    aspectRatio: `${problem.aspectRatio || 16 / 9}`,
-                                    ...getPresetBackgroundStyle(problem.backgroundType || 'blank')
+                                    display: 'block',
+                                    maxWidth: '100%',
+                                    maxHeight: '100%',
+                                    pointerEvents: 'none',
                                 }}
                             />
                         )}

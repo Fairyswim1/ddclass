@@ -1,8 +1,11 @@
 // 화이트보드 기본 배경 프리셋 정의
 // SVG 패턴을 CSS backgroundImage로 인코딩
 
+import { getTableThumbStyle } from './tableBackground';
+
 export const WHITEBOARD_PRESETS = [
     { id: 'blank',      label: '빈 배경',     emoji: '⬜' },
+    { id: 'table',      label: '분류 표',     emoji: '📊' },
     { id: 'lined',      label: '줄노트',       emoji: '📝' },
     { id: 'lined-wide', label: '넓은 줄노트',  emoji: '📄' },
     { id: 'grid',       label: '모눈종이 (소)', emoji: '⊞' },
@@ -22,6 +25,9 @@ export const getPresetBackgroundStyle = (type) => {
     switch (type) {
         case 'blank':
             return { backgroundColor: '#ffffff' };
+
+        case 'table':
+            return getTableThumbStyle(2, 3);
 
         case 'lined':
             return {
