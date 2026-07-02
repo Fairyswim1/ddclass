@@ -100,6 +100,7 @@
 .sg-selector--horizontal .sg-group {
     flex: 1;
     min-width: 0;
+    max-width: 130px;
 }
 
 .sg-selector--horizontal .sg-label {

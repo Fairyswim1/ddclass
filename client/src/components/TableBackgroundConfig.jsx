@@ -1,5 +1,5 @@
 import React from 'react';
-import { normalizeTableConfig } from '../utils/tableBackground';
+import { buildDefaultColWeights, buildDefaultRowWeights, normalizeTableConfig } from '../utils/tableBackground';
 import './TableBackground.css';
 
 const TableBackgroundConfig = ({ config, onChange, onClose }) => {
@@ -14,6 +14,14 @@ const TableBackgroundConfig = ({ config, onChange, onClose }) => {
         }
         const parsed = parseInt(rawValue, 10);
         if (!Number.isFinite(parsed) || parsed < 1) return;
+        if (field === 'rows') {
+            update({ rows: parsed, rowWeights: buildDefaultRowWeights(parsed) });
+            return;
+        }
+        if (field === 'cols') {
+            update({ cols: parsed, colWeights: buildDefaultColWeights(parsed) });
+            return;
+        }
         update({ [field]: parsed });
     };
 
@@ -187,7 +195,7 @@ const TableBackgroundConfig = ({ config, onChange, onClose }) => {
             )}
 
             <p className="table-bg-config-hint">
-                비율 숫자가 클수록 해당 행·열이 더 넓어집니다. 헤더 칸에 분류 기준을 적고, 나머지 칸에 카드를 배치하세요.
+                기본 비율: 첫 행 1 · 나머지 행 9 / 첫 열 1 · 나머지 열 5. 행·열 개수를 바꾸면 이 비율로 다시 맞춰집니다.
             </p>
         </div>
     );

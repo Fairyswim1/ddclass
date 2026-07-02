@@ -20,6 +20,32 @@ import TableBackgroundConfig from '../../components/TableBackgroundConfig';
 // Set worker for PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
+const IMAGE_SIZE_MAP = { S: 15, M: 30, L: 50, XL: 80 };
+
+const CanvasImagePreviewLayer = ({ items }) => {
+    const imageItems = items.filter((item) => item.type === 'image');
+    if (imageItems.length === 0) return null;
+
+    return (
+        <div className="canvas-preview-layer">
+            {imageItems.map((item, idx) => (
+                <div
+                    key={item.id}
+                    className="canvas-preview-item"
+                    style={{
+                        width: `${item.width}%`,
+                        left: `${8 + (idx * 7) % 55}%`,
+                        top: `${15 + (idx * 12) % 45}%`,
+                    }}
+                >
+                    <img src={resolveApiUrl(item.imageUrl)} alt="preview" draggable="false" />
+                    <span className="preview-size-badge">{item.width}%</span>
+                </div>
+            ))}
+        </div>
+    );
+};
+
 const FreeTeacherMode = () => {
     const navigate = useNavigate();
     const [title, setTitle] = useState('');
@@ -33,6 +59,7 @@ const FreeTeacherMode = () => {
     const { currentUser, nickname } = useAuth();
     const [inputText, setInputText] = useState('');
     const [fontSizeScale, setFontSizeScale] = useState('M'); // S, M, L
+    const [imageSizeScale, setImageSizeScale] = useState('M');
     const [aspectRatio, setAspectRatio] = useState(16 / 9);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -257,7 +284,7 @@ const FreeTeacherMode = () => {
                     id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
                     type: 'image',
                     imageUrl: result.url,
-                    width: 15
+                    width: IMAGE_SIZE_MAP[imageSizeScale] || 30,
                 };
             });
 
@@ -278,7 +305,6 @@ const FreeTeacherMode = () => {
         ));
     };
 
-    const IMAGE_SIZE_MAP = { 'S': 15, 'M': 30, 'L': 50, 'XL': 80 };
     const updateItemWidthByScale = (id, scale) => {
         updateItemWidth(id, IMAGE_SIZE_MAP[scale]);
     };
@@ -410,6 +436,18 @@ const FreeTeacherMode = () => {
                                 grade={grade}
                                 setGrade={setGrade}
                             />
+                            <div className="free-top-guide-inline">
+                                <span className="guide-inline-label">만드는 방법</span>
+                                <div className="guide-inline-steps">
+                                    <span><b>1</b> 배경</span>
+                                    <span><b>2</b> 카드</span>
+                                    <span><b>3</b> 저장</span>
+                                </div>
+                                <div className="guide-inline-tip">
+                                    <span className="guide-inline-tip-text">💡 PDF 1페이지</span>
+                                    <DidiTipLatexOcrButton />
+                                </div>
+                            </div>
                         </div>
 
                         <div className="workspace-container-flex">
@@ -447,9 +485,22 @@ const FreeTeacherMode = () => {
 
                                         <div className="card-type-section image-type">
                                             <div className="section-label"><ImageIcon size={16} /> 이미지 카드</div>
+                                            <div className="font-size-group image-size-preset-group">
+                                                {['S', 'M', 'L', 'XL'].map((scale) => (
+                                                    <button
+                                                        key={scale}
+                                                        type="button"
+                                                        className={`btn-size-toggle ${imageSizeScale === scale ? 'active' : ''}`}
+                                                        onClick={() => setImageSizeScale(scale)}
+                                                    >
+                                                        {scale}
+                                                    </button>
+                                                ))}
+                                            </div>
                                             <button className="btn-sidebar-primary-large" onClick={() => itemImageInputRef.current.click()}>
                                                 <Upload size={18} /> 이미지 업로드 (다중 선택 가능)
                                             </button>
+                                            <p className="image-upload-hint">기본 크기 {IMAGE_SIZE_MAP[imageSizeScale]}% · 추가 후 캔버스에서 미리보기</p>
                                             <input type="file" ref={itemImageInputRef} hidden onChange={handleAddImage} accept="image/*" multiple />
                                         </div>
                                     </div>
@@ -465,12 +516,10 @@ const FreeTeacherMode = () => {
                                             <span className="toggle-text">카드 복사 허용 (여러 번 사용)</span>
                                         </label>
                                     </div>
-                                </div>
 
-                                <div className="divider"></div>
-
-                                <div className="sidebar-tray-header">
-                                    <Layout size={16} /> 생성된 카드 목록 ({items.length})
+                                    <div className="sidebar-tray-header">
+                                        <Layout size={16} /> 생성된 카드 목록 ({items.length})
+                                    </div>
                                 </div>
 
                                 <div className="sidebar-tray-list">
@@ -497,8 +546,11 @@ const FreeTeacherMode = () => {
                                             ) : (
                                                 /* 이미지 카드: 썸네일 + S/M/L/XL 버튼 + 슬라이더 */
                                                 <div className="tray-image-card">
-                                                    <div className="tray-image-thumb">
-                                                        <img src={item.imageUrl} alt="item" />
+                                                    <div
+                                                        className="tray-image-thumb"
+                                                        style={{ width: `${Math.min(100, Math.max(45, item.width * 2.2))}%` }}
+                                                    >
+                                                        <img src={resolveApiUrl(item.imageUrl)} alt="item" />
                                                         <div className="tray-image-size-label">{item.width}%</div>
                                                     </div>
                                                     <div className="tray-image-controls">
@@ -550,29 +602,6 @@ const FreeTeacherMode = () => {
 
                             {/* Center: Workspace (Background Only) */}
                             <section className="teacher-workspace">
-                                <div className="workspace-with-guide">
-                                    <aside className="guide-sidebar-compact">
-                                        <p className="guide-compact-title">만드는 방법</p>
-                                        <div className="guide-steps-vertical">
-                                            <div className="guide-step-item-v">
-                                                <div className="step-num-v">1</div>
-                                                <p>배경 설정: 학습지나 이미지를 업로드하세요.</p>
-                                            </div>
-                                            <div className="guide-step-item-v">
-                                                <div className="step-num-v">2</div>
-                                                <p>카드 추가: 학생들이 움직일 텍스트/이미지를 만드세요.</p>
-                                            </div>
-                                            <div className="guide-step-item-v">
-                                                <div className="step-num-v">3</div>
-                                                <p>저장 & 공유: PIN 번호로 수업을 시작하세요!</p>
-                                            </div>
-                                        </div>
-                                        <div className="tip-box-compact">
-                                            <p><strong>💡 꿀팁:</strong> PDF는 첫 페이지가 배경이 됩니다!</p>
-                                            <DidiTipLatexOcrButton />
-                                        </div>
-                                    </aside>
-
                                 <section className={`center-preview-area${!backgroundUrl && backgroundType === 'blank' ? ' setup-mode' : ''}`}>
                                     {!backgroundUrl && backgroundType === 'blank' ? (
                                         <div className="free-bg-setup-stack">
@@ -615,13 +644,14 @@ const FreeTeacherMode = () => {
                                             </div>
                                         </div>
                                     ) : !backgroundUrl ? (
-                                        <div className="canvas-wrapper" style={{ position: 'relative' }}>
+                                        <div className="canvas-wrapper">
                                             <FreeBoardCanvasBackground
                                                 backgroundType={backgroundType}
                                                 tableConfig={tableConfig}
                                                 aspectRatio={aspectRatio}
                                                 minHeight={300}
                                             />
+                                            <CanvasImagePreviewLayer items={items} />
                                             {backgroundType === 'table' && tableConfigOpen && (
                                                 <div className="table-bg-config-overlay">
                                                     <TableBackgroundConfig
@@ -657,23 +687,7 @@ const FreeTeacherMode = () => {
                                                 className="canvas-bg-img"
                                                 style={{ transform: `scale(${bgScale})` }}
                                             />
-                                            {/* 이미지 카드 실제 크기 미리보기 */}
-                                            <div className="canvas-preview-layer">
-                                                {items.filter(i => i.type === 'image').map((item, idx) => (
-                                                    <div
-                                                        key={item.id}
-                                                        className="canvas-preview-item"
-                                                        style={{
-                                                            width: `${item.width}%`,
-                                                            left: `${10 + (idx * 5) % 60}%`,
-                                                            top: `${20 + (idx * 15) % 50}%`
-                                                        }}
-                                                    >
-                                                        <img src={resolveApiUrl(item.imageUrl)} alt="preview" draggable="false" />
-                                                        <span className="preview-size-badge">{item.width}%</span>
-                                                    </div>
-                                                ))}
-                                            </div>
+                                            <CanvasImagePreviewLayer items={items} />
                                             <div className="canvas-overlay-tools">
                                                 <div className="zoom-control-panel">
                                                     <span className="zoom-label">배경 확대/축소</span>
@@ -697,7 +711,6 @@ const FreeTeacherMode = () => {
                                     )}
                                     <input type="file" ref={fileInputRef} hidden onChange={(e) => handleFileUpload(e.target.files[0])} accept="image/*,.pdf" />
                                 </section>
-                                </div>
                             </section>
                         </div>
                     </>
