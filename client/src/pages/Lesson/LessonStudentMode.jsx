@@ -256,7 +256,7 @@ const LessonStudentMode = () => {
                                 quizPoints={quizPoints}
                                 onQuizAnswer={(quizId, answer, isCorrect) => {
                                     socketWrapper?.emit('submitLessonAnswer', {
-                                        answer: `[퀴즈:${quizId}] ${answer}`,
+                                        answer,
                                         isQuizAnswer: true,
                                         quizId,
                                         isCorrect,

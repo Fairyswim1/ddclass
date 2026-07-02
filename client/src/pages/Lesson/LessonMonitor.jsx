@@ -12,6 +12,7 @@ import ShortAnswerMonitor from './ShortAnswerMonitor';
 import WhiteboardMonitor from './WhiteboardMonitor';
 import PollMonitor from './PollMonitor';
 import VideoPlayerWithQuiz from './VideoPlayerWithQuiz';
+import VideoQuizMonitor from './VideoQuizMonitor';
 import LatexRenderer from '../../components/LatexRenderer';
 import SessionStatsPanel from '../../components/SessionStatsPanel';
 import './LessonMonitor.css';
@@ -529,6 +530,10 @@ const LessonMonitor = () => {
                                                     />
                                                   </div>
                                                 : <p style={{ color: '#94a3b8', textAlign: 'center' }}>동영상이 없습니다.</p>}
+                                            <VideoQuizMonitor
+                                                problemData={currentProblem}
+                                                parentStudents={activeStudents}
+                                            />
                                         </div>
                                     );
                                 })()}

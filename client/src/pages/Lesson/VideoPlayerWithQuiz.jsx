@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { CheckCircle, XCircle, Send } from 'lucide-react';
+import { CheckCircle, Send } from 'lucide-react';
 
 // ─────────────────────────────────────────────
 // YouTube IFrame API 로더 (전역 1회만 로드)
@@ -24,7 +24,7 @@ function loadYouTubeAPI(cb) {
 // ─────────────────────────────────────────────
 // QuizOverlay — 퀴즈 오버레이 UI
 // ─────────────────────────────────────────────
-const QuizOverlay = ({ quiz, onSubmit, submitted, submitResult }) => {
+const QuizOverlay = ({ quiz, onSubmit, submitted }) => {
     const [mcSelected, setMcSelected] = useState(null);
     const [saText, setSaText] = useState('');
 
@@ -65,24 +65,11 @@ const QuizOverlay = ({ quiz, onSubmit, submitted, submitResult }) => {
                 </p>
 
                 {submitted ? (
-                    /* 결과 표시 */
                     <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-                        {submitResult?.correct ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', color: '#16a34a' }}>
-                                <CheckCircle size={48} />
-                                <p style={{ fontWeight: 800, fontSize: '1.2rem' }}>정답입니다!</p>
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', color: '#dc2626' }}>
-                                <XCircle size={48} />
-                                <p style={{ fontWeight: 800, fontSize: '1.2rem' }}>오답입니다.</p>
-                                {submitResult?.correctAnswer !== undefined && (
-                                    <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
-                                        정답: <strong style={{ color: '#16a34a' }}>{submitResult.correctAnswer}</strong>
-                                    </p>
-                                )}
-                            </div>
-                        )}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', color: '#6366f1' }}>
+                            <CheckCircle size={48} />
+                            <p style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e293b' }}>답변이 제출되었습니다</p>
+                        </div>
                         <p style={{ color: '#94a3b8', fontSize: '0.8rem', marginTop: '1rem' }}>
                             잠시 후 영상이 재개됩니다...
                         </p>
@@ -173,10 +160,10 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
     const playerRef = useRef(null);
     const pollRef = useRef(null);
     const shownQuizzesRef = useRef(new Set());
+    const lastKnownTimeRef = useRef(trimStart);
 
     const [activeQuiz, setActiveQuiz] = useState(null);
     const [submitted, setSubmitted] = useState(false);
-    const [submitResult, setSubmitResult] = useState(null);
 
     // 퀴즈 정렬 (시간순)
     const sortedQuizzes = [...quizPoints].sort((a, b) => a.timeSeconds - b.timeSeconds);
@@ -190,14 +177,24 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
                 if (state !== 1) return;
                 const currentTime = playerRef.current.getCurrentTime?.() ?? 0;
 
+                if (Number.isFinite(currentTime) && currentTime > 0) {
+                    lastKnownTimeRef.current = currentTime;
+                }
+
                 if (trimStart > 0 && currentTime < trimStart - 0.25) {
+                    if (lastKnownTimeRef.current >= trimStart) {
+                        playerRef.current.seekTo?.(lastKnownTimeRef.current, true);
+                        return;
+                    }
                     playerRef.current.seekTo?.(trimStart, true);
+                    lastKnownTimeRef.current = trimStart;
                     return;
                 }
 
                 if (trimEnd !== null && currentTime >= trimEnd - 0.15) {
                     playerRef.current.pauseVideo?.();
                     playerRef.current.seekTo?.(trimEnd, true);
+                    lastKnownTimeRef.current = trimEnd;
                     clearInterval(pollRef.current);
                     pollRef.current = null;
                     return;
@@ -205,11 +202,11 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
 
                 for (const quiz of sortedQuizzes) {
                     if (!shownQuizzesRef.current.has(quiz.id) && currentTime >= quiz.timeSeconds) {
+                        lastKnownTimeRef.current = currentTime;
                         playerRef.current.pauseVideo?.();
                         shownQuizzesRef.current.add(quiz.id);
                         setActiveQuiz(quiz);
                         setSubmitted(false);
-                        setSubmitResult(null);
                         clearInterval(pollRef.current);
                         pollRef.current = null;
                         return;
@@ -218,6 +215,24 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
             } catch (_) { /* player not ready */ }
         }, 250);
     }, [sortedQuizzes, trimEnd, trimStart]);
+
+    const resumePlayback = useCallback(() => {
+        const resumeAt = Math.max(trimStart, lastKnownTimeRef.current || trimStart);
+        try {
+            playerRef.current?.seekTo?.(resumeAt, true);
+            setTimeout(() => {
+                playerRef.current?.playVideo?.();
+                startPoll();
+            }, 150);
+        } catch (_) {
+            try { playerRef.current?.playVideo?.(); } catch (_) {}
+            startPoll();
+        }
+    }, [trimStart, startPoll]);
+
+    useEffect(() => {
+        lastKnownTimeRef.current = trimStart;
+    }, [videoId, trimStart]);
 
     useEffect(() => {
         if (!videoId) return;
@@ -239,6 +254,7 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
                 },
                 events: {
                     onReady: (event) => {
+                        lastKnownTimeRef.current = trimStart;
                         if (trimStart > 0) {
                             event.target.seekTo(trimStart, true);
                         }
@@ -271,29 +287,22 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
         if (!activeQuiz) return;
 
         let isCorrect = false;
-        let correctAnswer = undefined;
 
         if (activeQuiz.type === 'multiple-choice') {
             isCorrect = answer === activeQuiz.answerIndex;
-            correctAnswer = activeQuiz.options?.[activeQuiz.answerIndex];
         } else {
             const keyword = (activeQuiz.answer || '').toLowerCase();
             isCorrect = keyword && String(answer).toLowerCase().includes(keyword);
-            correctAnswer = activeQuiz.answer;
         }
 
         setSubmitted(true);
-        setSubmitResult({ correct: isCorrect, correctAnswer });
         onQuizAnswer?.(activeQuiz.id, answer, isCorrect);
 
-        // 2.5초 후 영상 재개
         setTimeout(() => {
             setActiveQuiz(null);
             setSubmitted(false);
-            setSubmitResult(null);
-            try { playerRef.current?.playVideo?.(); } catch (_) {}
-            startPoll();
-        }, 2500);
+            resumePlayback();
+        }, 2000);
     };
 
     return (
@@ -310,7 +319,6 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
                     quiz={activeQuiz}
                     onSubmit={handleQuizSubmit}
                     submitted={submitted}
-                    submitResult={submitResult}
                 />
             )}
         </div>
