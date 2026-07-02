@@ -238,11 +238,27 @@ const TeacherDashboard = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('정말로 이 문제를 삭제하시겠습니까?')) return;
+    const handleDelete = async (item) => {
+        const isLesson = item.type === 'lesson';
+        const confirmMessage = isLesson
+            ? '이 수업 꾸러미를 삭제하시겠습니까? 포함된 슬라이드도 함께 삭제됩니다.'
+            : '정말로 이 문제를 삭제하시겠습니까?';
+        if (!window.confirm(confirmMessage)) return;
+
         try {
-            await deleteDoc(doc(db, 'problems', id));
-            setProblems(problems.filter(p => p.id !== id));
+            if (isLesson) {
+                const batch = writeBatch(db);
+                batch.delete(doc(db, 'lessons', item.id));
+                (item.problemIds || []).forEach((pid) => {
+                    if (String(pid).startsWith(`${item.id}_slide_`)) {
+                        batch.delete(doc(db, 'problems', pid));
+                    }
+                });
+                await batch.commit();
+            } else {
+                await deleteDoc(doc(db, 'problems', item.id));
+            }
+            setProblems(problems.filter(p => p.id !== item.id));
         } catch (error) {
             alert('삭제 실패: ' + error.message);
         }
@@ -524,7 +540,7 @@ const TeacherDashboard = () => {
                                                 const routeType = problem.type === 'free-drop' ? 'free-dnd' : problem.type;
                                                 navigate(`/${routeType}/${problem.id}`);
                                             }} title="수정"><Edit2 size={18} /></button>
-                                            <button className="btn-icon-subtle danger" onClick={() => handleDelete(problem.id)} title="문제 삭제"><Trash2 size={18} /></button>
+                                            <button className="btn-icon-subtle danger" onClick={() => handleDelete(problem)} title="문제 삭제"><Trash2 size={18} /></button>
                                         </div>
                                     </div>
                                     <div className="card-body-centered">
