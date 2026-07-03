@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Eraser, Pen, Trash2 } from 'lucide-react';
 import { resolveApiUrl } from '../../utils/url';
 import { getPresetBackgroundStyle } from '../../utils/whiteboardPresets';
-import { PAINT_PALETTE, PEN_SIZES, ERASER_SIZE_MULTIPLIER } from '../../utils/whiteboardTools';
+import { PAINT_PALETTE, PEN_SIZES, ERASER_SIZES } from '../../utils/whiteboardTools';
 import './WhiteboardDrawSurface.css';
 
 const WhiteboardDrawSurface = ({
@@ -19,6 +19,7 @@ const WhiteboardDrawSurface = ({
     const [primaryColor, setPrimaryColor] = useState('#000000');
     const [secondaryColor, setSecondaryColor] = useState('#ffffff');
     const [lineWidth, setLineWidth] = useState(8);
+    const [eraserWidth, setEraserWidth] = useState(24);
     const [canvasKey, setCanvasKey] = useState(0);
 
     const presetStyle = backgroundUrl ? {} : getPresetBackgroundStyle(backgroundType);
@@ -118,7 +119,7 @@ const WhiteboardDrawSurface = ({
         if (isEraser) {
             ctx.globalCompositeOperation = 'destination-out';
             ctx.strokeStyle = 'rgba(0,0,0,1)';
-            ctx.lineWidth = lineWidth * ERASER_SIZE_MULTIPLIER;
+            ctx.lineWidth = eraserWidth;
         } else {
             ctx.globalCompositeOperation = 'source-over';
             ctx.strokeStyle = primaryColor;
@@ -206,21 +207,33 @@ const WhiteboardDrawSurface = ({
                         </button>
                     </div>
 
-                    <div className="wb-paint-sizes" aria-label="펜 굵기">
-                        {PEN_SIZES.map(({ id, size, label }) => (
-                            <button
-                                key={id}
-                                type="button"
-                                className={`wb-paint-size-btn ${lineWidth === size && !isEraser ? 'active' : ''}`}
-                                onClick={() => { setLineWidth(size); setTool('pen'); }}
-                                title={`${label} (${size}px)`}
-                            >
-                                <span
-                                    className="wb-paint-size-dot"
-                                    style={{ width: Math.min(size, 20), height: Math.min(size, 20) }}
-                                />
-                            </button>
-                        ))}
+                    <div className="wb-paint-sizes" aria-label={isEraser ? '지우개 굵기' : '펜 굵기'}>
+                        <span className="wb-paint-sizes-label">{isEraser ? '지우개' : '펜'}</span>
+                        {(isEraser ? ERASER_SIZES : PEN_SIZES).map(({ id, size, label }) => {
+                            const activeWidth = isEraser ? eraserWidth : lineWidth;
+                            return (
+                                <button
+                                    key={id}
+                                    type="button"
+                                    className={`wb-paint-size-btn ${activeWidth === size ? 'active' : ''}`}
+                                    onClick={() => {
+                                        if (isEraser) {
+                                            setEraserWidth(size);
+                                            setTool('eraser');
+                                        } else {
+                                            setLineWidth(size);
+                                            setTool('pen');
+                                        }
+                                    }}
+                                    title={`${label} (${size}px)`}
+                                >
+                                    <span
+                                        className={`wb-paint-size-dot ${isEraser ? 'wb-paint-size-dot--eraser' : ''}`}
+                                        style={{ width: Math.min(size, 20), height: Math.min(size, 20) }}
+                                    />
+                                </button>
+                            );
+                        })}
                     </div>
 
                     <div className="wb-paint-colors-wrap">

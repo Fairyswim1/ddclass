@@ -15,4 +15,11 @@ export const PEN_SIZES = [
     { id: 'xxl', label: '굵게', size: 32 },
 ];
 
-export const ERASER_SIZE_MULTIPLIER = 2.5;
+export const ERASER_SIZES = [
+    { id: 'xs', label: '작게', size: 8 },
+    { id: 's', label: 'S', size: 16 },
+    { id: 'm', label: 'M', size: 24 },
+    { id: 'l', label: 'L', size: 36 },
+    { id: 'xl', label: 'XL', size: 52 },
+    { id: 'xxl', label: '크게', size: 72 },
+];
