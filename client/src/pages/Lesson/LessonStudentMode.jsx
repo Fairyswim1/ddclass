@@ -22,6 +22,8 @@ const extractYoutubeId = (url) => {
     return match ? match[1] : null;
 };
 
+const SUMMON_MESSAGE_PREFIX = '__DD_SUMMON:';
+
 const LessonStudentMode = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -46,6 +48,38 @@ const LessonStudentMode = () => {
     currentStepIndexRef.current = currentStepIndex;
     const problemIdsRef = useRef(state.problemIds || []);
     problemIdsRef.current = problemIds;
+    const pendingSummonStepRef = useRef(null);
+    const applyForcedStepRef = useRef(null);
+    const socketRef = useRef(null);
+
+    const applyForcedStep = (stepIndex) => {
+        if (typeof stepIndex !== 'number') return;
+
+        const ids = problemIdsRef.current;
+        if (!ids.length) {
+            pendingSummonStepRef.current = stepIndex;
+            return;
+        }
+
+        pendingSummonStepRef.current = null;
+        const clamped = Math.max(0, Math.min(stepIndex, ids.length - 1));
+        setCurrentStepIndex(clamped);
+        setMaxAllowedStep((prev) => Math.max(prev, clamped));
+        setSummonedNotice(clamped + 1);
+        setTimeout(() => setSummonedNotice(null), 5000);
+
+        socketRef.current?.emit('changeStudentStep', {
+            lessonId,
+            studentName: nickname,
+            stepIndex: clamped
+        });
+    };
+    applyForcedStepRef.current = applyForcedStep;
+
+    useEffect(() => {
+        if (!problemIds.length || pendingSummonStepRef.current === null) return;
+        applyForcedStepRef.current?.(pendingSummonStepRef.current);
+    }, [problemIds]);
 
     // 1. problemIds가 없으면 서버에서 수업 정보를 불러온다.
     useEffect(() => {
@@ -76,6 +110,7 @@ const LessonStudentMode = () => {
         // Initialize Lesson Socket
         const newSocket = io(import.meta.env.VITE_API_URL || 'https://ddclass-server.onrender.com');
         setSocket(newSocket);
+        socketRef.current = newSocket;
 
         const joinLessonRoom = () => {
             console.log('Student joining lesson room:', lessonId);
@@ -83,66 +118,64 @@ const LessonStudentMode = () => {
                 lessonId,
                 studentName: nickname
             });
-            // 방금 들어왔으니 교사에게 초기 step 위치(0)를 알림
             newSocket.emit('changeStudentStep', {
                 lessonId,
                 studentName: nickname,
-                stepIndex: 0
+                stepIndex: currentStepIndexRef.current
             });
         };
 
         if (newSocket.connected) joinLessonRoom();
         newSocket.on('connect', joinLessonRoom);
 
-        // Listen for pacing changes from teacher
         newSocket.on('maxAllowedStepUpdated', ({ maxAllowedStep }) => {
             console.log('Teacher changed max allowed step to:', maxAllowedStep);
             setMaxAllowedStep(maxAllowedStep);
         });
 
-        // 개별/전체 메시지 수신
         newSocket.on('messageReceived', (data) => {
+            const msg = data?.message || '';
+            if (msg.startsWith(SUMMON_MESSAGE_PREFIX)) {
+                const stepIndex = parseInt(msg.slice(SUMMON_MESSAGE_PREFIX.length), 10);
+                if (!Number.isNaN(stepIndex)) {
+                    applyForcedStepRef.current?.(stepIndex);
+                }
+                return;
+            }
             setIncomingMessage(data);
             setTimeout(() => setIncomingMessage(null), 6000);
         });
 
-        // 교사가 실시간으로 YouTube 모드 변경
         newSocket.on('videoModeChanged', ({ stepIndex, videoMode }) => {
             setLiveVideoModes(prev => ({ ...prev, [stepIndex]: videoMode }));
         });
 
-        // 교사가 모든 학생을 특정 슬라이드로 강제 이동
         newSocket.on('forceNavigateToStep', ({ stepIndex }) => {
-            const ids = problemIdsRef.current;
-            if (!ids.length || typeof stepIndex !== 'number') return;
-
-            const clamped = Math.max(0, Math.min(stepIndex, ids.length - 1));
-            setCurrentStepIndex(clamped);
-            setSummonedNotice(clamped + 1);
-            setTimeout(() => setSummonedNotice(null), 5000);
-
-            newSocket.emit('changeStudentStep', {
-                lessonId,
-                studentName: nickname,
-                stepIndex: clamped
-            });
+            applyForcedStepRef.current?.(stepIndex);
         });
 
-        return () => newSocket.disconnect();
+        return () => {
+            socketRef.current = null;
+            newSocket.disconnect();
+        };
     }, [lessonId, nickname, navigate]); // Removed currentStepIndex to prevent reconnect loop
 
-    // Fetch the specific problem data whenever the step index changes
     useEffect(() => {
-        const fetchCurrentProblem = async () => {
-            if (!problemIds || problemIds.length === 0) return;
+        if (!problemIds || problemIds.length === 0) return;
 
+        let cancelled = false;
+        const targetIndex = currentStepIndex;
+
+        const fetchCurrentProblem = async () => {
             try {
                 setLoading(true);
-                const targetProblemId = problemIds[currentStepIndex];
+                const targetProblemId = problemIds[targetIndex];
                 if (!targetProblemId) return;
 
                 const problemRef = doc(db, 'problems', targetProblemId);
                 const snap = await getDoc(problemRef);
+
+                if (cancelled) return;
 
                 if (snap.exists()) {
                     setCurrentProblemData({ id: snap.id, ...snap.data() });
@@ -152,16 +185,34 @@ const LessonStudentMode = () => {
             } catch (error) {
                 console.error('Error fetching problem data:', error);
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         };
 
         fetchCurrentProblem();
+        return () => {
+            cancelled = true;
+        };
     }, [currentStepIndex, problemIds]);
+
+    const summonToast = summonedNotice ? (
+        <div style={{
+            position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)',
+            zIndex: 9998, maxWidth: '90vw', width: '420px',
+            background: '#F58220', color: 'white', borderRadius: '14px',
+            padding: '1rem 1.5rem', boxShadow: '0 8px 30px rgba(245, 130, 32, 0.35)',
+            display: 'flex', alignItems: 'center', gap: '0.75rem',
+            fontWeight: 'bold', fontSize: '1rem'
+        }}>
+            <span style={{ fontSize: '1.4rem' }}>📣</span>
+            선생님이 {summonedNotice}번 슬라이드로 이동시켰어요!
+        </div>
+    ) : null;
 
     if (loading || !currentProblemData) {
         return (
             <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA' }}>
+                {summonToast}
                 <Loader2 className="animate-spin" size={48} style={{ color: 'var(--color-brand-orange)' }} />
                 <p style={{ marginTop: '1rem', color: '#666', fontWeight: 'bold' }}>문제를 준비하고 있습니다. 잠시만 기다려주세요...</p>
             </div>
@@ -386,21 +437,9 @@ const LessonStudentMode = () => {
                 </div>
             )}
 
-            {summonedNotice && (
-                <div style={{
-                    position: 'fixed', top: incomingMessage ? '5.5rem' : '1rem', left: '50%', transform: 'translateX(-50%)',
-                    zIndex: 9998, maxWidth: '90vw', width: '420px',
-                    background: '#F58220', color: 'white', borderRadius: '14px',
-                    padding: '1rem 1.5rem', boxShadow: '0 8px 30px rgba(245, 130, 32, 0.35)',
-                    display: 'flex', alignItems: 'center', gap: '0.75rem',
-                    fontWeight: 'bold', fontSize: '1rem'
-                }}>
-                    <span style={{ fontSize: '1.4rem' }}>📣</span>
-                    선생님이 {summonedNotice}번 슬라이드로 이동시켰어요!
-                </div>
-            )}
+            {summonToast}
 
-            <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }}>
+            <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }} key={`step-${currentStepIndex}-${currentProblemData.id}`}>
                 {renderProblemComponent()}
             </div>
             

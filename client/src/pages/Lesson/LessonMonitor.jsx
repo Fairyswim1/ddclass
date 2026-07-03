@@ -304,6 +304,16 @@ const LessonMonitor = () => {
     const handleSummonStudents = (stepIndex) => {
         if (!socket) return;
         socket.emit('summonStudentsToStep', { lessonId: id, stepIndex });
+        // 서버 미배포·소켓 누락 대비: 기존 broadcastMessage 채널로도 전달
+        socket.emit('broadcastMessage', {
+            roomId: id,
+            message: `__DD_SUMMON:${stepIndex}`,
+            teacherName: '교사'
+        });
+        setStudents((prev) => prev.map((s) => ({ ...s, currentStep: stepIndex })));
+        if (stepIndex > maxAllowedStep) {
+            setMaxAllowedStep(stepIndex);
+        }
         setSlideContextMenu(null);
         setSummonFeedback(stepIndex);
         setTimeout(() => setSummonFeedback(null), 2500);

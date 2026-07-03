@@ -111,7 +111,7 @@ app.use((req, res, next) => {
 // -----------------------------------------------------
 // [DIAGNOSTIC] 서버 상태 및 실시간 모니터링 상태 조회
 // -----------------------------------------------------
-app.get('/api/health', (req, res) => res.json({ success: true, version: '1.0.5-IMAGE-OCR', timestamp: new Date() }));
+app.get('/api/health', (req, res) => res.json({ success: true, version: '1.0.6-SUMMON', timestamp: new Date() }));
 
 // [DEBUG] 특정 수업의 현재 서버 side maxAllowedStep 조회
 app.get('/api/debug/lesson-state/:lessonId', (req, res) => {
@@ -792,8 +792,9 @@ io.on('connection', (socket) => {
       student.currentStep = stepIndex;
     });
 
-    io.to(lessonId).emit('forceNavigateToStep', { stepIndex });
-    io.to(lessonId).emit('studentsBulkStepChanged', { stepIndex });
+    console.log(`[SUMMON] 수업 ${lessonId} → 슬라이드 ${stepIndex + 1}, 학생 ${Object.keys(state.students).length}명`);
+    socket.to(lessonId).emit('forceNavigateToStep', { stepIndex });
+    socket.to(lessonId).emit('studentsBulkStepChanged', { stepIndex });
   });
 
   socket.on('submitLessonAnswer', ({ lessonId, studentName, stepIndex, answer, isQuizAnswer, quizId, isCorrect }) => {
