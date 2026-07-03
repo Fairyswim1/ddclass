@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
-import { Archive, GripVertical, Loader2, Search } from 'lucide-react';
+import { Archive, ChevronLeft, ChevronRight, GripVertical, Loader2, Search } from 'lucide-react';
 
 const ArchiveProblemPanel = ({ problems, loading, typeIcons, typeLabels, onAddClick }) => {
     const [search, setSearch] = useState('');
+    const [collapsed, setCollapsed] = useState(false);
 
     const filtered = useMemo(() => {
         const q = search.trim().toLowerCase();
@@ -15,11 +16,42 @@ const ArchiveProblemPanel = ({ problems, loading, typeIcons, typeLabels, onAddCl
         });
     }, [problems, search, typeLabels]);
 
+    if (collapsed) {
+        return (
+            <aside className="archive-sidebar archive-sidebar--collapsed">
+                <button
+                    type="button"
+                    className="archive-collapse-btn"
+                    onClick={() => setCollapsed(false)}
+                    title="내 보관함 펼치기"
+                    aria-label="내 보관함 펼치기"
+                >
+                    <ChevronRight size={16} />
+                </button>
+                <div className="archive-collapsed-label">
+                    <Archive size={16} />
+                    <span>보관함</span>
+                </div>
+            </aside>
+        );
+    }
+
     return (
         <aside className="archive-sidebar">
             <div className="archive-sidebar-header">
-                <Archive size={18} />
-                <span>내 보관함</span>
+                <div className="archive-sidebar-title">
+                    <Archive size={18} />
+                    <span>내 보관함</span>
+                </div>
+                <button
+                    type="button"
+                    className="archive-collapse-btn"
+                    onClick={() => setCollapsed(true)}
+                    title="내 보관함 접기"
+                    aria-label="내 보관함 접기"
+                >
+                    <ChevronLeft size={16} />
+                </button>
             </div>
             <p className="archive-sidebar-hint">빈칸·순서·자유보드를 슬라이드 목록으로 끌어오거나 클릭하세요.</p>
 

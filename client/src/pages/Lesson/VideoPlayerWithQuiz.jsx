@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { CheckCircle, Send } from 'lucide-react';
+import { CheckCircle, Send, Pause, Play } from 'lucide-react';
+import './VideoPlayerWithQuiz.css';
 
 // ─────────────────────────────────────────────
 // YouTube IFrame API 로더 (전역 1회만 로드)
@@ -21,6 +22,62 @@ function loadYouTubeAPI(cb) {
     };
 }
 
+const fmtTime = (sec) => {
+    const s = Math.max(0, Math.floor(sec || 0));
+    const m = Math.floor(s / 60);
+    return `${m}:${String(s % 60).padStart(2, '0')}`;
+};
+
+const TrimVideoControls = ({
+    relativeTime,
+    trimDuration,
+    isPlaying,
+    onTogglePlay,
+    onSeekRelative,
+}) => {
+    const barRef = useRef(null);
+
+    const progressPct = trimDuration > 0
+        ? Math.min(100, Math.max(0, (relativeTime / trimDuration) * 100))
+        : 0;
+
+    const handleBarClick = (e) => {
+        const bar = barRef.current;
+        if (!bar || trimDuration <= 0) return;
+        const rect = bar.getBoundingClientRect();
+        const pct = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+        onSeekRelative(pct * trimDuration);
+    };
+
+    return (
+        <div className="trim-video-controls">
+            <button
+                type="button"
+                className="trim-video-play-btn"
+                onClick={onTogglePlay}
+                aria-label={isPlaying ? '일시정지' : '재생'}
+            >
+                {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+            </button>
+            <div
+                ref={barRef}
+                className="trim-video-progress"
+                onClick={handleBarClick}
+                role="slider"
+                aria-valuemin={0}
+                aria-valuemax={trimDuration}
+                aria-valuenow={relativeTime}
+            >
+                <div className="trim-video-progress-fill" style={{ width: `${progressPct}%` }} />
+                <div className="trim-video-progress-thumb" style={{ left: `${progressPct}%` }} />
+            </div>
+            <span className="trim-video-time">
+                {fmtTime(relativeTime)} / {fmtTime(trimDuration)}
+            </span>
+        </div>
+    );
+};
+
 const QuizOverlay = ({ quiz, onSubmit, submitted }) => {
     const [mcSelected, setMcSelected] = useState(null);
     const [saText, setSaText] = useState('');
@@ -36,28 +93,16 @@ const QuizOverlay = ({ quiz, onSubmit, submitted }) => {
     };
 
     return (
-        <div style={{
-            position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.82)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 100, padding: '1.5rem'
-        }}>
-            <div style={{
-                background: 'white', borderRadius: '20px', padding: '2rem',
-                width: '100%', maxWidth: '520px',
-                boxShadow: '0 25px 60px rgba(0,0,0,0.4)'
-            }}>
+        <div className="video-quiz-overlay">
+            <div className="video-quiz-card">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                    <span style={{ background: '#f59e0b', color: 'white', borderRadius: '999px', padding: '3px 12px', fontSize: '0.75rem', fontWeight: 800 }}>
-                        ⏸ 영상 중 퀴즈
-                    </span>
+                    <span className="video-quiz-badge">⏸ 영상 중 퀴즈</span>
                     <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
                         {quiz.type === 'multiple-choice' ? '객관식' : '주관식'}
                     </span>
                 </div>
 
-                <p style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', marginBottom: '1.25rem', lineHeight: 1.4 }}>
-                    {quiz.question || '(질문 없음)'}
-                </p>
+                <p className="video-quiz-question">{quiz.question || '(질문 없음)'}</p>
 
                 {submitted ? (
                     <div style={{ textAlign: 'center', padding: '1rem 0' }}>
@@ -74,34 +119,20 @@ const QuizOverlay = ({ quiz, onSubmit, submitted }) => {
                         {(quiz.options || []).map((opt, i) => (
                             <button
                                 key={i}
+                                type="button"
                                 onClick={() => setMcSelected(i)}
-                                style={{
-                                    display: 'flex', alignItems: 'center', gap: '0.75rem',
-                                    padding: '0.75rem 1rem', border: '2px solid',
-                                    borderColor: mcSelected === i ? '#6366f1' : '#e2e8f0',
-                                    borderRadius: '10px', cursor: 'pointer', textAlign: 'left',
-                                    background: mcSelected === i ? '#eef2ff' : 'white',
-                                    transition: 'all 0.15s'
-                                }}
+                                className={`video-quiz-option ${mcSelected === i ? 'selected' : ''}`}
                             >
-                                <span style={{
-                                    width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0,
-                                    background: mcSelected === i ? '#6366f1' : '#f1f5f9',
-                                    color: mcSelected === i ? 'white' : '#64748b',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontWeight: 800, fontSize: '0.8rem'
-                                }}>{i + 1}</span>
-                                <span style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.95rem' }}>{opt}</span>
+                                <span className="video-quiz-option-num">{i + 1}</span>
+                                <span>{opt}</span>
                             </button>
                         ))}
                         <button
+                            type="button"
                             onClick={handleSubmit}
                             disabled={mcSelected === null}
-                            style={{
-                                marginTop: '0.25rem', padding: '0.75rem', background: mcSelected !== null ? '#6366f1' : '#e2e8f0',
-                                color: mcSelected !== null ? 'white' : '#94a3b8', border: 'none', borderRadius: '10px',
-                                cursor: mcSelected !== null ? 'pointer' : 'not-allowed', fontWeight: 800, fontSize: '1rem'
-                            }}
+                            className="video-quiz-submit"
+                            style={{ opacity: mcSelected !== null ? 1 : 0.5 }}
                         >
                             제출하기
                         </button>
@@ -113,22 +144,16 @@ const QuizOverlay = ({ quiz, onSubmit, submitted }) => {
                             onChange={e => setSaText(e.target.value)}
                             placeholder="답변을 입력하세요..."
                             rows={3}
-                            style={{
-                                padding: '0.75rem', border: '2px solid #e2e8f0', borderRadius: '10px',
-                                fontSize: '0.95rem', resize: 'none', outline: 'none', fontFamily: 'inherit'
-                            }}
+                            className="video-quiz-textarea"
                             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
                             autoFocus
                         />
                         <button
+                            type="button"
                             onClick={handleSubmit}
                             disabled={!saText.trim()}
-                            style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                                padding: '0.75rem', background: saText.trim() ? '#6366f1' : '#e2e8f0',
-                                color: saText.trim() ? 'white' : '#94a3b8', border: 'none', borderRadius: '10px',
-                                cursor: saText.trim() ? 'pointer' : 'not-allowed', fontWeight: 800, fontSize: '1rem'
-                            }}
+                            className="video-quiz-submit video-quiz-submit--row"
+                            style={{ opacity: saText.trim() ? 1 : 0.5 }}
                         >
                             <Send size={18} /> 제출하기
                         </button>
@@ -142,6 +167,7 @@ const QuizOverlay = ({ quiz, onSubmit, submitted }) => {
 const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoints = [], onQuizAnswer }) => {
     const playerRef = useRef(null);
     const pollRef = useRef(null);
+    const uiPollRef = useRef(null);
     const shownQuizzesRef = useRef(new Set());
     const lastKnownTimeRef = useRef(trimStart);
     const pausedForQuizTimeRef = useRef(null);
@@ -154,8 +180,19 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
     trimStartRef.current = trimStart;
     trimEndRef.current = trimEnd;
 
+    const hasTrim = trimStart > 0 || trimEnd !== null;
+
     const [activeQuiz, setActiveQuiz] = useState(null);
     const [submitted, setSubmitted] = useState(false);
+    const [videoDuration, setVideoDuration] = useState(null);
+    const [relativeTime, setRelativeTime] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    const effectiveEnd = trimEnd ?? videoDuration ?? null;
+    const trimDuration = useMemo(() => {
+        if (effectiveEnd === null) return 0;
+        return Math.max(0, effectiveEnd - trimStart);
+    }, [effectiveEnd, trimStart]);
 
     const sortedQuizzes = useMemo(
         () => [...quizPoints].sort((a, b) => a.timeSeconds - b.timeSeconds),
@@ -164,12 +201,44 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
     const sortedQuizzesRef = useRef(sortedQuizzes);
     sortedQuizzesRef.current = sortedQuizzes;
 
+    const clampToTrim = useCallback((time) => {
+        const start = trimStartRef.current;
+        const end = trimEndRef.current ?? videoDuration ?? time;
+        return Math.min(end, Math.max(start, time));
+    }, [videoDuration]);
+
+    const updateUiTime = useCallback(() => {
+        const player = playerRef.current;
+        if (!player?.getCurrentTime) return;
+        try {
+            const current = player.getCurrentTime();
+            const start = trimStartRef.current;
+            const end = trimEndRef.current ?? videoDuration ?? current;
+            const relative = Math.min(end - start, Math.max(0, current - start));
+            setRelativeTime(relative);
+            const state = player.getPlayerState?.();
+            setIsPlaying(state === window.YT.PlayerState.PLAYING);
+        } catch (_) { /* ignore */ }
+    }, [videoDuration]);
+
     const stopPoll = useCallback(() => {
         if (pollRef.current) {
             clearInterval(pollRef.current);
             pollRef.current = null;
         }
     }, []);
+
+    const stopUiPoll = useCallback(() => {
+        if (uiPollRef.current) {
+            clearInterval(uiPollRef.current);
+            uiPollRef.current = null;
+        }
+    }, []);
+
+    const startUiPoll = useCallback(() => {
+        if (!hasTrim || uiPollRef.current) return;
+        uiPollRef.current = setInterval(updateUiTime, 200);
+    }, [hasTrim, updateUiTime]);
 
     const startPoll = useCallback(() => {
         if (pollRef.current) return;
@@ -199,6 +268,8 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
                     player.pauseVideo?.();
                     player.seekTo?.(trimEndVal, true);
                     lastKnownTimeRef.current = trimEndVal;
+                    setRelativeTime(trimEndVal - trimStartVal);
+                    setIsPlaying(false);
                     stopPoll();
                     return;
                 }
@@ -211,13 +282,16 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
                         shownQuizzesRef.current.add(quiz.id);
                         setActiveQuiz(quiz);
                         setSubmitted(false);
+                        setIsPlaying(false);
                         stopPoll();
                         return;
                     }
                 }
+
+                if (hasTrim) updateUiTime();
             } catch (_) { /* player not ready */ }
         }, 250);
-    }, [stopPoll]);
+    }, [hasTrim, stopPoll, updateUiTime]);
 
     const resumePlayback = useCallback(() => {
         const player = playerRef.current;
@@ -245,6 +319,7 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
                 isResumingRef.current = false;
                 pausedForQuizTimeRef.current = null;
                 startPollRef.current();
+                updateUiTime();
                 return;
             }
 
@@ -255,6 +330,7 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
                     pausedForQuizTimeRef.current = null;
                     lastKnownTimeRef.current = resumeAt;
                     startPollRef.current();
+                    updateUiTime();
                     return;
                 }
                 tryPlay(attempt + 1);
@@ -262,16 +338,53 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
         };
 
         setTimeout(() => tryPlay(0), 120);
-    }, [stopPoll]);
+    }, [stopPoll, updateUiTime]);
 
     startPollRef.current = startPoll;
     resumePlaybackRef.current = resumePlayback;
+
+    const handleTogglePlay = useCallback(() => {
+        const player = playerRef.current;
+        if (!player) return;
+        try {
+            const state = player.getPlayerState?.();
+            if (state === window.YT.PlayerState.PLAYING) {
+                player.pauseVideo?.();
+                setIsPlaying(false);
+                stopPoll();
+            } else {
+                const current = player.getCurrentTime?.() ?? trimStartRef.current;
+                const end = trimEndRef.current ?? videoDuration;
+                if (end !== null && current >= end - 0.2) {
+                    player.seekTo?.(trimStartRef.current, true);
+                    setRelativeTime(0);
+                }
+                player.playVideo?.();
+                setIsPlaying(true);
+                startPollRef.current();
+            }
+            updateUiTime();
+        } catch (_) { /* ignore */ }
+    }, [stopPoll, updateUiTime, videoDuration]);
+
+    const handleSeekRelative = useCallback((relativeSec) => {
+        const player = playerRef.current;
+        if (!player) return;
+        const target = clampToTrim(trimStartRef.current + relativeSec);
+        try {
+            player.seekTo?.(target, true);
+            lastKnownTimeRef.current = target;
+            setRelativeTime(Math.max(0, target - trimStartRef.current));
+        } catch (_) { /* ignore */ }
+    }, [clampToTrim]);
 
     useEffect(() => {
         shownQuizzesRef.current = new Set();
         pausedForQuizTimeRef.current = null;
         lastKnownTimeRef.current = trimStart;
         isResumingRef.current = false;
+        setRelativeTime(0);
+        setVideoDuration(null);
     }, [videoId, trimStart, trimEnd]);
 
     useEffect(() => {
@@ -285,29 +398,49 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
                 playerRef.current = null;
             }
 
+            const playerVars = {
+                start: Math.floor(trimStart),
+                rel: 0,
+                modestbranding: 1,
+                enablejsapi: 1,
+            };
+
+            if (hasTrim) {
+                playerVars.controls = 0;
+                playerVars.disablekb = 1;
+                playerVars.fs = 0;
+            }
+
+            if (trimEnd !== null) {
+                playerVars.end = Math.floor(trimEnd);
+            }
+
             playerRef.current = new window.YT.Player(elementId, {
                 videoId,
-                playerVars: {
-                    start: Math.floor(trimStart),
-                    rel: 0,
-                    modestbranding: 1,
-                    enablejsapi: 1,
-                },
+                playerVars,
                 events: {
                     onReady: (event) => {
+                        const duration = event.target.getDuration?.() ?? null;
+                        setVideoDuration(duration);
                         lastKnownTimeRef.current = trimStart;
+                        setRelativeTime(0);
                         if (trimStart > 0) {
                             event.target.seekTo(trimStart, true);
                         }
+                        if (hasTrim) startUiPoll();
                     },
                     onStateChange: (event) => {
                         if (event.data === window.YT.PlayerState.PLAYING) {
+                            setIsPlaying(true);
                             startPollRef.current();
+                            if (hasTrim) updateUiTime();
                         } else if (
                             event.data === window.YT.PlayerState.PAUSED ||
                             event.data === window.YT.PlayerState.ENDED
                         ) {
+                            setIsPlaying(false);
                             stopPoll();
+                            if (hasTrim) updateUiTime();
                         }
                     }
                 }
@@ -316,10 +449,11 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
 
         return () => {
             stopPoll();
+            stopUiPoll();
             try { playerRef.current?.destroy?.(); } catch (_) { /* ignore */ }
             playerRef.current = null;
         };
-    }, [videoId, trimStart, trimEnd, stopPoll]);
+    }, [videoId, trimStart, trimEnd, hasTrim, stopPoll, stopUiPoll, startUiPoll, updateUiTime]);
 
     const handleQuizSubmit = (answer) => {
         if (!activeQuiz) return;
@@ -343,8 +477,17 @@ const VideoPlayerWithQuiz = ({ videoId, trimStart = 0, trimEnd = null, quizPoint
     };
 
     return (
-        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000', borderRadius: '12px', overflow: 'hidden' }}>
-            <div id={`yt-player-${videoId}`} style={{ width: '100%', height: '100%' }} />
+        <div className={`video-player-wrap ${hasTrim ? 'video-player-wrap--trimmed' : ''}`}>
+            <div id={`yt-player-${videoId}`} className="video-player-iframe" />
+            {hasTrim && trimDuration > 0 && (
+                <TrimVideoControls
+                    relativeTime={relativeTime}
+                    trimDuration={trimDuration}
+                    isPlaying={isPlaying}
+                    onTogglePlay={handleTogglePlay}
+                    onSeekRelative={handleSeekRelative}
+                />
+            )}
             {activeQuiz && (
                 <QuizOverlay
                     quiz={activeQuiz}

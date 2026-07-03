@@ -52,7 +52,7 @@ const WhiteboardEditor = ({ slide, onChange }) => {
 
             <div className="editor-group">
                 <label>배경 선택</label>
-                <p className="help-text">기본 배경 중 하나를 선택하거나, 직접 이미지를 업로드하세요.</p>
+                <p className="help-text">학생은 가로 전체 화면(16:9) 캔버스에서 MS 그림판 스타일 팔레트로 그립니다.</p>
 
                 <div className="wb-preset-grid">
                     {WHITEBOARD_PRESETS.map((preset) => {

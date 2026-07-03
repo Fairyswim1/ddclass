@@ -439,7 +439,17 @@ const LessonStudentMode = () => {
 
             {summonToast}
 
-            <div style={{ flex: 1, overflowY: 'auto', position: 'relative' }} key={`step-${currentStepIndex}-${currentProblemData.id}`}>
+            <div
+                style={{
+                    flex: 1,
+                    overflow: currentProblemData.type === 'whiteboard' ? 'hidden' : 'auto',
+                    position: 'relative',
+                    minHeight: 0,
+                    display: currentProblemData.type === 'whiteboard' ? 'flex' : 'block',
+                    flexDirection: 'column',
+                }}
+                key={`step-${currentStepIndex}-${currentProblemData.id}`}
+            >
                 {renderProblemComponent()}
             </div>
             

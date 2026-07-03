@@ -41,7 +41,7 @@ const WhiteboardMonitor = ({ problemData, parentStudents, socket, lessonId }) =>
                                 </button>
                             </div>
                         </div>
-                        <div style={{ position: 'relative', background: 'white', borderRadius: '12px', overflow: 'hidden', maxHeight: '75vh', aspectRatio: '4/3' }}>
+                        <div style={{ position: 'relative', background: 'white', borderRadius: '12px', overflow: 'hidden', maxHeight: '75vh', aspectRatio: '16/9' }}>
                             {backgroundUrl && (
                                 <img
                                     src={resolveApiUrl(backgroundUrl)} alt="background"
