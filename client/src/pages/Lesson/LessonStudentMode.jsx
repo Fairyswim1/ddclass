@@ -33,16 +33,19 @@ const LessonStudentMode = () => {
     const [maxAllowedStep, setMaxAllowedStep] = useState(0);
     const [loading, setLoading] = useState(true);
     const [incomingMessage, setIncomingMessage] = useState(null);
+    const [summonedNotice, setSummonedNotice] = useState(null);
     // 교사가 실시간으로 바꾼 YouTube 모드 { [stepIndex]: 'class' | 'homework' }
     const [liveVideoModes, setLiveVideoModes] = useState({});
-
-    // ref로 항상 최신 step 값을 추적 — 자식 컴포넌트의 stale closure 문제 방지
-    const currentStepIndexRef = useRef(0);
-    currentStepIndexRef.current = currentStepIndex;
 
     const state = location.state || {};
     const { pin, nickname, lessonId } = state;
     const [problemIds, setProblemIds] = useState(state.problemIds || []);
+
+    // ref로 항상 최신 step 값을 추적 — 자식 컴포넌트의 stale closure 문제 방지
+    const currentStepIndexRef = useRef(0);
+    currentStepIndexRef.current = currentStepIndex;
+    const problemIdsRef = useRef(state.problemIds || []);
+    problemIdsRef.current = problemIds;
 
     // 1. problemIds가 없으면 서버에서 수업 정보를 불러온다.
     useEffect(() => {
@@ -106,6 +109,23 @@ const LessonStudentMode = () => {
         // 교사가 실시간으로 YouTube 모드 변경
         newSocket.on('videoModeChanged', ({ stepIndex, videoMode }) => {
             setLiveVideoModes(prev => ({ ...prev, [stepIndex]: videoMode }));
+        });
+
+        // 교사가 모든 학생을 특정 슬라이드로 강제 이동
+        newSocket.on('forceNavigateToStep', ({ stepIndex }) => {
+            const ids = problemIdsRef.current;
+            if (!ids.length || typeof stepIndex !== 'number') return;
+
+            const clamped = Math.max(0, Math.min(stepIndex, ids.length - 1));
+            setCurrentStepIndex(clamped);
+            setSummonedNotice(clamped + 1);
+            setTimeout(() => setSummonedNotice(null), 5000);
+
+            newSocket.emit('changeStudentStep', {
+                lessonId,
+                studentName: nickname,
+                stepIndex: clamped
+            });
         });
 
         return () => newSocket.disconnect();
@@ -363,6 +383,20 @@ const LessonStudentMode = () => {
                         onClick={() => setIncomingMessage(null)}
                         style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '1.2rem', padding: 0 }}
                     >×</button>
+                </div>
+            )}
+
+            {summonedNotice && (
+                <div style={{
+                    position: 'fixed', top: incomingMessage ? '5.5rem' : '1rem', left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 9998, maxWidth: '90vw', width: '420px',
+                    background: '#F58220', color: 'white', borderRadius: '14px',
+                    padding: '1rem 1.5rem', boxShadow: '0 8px 30px rgba(245, 130, 32, 0.35)',
+                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    fontWeight: 'bold', fontSize: '1rem'
+                }}>
+                    <span style={{ fontSize: '1.4rem' }}>📣</span>
+                    선생님이 {summonedNotice}번 슬라이드로 이동시켰어요!
                 </div>
             )}
 

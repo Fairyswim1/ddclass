@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Loader2, Send, Volume2, BarChart2, Save } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, Send, Volume2, BarChart2, Save, Megaphone } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { db } from '../../firebase';
 import { doc, getDoc, getDocs, collection, query, documentId, where, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -36,6 +36,8 @@ const LessonMonitor = () => {
     const [liveVideoModes, setLiveVideoModes] = useState({});
     const [showStats, setShowStats] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [slideContextMenu, setSlideContextMenu] = useState(null);
+    const [summonFeedback, setSummonFeedback] = useState(null);
 
     useEffect(() => {
         const fetchLessonAndProblems = async () => {
@@ -126,6 +128,10 @@ const LessonMonitor = () => {
             setStudents(prev => prev.map(s => s.id === id ? { ...s, currentStep } : s));
         });
 
+        newSocket.on('studentsBulkStepChanged', ({ stepIndex }) => {
+            setStudents(prev => prev.map(s => ({ ...s, currentStep: stepIndex })));
+        });
+
         newSocket.on('answerUpdated', (studentData) => {
             if (studentData.name === 'TEACHER_MONITOR') return;
             setStudents(prev => {
@@ -158,6 +164,20 @@ const LessonMonitor = () => {
 
         return () => newSocket.disconnect();
     }, [id]);
+
+    useEffect(() => {
+        if (!slideContextMenu) return;
+        const close = () => setSlideContextMenu(null);
+        const timer = setTimeout(() => {
+            window.addEventListener('click', close);
+            window.addEventListener('scroll', close, true);
+        }, 0);
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('click', close);
+            window.removeEventListener('scroll', close, true);
+        };
+    }, [slideContextMenu]);
 
     // 세션 저장 (Firestore sessions 컬렉션)
     const handleSaveSession = async () => {
@@ -275,6 +295,20 @@ const LessonMonitor = () => {
         socket.emit('setVideoMode', { lessonId: id, stepIndex, videoMode: mode });
     };
 
+    const handleSlideContextMenu = (e, stepIndex) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setSlideContextMenu({ x: e.clientX, y: e.clientY, stepIndex });
+    };
+
+    const handleSummonStudents = (stepIndex) => {
+        if (!socket) return;
+        socket.emit('summonStudentsToStep', { lessonId: id, stepIndex });
+        setSlideContextMenu(null);
+        setSummonFeedback(stepIndex);
+        setTimeout(() => setSummonFeedback(null), 2500);
+    };
+
     if (loading) {
         return (
             <div className="lesson-page-loading">
@@ -363,7 +397,8 @@ const LessonMonitor = () => {
                                 key={prob.id || idx} 
                                 className={`pacing-card ${isCurrent ? 'active' : ''} ${!isAllowed ? 'locked' : ''}`}
                                 onClick={() => handleStepChange(idx)}
-                                title={prob.title || '제목 없음'}
+                                onContextMenu={(e) => handleSlideContextMenu(e, idx)}
+                                title={`${prob.title || '제목 없음'} — 우클릭: 학생 소환`}
                             >
                                 <div className="card-header">
                                     <span className="card-number">{idx + 1}</span>
@@ -397,6 +432,30 @@ const LessonMonitor = () => {
                     })}
                 </div>
             </div>
+
+            {slideContextMenu && (
+                <div
+                    className="slide-context-menu"
+                    style={{ top: slideContextMenu.y, left: slideContextMenu.x }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <button
+                        type="button"
+                        className="slide-context-menu-item"
+                        onClick={() => handleSummonStudents(slideContextMenu.stepIndex)}
+                    >
+                        <Megaphone size={16} />
+                        {slideContextMenu.stepIndex + 1}번 슬라이드로 학생 소환
+                    </button>
+                </div>
+            )}
+
+            {summonFeedback !== null && (
+                <div className="summon-toast">
+                    <Megaphone size={16} />
+                    모든 학생을 {summonFeedback + 1}번 슬라이드로 이동시켰습니다
+                </div>
+            )}
 
             {/* 전체 공지 메시지 바 */}
             <div style={{ background: '#1e293b', padding: '0.6rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

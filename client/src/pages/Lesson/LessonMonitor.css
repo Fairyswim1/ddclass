@@ -261,3 +261,65 @@
 .lesson-page-error {
     color: #DC2626;
 }
+
+.slide-context-menu {
+    position: fixed;
+    z-index: 10000;
+    min-width: 220px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    padding: 0.35rem;
+    animation: contextMenuIn 0.12s ease;
+}
+
+@keyframes contextMenuIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.slide-context-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+    text-align: left;
+}
+
+.slide-context-menu-item:hover {
+    background: #FFF7ED;
+    color: #C2410C;
+}
+
+.summon-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: #1e293b;
+    color: white;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    animation: summonToastIn 0.25s ease;
+}
+
+@keyframes summonToastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}

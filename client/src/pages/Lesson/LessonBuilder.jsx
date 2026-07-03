@@ -7,6 +7,9 @@ import { resolveApiUrl } from '../../utils/url';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import './LessonBuilder.css';
 import DidiTipLatexOcrButton from '../../components/ImageToLatex/DidiTipLatexOcrButton';
+import ArchiveProblemPanel from '../../components/Lesson/ArchiveProblemPanel';
+import { useArchiveProblems } from '../../hooks/useArchiveProblems';
+import { handleLessonDragEnd, addArchiveProblemAsSlide } from '../../utils/lessonDragHandlers';
 
 // Importing Editors
 import FillBlanksEditor from './Editors/FillBlanksEditor';
@@ -61,6 +64,7 @@ const LessonBuilder = () => {
     const [slides, setSlides] = useState([]);
     const [activeSlideId, setActiveSlideId] = useState(null);
     const [showTypeSelector, setShowTypeSelector] = useState(false);
+    const { archiveProblems, archiveLoading } = useArchiveProblems(currentUser);
 
     React.useEffect(() => {
         if (!authLoading && !currentUser) {
@@ -108,11 +112,11 @@ const LessonBuilder = () => {
     };
 
     const onDragEnd = (result) => {
-        if (!result.destination) return;
-        const newSlides = Array.from(slides);
-        const [reorderedItem] = newSlides.splice(result.source.index, 1);
-        newSlides.splice(result.destination.index, 0, reorderedItem);
-        setSlides(newSlides);
+        handleLessonDragEnd(result, archiveProblems, setSlides, setActiveSlideId);
+    };
+
+    const handleImportFromArchive = (problem) => {
+        addArchiveProblemAsSlide(problem, setSlides, setActiveSlideId);
     };
 
     const handleSave = async () => {
@@ -181,9 +185,17 @@ const LessonBuilder = () => {
             </header>
 
             <div className="builder-body">
-                {/* Left Sidebar: Slides Thumbnails */}
-                <aside className="slides-sidebar">
-                    <DragDropContext onDragEnd={onDragEnd}>
+                <DragDropContext onDragEnd={onDragEnd}>
+                    <ArchiveProblemPanel
+                        problems={archiveProblems}
+                        loading={archiveLoading}
+                        typeIcons={TYPE_ICONS}
+                        typeLabels={TYPE_LABELS}
+                        onAddClick={handleImportFromArchive}
+                    />
+
+                    {/* Left Sidebar: Slides Thumbnails */}
+                    <aside className="slides-sidebar">
                         <Droppable droppableId="slides-list">
                             {(provided) => (
                                 <div className="slides-list" {...provided.droppableProps} ref={provided.innerRef}>
@@ -218,7 +230,6 @@ const LessonBuilder = () => {
                                 </div>
                             )}
                         </Droppable>
-                    </DragDropContext>
 
                     <div className="add-slide-wrapper">
                         <button className="btn-add-slide" onClick={() => setShowTypeSelector(!showTypeSelector)}>
@@ -246,7 +257,8 @@ const LessonBuilder = () => {
                         <p>수식 이미지가 있다면 LaTeX로 변환해 문제에 붙여넣을 수 있어요.</p>
                         <DidiTipLatexOcrButton />
                     </div>
-                </aside>
+                    </aside>
+                </DragDropContext>
 
                 {/* Right Main: Slide Editor */}
                 <main className="slide-editor-main">

@@ -927,3 +927,137 @@
     outline: none;
     background: #FFF9F2;
 }
+
+/* Archive sidebar — import from problem library */
+.archive-sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: #FFFBF5;
+    border-right: 2px solid #F0EEE9;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0.85rem;
+    overflow: hidden;
+    box-shadow: 4px 0 16px rgba(93, 64, 55, 0.03);
+}
+
+.archive-sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--color-brand-brown);
+    margin-bottom: 0.35rem;
+}
+
+.archive-sidebar-hint {
+    font-size: 0.72rem;
+    color: #9CA3AF;
+    line-height: 1.45;
+    margin: 0 0 0.75rem;
+}
+
+.archive-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.65rem;
+    background: white;
+    border: 2px solid #F0EEE9;
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+    color: #B8A99E;
+}
+
+.archive-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.82rem;
+    background: transparent;
+    color: var(--color-brand-brown);
+}
+
+.archive-problem-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    min-height: 80px;
+}
+
+.archive-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem 0;
+    color: #9CA3AF;
+    font-size: 0.85rem;
+}
+
+.archive-empty {
+    font-size: 0.78rem;
+    color: #9CA3AF;
+    line-height: 1.5;
+    text-align: center;
+    padding: 1.5rem 0.5rem;
+    white-space: pre-line;
+}
+
+.archive-problem-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    padding: 0.55rem 0.5rem;
+    background: white;
+    border: 2px solid #F0EEE9;
+    border-radius: 10px;
+    cursor: grab;
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.archive-problem-item:hover {
+    border-color: var(--color-brand-orange);
+    background: #FFF9F2;
+    box-shadow: 0 2px 8px rgba(245, 130, 32, 0.12);
+}
+
+.archive-problem-item.dragging {
+    border-color: var(--color-brand-blue);
+    box-shadow: 0 4px 16px rgba(79, 182, 255, 0.25);
+    opacity: 0.95;
+}
+
+.archive-grip {
+    flex-shrink: 0;
+    color: #D1D5DB;
+    margin-top: 2px;
+}
+
+.archive-item-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.archive-item-type {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--color-brand-orange);
+    margin-bottom: 0.15rem;
+}
+
+.archive-item-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-brand-brown);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

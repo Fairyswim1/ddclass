@@ -323,29 +323,14 @@ const FreeStudentMode = ({ lessonProblemData = null, lessonRoomId = null, lesson
 
                 {/* Canvas Area */}
                 <section className="student-canvas-workspace">
-                    <div
-                        className="student-canvas-container"
-                        style={{
-                            position: 'relative',
-                            display: 'inline-block',
-                            maxWidth: '100%',
-                            maxHeight: '100%',
-                            backgroundColor: 'white',
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
-                        }}
-                    >
+                    <div className="student-canvas-container">
                         {problem.backgroundUrl ? (
                             <img
                                 src={resolveApiUrl(problem.backgroundUrl)}
                                 alt="background"
+                                className="student-canvas-bg-img"
                                 style={{
-                                    display: 'block',
-                                    maxWidth: '100%',
-                                    maxHeight: '100%',
-                                    pointerEvents: 'none',
                                     transform: `scale(${problem.bgScale || 1})`,
-                                    transformOrigin: 'center',
-                                    transition: 'transform 0.3s ease'
                                 }}
                             />
                         ) : (
@@ -353,13 +338,8 @@ const FreeStudentMode = ({ lessonProblemData = null, lessonRoomId = null, lesson
                                 backgroundType={problem.backgroundType || 'blank'}
                                 tableConfig={problem.tableConfig}
                                 aspectRatio={problem.aspectRatio || 16 / 9}
-                                minHeight={300}
-                                style={{
-                                    display: 'block',
-                                    maxWidth: '100%',
-                                    maxHeight: '100%',
-                                    pointerEvents: 'none',
-                                }}
+                                fillContainer
+                                style={{ pointerEvents: 'none' }}
                             />
                         )}
                         <div

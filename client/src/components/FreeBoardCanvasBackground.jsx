@@ -14,6 +14,7 @@ const FreeBoardCanvasBackground = ({
     bgScale = 1,
     aspectRatio = 16 / 9,
     minHeight = 300,
+    fillContainer = false,
     className = '',
     style = {},
 }) => {
@@ -45,8 +46,8 @@ const FreeBoardCanvasBackground = ({
                     position: 'relative',
                     width: '100%',
                     height: '100%',
-                    minHeight,
-                    aspectRatio: `${aspectRatio}`,
+                    minHeight: fillContainer ? 0 : minHeight,
+                    ...(fillContainer ? {} : { aspectRatio: `${aspectRatio}` }),
                     background: '#ffffff',
                     ...style,
                 }}
@@ -62,8 +63,8 @@ const FreeBoardCanvasBackground = ({
             style={{
                 width: '100%',
                 height: '100%',
-                minHeight,
-                aspectRatio: `${aspectRatio}`,
+                minHeight: fillContainer ? 0 : minHeight,
+                ...(fillContainer ? {} : { aspectRatio: `${aspectRatio}` }),
                 ...getPresetBackgroundStyle(backgroundType),
                 ...style,
             }}

@@ -12,6 +12,7 @@
     display: flex;
     flex-direction: row;
     overflow: hidden;
+    min-height: 0;
 }
 
 /* Tray Area (Sidebar) */
@@ -91,12 +92,36 @@
 .student-canvas-workspace {
     flex: 1;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    overflow: auto;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0.75rem 1rem;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
     background-color: var(--color-bg-light);
     position: relative;
+}
+
+.student-canvas-container {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    background: white;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.student-canvas-bg-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    transform-origin: center;
+    transition: transform 0.3s ease;
 }
 
 .student-master-canvas {

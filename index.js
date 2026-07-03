@@ -719,6 +719,28 @@ io.on('connection', (socket) => {
     io.to(lessonId).emit('maxAllowedStepUpdated', { maxAllowedStep });
   });
 
+  // 교사가 모든 학생을 특정 슬라이드로 강제 이동
+  socket.on('summonStudentsToStep', ({ lessonId, stepIndex }) => {
+    if (!lessonId || typeof stepIndex !== 'number' || stepIndex < 0) return;
+
+    if (!roomStates[lessonId]) {
+      roomStates[lessonId] = { students: {}, maxAllowedStep: 0 };
+    }
+    const state = roomStates[lessonId];
+
+    if (stepIndex > state.maxAllowedStep) {
+      state.maxAllowedStep = stepIndex;
+      io.to(lessonId).emit('maxAllowedStepUpdated', { maxAllowedStep: stepIndex });
+    }
+
+    Object.values(state.students).forEach((student) => {
+      student.currentStep = stepIndex;
+    });
+
+    io.to(lessonId).emit('forceNavigateToStep', { stepIndex });
+    io.to(lessonId).emit('studentsBulkStepChanged', { stepIndex });
+  });
+
   socket.on('submitLessonAnswer', ({ lessonId, studentName, stepIndex, answer }) => {
     if (!roomStates[lessonId] || !roomStates[lessonId].students[socket.id]) return;
 
